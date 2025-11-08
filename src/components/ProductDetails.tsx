@@ -5,6 +5,7 @@ import type { Product } from '@/data/products'
 import { CountdownTimer } from './CountdownTimer'
 import { QuantitySelector } from './QuantitySelector'
 import { Accordion } from './Accordion'
+import { CheckoutModal } from './CheckoutModal'
 
 type ProductDetailsProps = {
   product: Product
@@ -13,15 +14,28 @@ type ProductDetailsProps = {
 export const ProductDetails = ({ product }: ProductDetailsProps): JSX.Element => {
   const [quantity, setQuantity] = useState(1)
   const [isWishlisted, setIsWishlisted] = useState(false)
+  const [isCheckoutModalOpen, setIsCheckoutModalOpen] = useState(false)
 
   const handleAddToCart = (): void => {
-    // TODO: Implement cart functionality
-    console.log(`Added ${quantity} x ${product.name} to cart`)
+    const phoneNumber = '+213673734578'
+    const totalPrice = product.price * quantity
+    const message = `Bonjour! Je souhaite ajouter au panier:
+
+📦 Produit: ${product.name}
+💰 Prix unitaire: ${product.price.toLocaleString()} DA
+📊 Quantité: ${quantity}
+💵 Prix total: ${totalPrice.toLocaleString()} DA
+🏷️ Type: ${product.productType}
+${product.category ? `📂 Catégorie: ${product.category}` : ''}
+${product.need ? `✨ Usage: ${product.need}` : ''}
+
+Merci!`
+    const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`
+    window.open(whatsappUrl, '_blank')
   }
 
   const handleBuyNow = (): void => {
-    // TODO: Implement buy now functionality
-    console.log(`Buy now: ${quantity} x ${product.name}`)
+    setIsCheckoutModalOpen(true)
   }
 
   const handleWishlist = (): void => {
@@ -282,6 +296,14 @@ export const ProductDetails = ({ product }: ProductDetailsProps): JSX.Element =>
           </div>
         </div>
       </div>
+
+      {/* Checkout Modal */}
+      <CheckoutModal
+        product={product}
+        quantity={quantity}
+        isOpen={isCheckoutModalOpen}
+        onClose={() => setIsCheckoutModalOpen(false)}
+      />
     </div>
   )
 }
