@@ -4,7 +4,7 @@ export const CTASection = (): JSX.Element => {
   const handleWhatsAppClick = (): void => {
     const phoneNumber = '+213673734578'
     const message =
-      'Bonjour! Je souhaite discuter de mon projet de cuisine sur mesure.'
+      'Bonjour! Je souhaite decouvrir votre collection de parfums de luxe.'
     const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(
       message,
     )}`
@@ -16,7 +16,7 @@ export const CTASection = (): JSX.Element => {
   }
 
   const handleEmailClick = (): void => {
-    window.open('mailto:contact@cuisine-alger.com', '_self')
+    window.open('mailto:contact@brahim-perfum.com', '_self')
   }
 
   return (
@@ -24,14 +24,14 @@ export const CTASection = (): JSX.Element => {
       <div className="mx-auto max-w-5xl rounded-3xl border border-kitchen-lux-dark-green-200 bg-white/85 px-6 py-16 shadow-sm sm:px-10">
         <div className="mx-auto max-w-3xl text-center">
           <p className="text-xs uppercase tracking-[0.4em] text-kitchen-lux-dark-green-600">
-            Pret a concevoir
+            Pret a decouvrir
           </p>
           <h2 className="mt-4 text-4xl font-elegant font-semibold text-kitchen-lux-dark-green-800 sm:text-5xl">
-            Imaginons ensemble votre cuisine ideale
+            Decouvrez votre fragrance ideale
           </h2>
           <p className="mt-6 text-base leading-relaxed text-kitchen-lux-dark-green-700">
-            Partagez vos envies et contraintes, nous nous chargeons de concevoir
-            une cuisine fonctionnelle, esthetique et parfaitement adaptee a vos besoins.
+            Partagez vos preferences olfactives, nous vous guidons vers le parfum
+            qui vous correspond parfaitement parmi notre collection exclusive de fragrances authentiques.
           </p>
         </div>
 
@@ -83,7 +83,7 @@ export const CTASection = (): JSX.Element => {
               Email
             </p>
             <p className="mt-4 text-lg font-semibold text-kitchen-lux-dark-green-800">
-              contact@cuisine-alger.com
+              contact@brahim-perfum.com
             </p>
             <button
               onClick={handleEmailClick}

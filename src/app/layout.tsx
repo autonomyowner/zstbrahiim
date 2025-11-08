@@ -25,11 +25,11 @@ const greatVibes = Great_Vibes({
 })
 
 export const metadata: Metadata = {
-  title: 'Brahim Perfum - Conception et fabrication de cuisines modernes a Bouzareah',
+  title: 'Brahim Perfum - Parfums de luxe et fragrances authentiques a Bouzareah',
   description:
-    'Conception et fabrication de cuisines modernes a Bouzareah. Cuisines sur mesure, menuiserie haut de gamme et amenagement complet.',
+    'Decouvrez notre collection exclusive de parfums de luxe et fragrances authentiques a Bouzareah. Parfums originaux, eaux de parfum haut de gamme et fragrances rares.',
   keywords:
-    'cuisine moderne, fabrication cuisine, menuiserie, Bouzareah, cuisine sur mesure, amenagement cuisine, plans de travail',
+    'parfum, parfums de luxe, fragrances authentiques, eau de parfum, parfum original, Bouzareah, parfumerie, fragrances rares, parfums importes',
   authors: [{ name: 'Brahim Perfum' }],
   creator: 'Brahim Perfum',
   publisher: 'Brahim Perfum',
@@ -43,22 +43,22 @@ export const metadata: Metadata = {
     address: false,
     telephone: false,
   },
-  metadataBase: new URL('https://cuisine-alger.com'),
+  metadataBase: new URL('https://brahim-perfum.com'),
   alternates: {
     canonical: '/',
   },
   openGraph: {
-    title: 'Brahim Perfum - Conception et fabrication de cuisines modernes a Bouzareah',
+    title: 'Brahim Perfum - Parfums de luxe et fragrances authentiques a Bouzareah',
     description:
-      'Conception et fabrication de cuisines modernes a Bouzareah. Cuisines sur mesure, menuiserie haut de gamme et amenagement complet.',
-    url: 'https://cuisine-alger.com',
+      'Decouvrez notre collection exclusive de parfums de luxe et fragrances authentiques a Bouzareah. Parfums originaux, eaux de parfum haut de gamme et fragrances rares.',
+    url: 'https://brahim-perfum.com',
     siteName: 'Brahim Perfum',
     images: [
       {
         url: '/og-image.jpg',
         width: 1200,
         height: 630,
-        alt: 'Brahim Perfum - Conception et fabrication de cuisines modernes a Bouzareah',
+        alt: 'Brahim Perfum - Parfums de luxe et fragrances authentiques a Bouzareah',
       },
     ],
     locale: 'fr_DZ',
@@ -66,9 +66,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Brahim Perfum - Conception et fabrication de cuisines modernes a Bouzareah',
+    title: 'Brahim Perfum - Parfums de luxe et fragrances authentiques a Bouzareah',
     description:
-      'Conception et fabrication de cuisines modernes a Bouzareah. Cuisines sur mesure, menuiserie haut de gamme et amenagement complet.',
+      'Decouvrez notre collection exclusive de parfums de luxe et fragrances authentiques a Bouzareah. Parfums originaux, eaux de parfum haut de gamme et fragrances rares.',
     images: ['/og-image.jpg'],
   },
   robots: {

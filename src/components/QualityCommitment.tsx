@@ -7,20 +7,20 @@ type TrustBadge = {
 
 const trustBadges: TrustBadge[] = [
   {
-    title: 'FORMULÉ EN FRANCE',
-    description: 'Expertise scientifique et respect des normes européennes strictes.',
+    title: 'PARFUMS AUTHENTIQUES',
+    description: 'Selection rigoureuse de fragrances originales et garanties authentiques.',
   },
   {
-    title: 'INGRÉDIENTS ACTIFS PURS',
-    description: 'Sourcing rigoureux pour une biodisponibilité maximale.',
+    title: 'NOTES DE QUALITE',
+    description: 'Parfums de luxe avec des notes equilibrees et complexes.',
   },
   {
-    title: 'SANS OGM NI GLUTEN',
-    description: 'Une transparence totale pour une consommation sereine.',
+    title: 'GARANTIE D AUTHENTICITE',
+    description: 'Une transparence totale sur l origine et la qualite de chaque parfum.',
   },
   {
-    title: 'FACILE À ASSIMILER',
-    description: 'Des formats conçus pour une absorption optimale par votre corps.',
+    title: 'TENUE EXCEPTIONNELLE',
+    description: 'Fragrances selectionnees pour leur tenue longue et persistante.',
   },
 ]
 
@@ -33,12 +33,12 @@ export const QualityCommitment = (): JSX.Element => {
             Notre promesse
           </p>
           <h2 className="mt-5 text-4xl font-elegant font-semibold text-kitchen-lux-dark-green-800 sm:text-5xl">
-            Excellence et Pureté Française
+            Excellence et Authenticite
           </h2>
           <p className="mx-auto mt-6 max-w-3xl text-base leading-relaxed text-kitchen-lux-dark-green-700">
-            Chez Cellavie, nous croyons que le bien-être commence par l&apos;intégrité des ingrédients. 
-            C&apos;est pourquoi nous nous engageons à vous offrir des compléments qui allient le meilleur 
-            de la nature et de la science, avec une exigence de qualité sans compromis.
+            Chez Brahim Perfum, nous croyons que l&apos;elegance commence par l&apos;authenticite des fragrances. 
+            C&apos;est pourquoi nous nous engageons a vous offrir des parfums de luxe qui allient le meilleur 
+            de la parfumerie mondiale, avec une exigence de qualite sans compromis.
           </p>
         </div>
 
@@ -46,7 +46,7 @@ export const QualityCommitment = (): JSX.Element => {
           <div className="relative w-full max-w-4xl aspect-[16/9] overflow-hidden rounded-[32px] border border-kitchen-lux-dark-green-200 bg-gradient-to-br from-kitchen-lux-dark-green-50 to-kitchen-lux-dark-green-100 shadow-lg">
             <Image
               src="/unnamed (1).jpg"
-              alt="Cellavie produits de qualité"
+              alt="Brahim Perfum - Collection de parfums de luxe"
               fill
               className="object-cover"
             />

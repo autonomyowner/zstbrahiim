@@ -7,10 +7,10 @@ export const TestimonialsSection = (): JSX.Element => {
             Découvrez notre produit
           </p>
           <h2 className="mt-5 text-4xl font-elegant font-semibold text-kitchen-lux-dark-green-800 sm:text-5xl">
-            Cellavie Immune Boost
+            Brahim Perfum Collection
           </h2>
           <p className="mx-auto mt-6 max-w-2xl text-base leading-relaxed text-kitchen-lux-dark-green-700">
-            Découvrez les bienfaits de notre complément alimentaire pour renforcer votre système immunitaire.
+            Decouvrez notre collection exclusive de parfums de luxe et fragrances authentiques.
           </p>
         </div>
 
@@ -25,7 +25,7 @@ export const TestimonialsSection = (): JSX.Element => {
               playsInline
               poster="/picturs/hero.jpg"
             >
-              <source src="/Cellavie_Immune_Boost_Commercial_Generation (1).mp4" type="video/mp4" />
+              <source src="/sectionhgero.mp4" type="video/mp4" />
               Votre navigateur ne supporte pas la lecture de vidéos.
             </video>
           </div>

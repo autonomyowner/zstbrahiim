@@ -1,6 +1,6 @@
-# Cellavie ❤️ - Website
+# Brahim Perfum ❤️ - Website
 
-Un site web moderne et élégant pour Cellavie, une entreprise de conception et fabrication de cuisines modernes basée à Bouzareah, Algérie.
+Un site web moderne et élégant pour Brahim Perfum, une parfumerie de luxe spécialisée dans les fragrances authentiques basée à Bouzareah, Algérie.
 
 ## 🚀 Technologies Utilisées
 
@@ -19,9 +19,9 @@ Un site web moderne et élégant pour Cellavie, une entreprise de conception et 
 - Animations fluides et transitions élégantes
 
 ### 📱 Pages
-- **Accueil** - Hero section avec CTA, aperçu des services, témoignages
-- **Services** - Détails complets des services de cuisine
-- **Contact** - Informations de contact et zone de service
+- **Accueil** - Hero section avec CTA, aperçu des produits, témoignages
+- **Services** - Détails complets de nos parfums et fragrances
+- **Contact** - Informations de contact et zone de livraison
 
 ### 🔧 Fonctionnalités Techniques
 - Navigation sticky avec effets de scroll
@@ -96,7 +96,7 @@ Le thème utilise un gradient élégant :
 ### Informations de Contact
 - **WhatsApp** : +213 79 733 94 51
 - **Téléphone** : +213 79 733 94 51
-- **Email** : contact@cuisine-alger.com
+- **Email** : contact@brahim-perfum.com
 - **Localisation** : Bouzareah, Algérie
 
 ### Zone de Service
@@ -112,13 +112,13 @@ Le thème utilise un gradient élégant :
 ### Variables d'Environnement
 Créez un fichier `.env.local` :
 ```env
-NEXT_PUBLIC_SITE_URL=https://cuisine-alger.com
+NEXT_PUBLIC_SITE_URL=https://brahim-perfum.com
 NEXT_PUBLIC_PHONE_NUMBER=+213673734578
-NEXT_PUBLIC_EMAIL=contact@cuisine-alger.com
+NEXT_PUBLIC_EMAIL=contact@brahim-perfum.com
 ```
 
 ### SEO
-- Métadonnées optimisées pour "Conception et fabrication de cuisines modernes dans toute l'Algérie"
+- Métadonnées optimisées pour "Parfums de luxe et fragrances authentiques dans toute l'Algérie"
 - OpenGraph tags pour les réseaux sociaux
 - Structure de données pour Google
 
@@ -162,4 +162,4 @@ Ce projet est sous licence MIT. Voir le fichier `LICENSE` pour plus de détails.
 
 ---
 
-**Cellavie ❤️** - Transformez votre cuisine en espace de vie idéal 
+**Brahim Perfum ❤️** - Découvrez votre fragrance idéale parmi notre collection exclusive 

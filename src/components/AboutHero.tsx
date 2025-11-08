@@ -10,12 +10,12 @@ export const AboutHero = (): JSX.Element => {
                 A propos
               </p>
               <h1 className="mt-5 text-4xl font-elegant font-semibold text-neutral-900 sm:text-5xl">
-                L equipe Cellavie maitrise l art de la menuiserie moderne
+                Brahim Perfum maitrise l art des fragrances authentiques
               </h1>
               <p className="mt-4 text-base leading-relaxed text-neutral-600">
-                Basee a Bouzareah, Cellavie concoit et fabrique des cuisines sur mesure
-                avec un savoir-faire artisanal et des materiaux de qualite. Nous transformons
-                vos espaces grace a notre expertise en menuiserie et notre attention aux details.
+                Basee a Bouzareah, Brahim Perfum selectionne et propose des parfums de luxe
+                avec un savoir-faire authentique et des fragrances de qualite. Nous vous guidons
+                vers la fragrance parfaite grace a notre expertise en parfumerie et notre attention aux details.
               </p>
             </div>
 
@@ -25,8 +25,8 @@ export const AboutHero = (): JSX.Element => {
                   Notre histoire
                 </h2>
                 <p className="mt-3 text-sm leading-relaxed text-neutral-600">
-                  Depuis plus de cinq ans, nous concevons et fabriquons des cuisines
-                  sur mesure avec un savoir-faire artisanal et une grande exigence qualitative.
+                  Depuis plusieurs annees, nous selectionnons et proposons des parfums de luxe
+                  authentiques avec un savoir-faire reconnu et une grande exigence qualitative.
                 </p>
               </div>
               <div>
@@ -34,9 +34,9 @@ export const AboutHero = (): JSX.Element => {
                   Notre promesse
                 </h2>
                 <p className="mt-3 text-sm leading-relaxed text-neutral-600">
-                  Offrir des cuisines fonctionnelles et esthetiques, de la conception 3D
-                  a l installation finale, pour une experience sans stress et
-                  parfaitement orchestree.
+                  Offrir des parfums authentiques et de qualite, de la selection
+                  a la livraison, pour une experience olfactive unique et
+                  parfaitement personnalisee.
                 </p>
               </div>
             </div>
@@ -47,7 +47,7 @@ export const AboutHero = (): JSX.Element => {
                   50+
                 </p>
                 <p className="mt-1 text-xs uppercase tracking-[0.35em] text-neutral-500">
-                  Cuisines
+                  Parfums
                 </p>
               </div>
               <div>
@@ -80,10 +80,10 @@ export const AboutHero = (): JSX.Element => {
             </div>
             <div className="absolute -bottom-8 left-1/2 w-60 -translate-x-1/2 rounded-3xl border border-neutral-200 bg-white/95 px-6 py-5 text-center shadow-lg">
               <p className="text-xs uppercase tracking-[0.35em] text-neutral-500">
-                Atelier de fabrication
+                Collection exclusive
               </p>
               <p className="mt-3 text-sm text-neutral-600">
-                Materiaux nobles et fabrication sur mesure pour chaque cuisine.
+                Fragrances authentiques et selection rigoureuse pour chaque parfum.
               </p>
             </div>
           </div>

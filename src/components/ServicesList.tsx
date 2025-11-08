@@ -12,94 +12,94 @@ type Service = {
 
 const services: Service[] = [
   {
-    id: 'cuisine-moderne',
-    title: 'Cuisine moderne',
+    id: 'parfums-feminins',
+    title: 'Parfums feminins',
     description:
-      'Design contemporain aux lignes epurees avec des materiaux haut de gamme pour une cuisine fonctionnelle et esthetique.',
+      'Collection exclusive de fragrances feminines authentiques, des notes florales aux accords orientaux pour sublimer votre personnalite.',
     features: [
-      'Conception 3D et plans detailles',
-      'Materiaux premium (lacquer, melamine, bois massif)',
-      'Electromenager integre et dissimule',
-      'Eclairage LED integre et ambiant',
-      'Installation complete par nos equipes',
+      'Parfums de luxe authentiques',
+      'Notes florales, fruitees et orientales',
+      'Eaux de parfum et extraits',
+      'Fragrances rares et exclusives',
+      'Conseils personnalises par nos experts',
     ],
     image: '/picturs/3.jpg',
-    signature: 'Design contemporain',
+    signature: 'Femininite et elegance',
   },
   {
-    id: 'cuisine-classique',
-    title: 'Cuisine classique',
+    id: 'parfums-masculins',
+    title: 'Parfums masculins',
     description:
-      'Style intemporel avec bois noble et finitions raffinees pour une cuisine chaleureuse et traditionnelle.',
+      'Selection de fragrances masculines intemporelles, des notes boisees aux accords aquatiques pour affirmer votre style.',
     features: [
-      'Bois massif et placage de qualite',
-      'Finitions traditionnelles (vernis, cire, patine)',
-      'Poignees et accessoires de style',
-      'Plans de travail en granit ou marbre',
-      'Fabrication artisanale sur mesure',
+      'Parfums de luxe authentiques',
+      'Notes boisees, epicees et aquatiques',
+      'Eaux de parfum et extraits',
+      'Fragrances rares et exclusives',
+      'Conseils personnalises par nos experts',
     ],
     image: '/picturs/7.jpg',
-    signature: 'Tradition et qualite',
+    signature: 'Masculinite et caractere',
   },
   {
-    id: 'amenagement-sur-mesure',
-    title: 'Amenagement sur mesure',
+    id: 'parfums-unisexes',
+    title: 'Parfums unisexes',
     description:
-      'Optimisation maximale de l espace avec des solutions personnalisees adaptees a vos contraintes et besoins.',
+      'Fragrances universelles qui transcendent les genres, des creations audacieuses pour une identite olfactive unique.',
     features: [
-      'Etude ergonomique de l espace',
-      'Solutions de rangement optimisees',
-      'Adaptation aux contraintes architecturales',
-      'Integration d ilots et peninsules',
-      'Conception modulaire et evolutive',
+      'Parfums de luxe authentiques',
+      'Notes universelles et modernes',
+      'Eaux de parfum et extraits',
+      'Fragrances rares et exclusives',
+      'Conseils personnalises par nos experts',
     ],
     image: '/picturs/9.jpg',
-    signature: 'Optimisation espace',
+    signature: 'Modernite et audace',
   },
   {
-    id: 'plans-de-travail',
-    title: 'Plans de travail',
+    id: 'fragrances-rares',
+    title: 'Fragrances rares',
     description:
-      'Granit, quartz, marbre ou stratifie pour des plans de travail durables et esthetiques adaptes a votre style.',
+      'Collection limitee de parfums rares et exclusifs, des creations d exception pour les amateurs de fragrances uniques.',
     features: [
-      'Granit naturel et quartz composite',
-      'Marbre et pierres naturelles',
-      'Stratifie haute pression',
-      'Decoupe et usinage precis',
-      'Pose et finition professionnelle',
+      'Parfums de niche et exclusifs',
+      'Creations limitees et rares',
+      'Notes exceptionnelles et complexes',
+      'Emballage premium et soigne',
+      'Conseils specialises par nos experts',
     ],
     image: '/picturs/7.jpg',
-    signature: 'Materiaux nobles',
+    signature: 'Exclusivite et raffinement',
   },
   {
-    id: 'menuiserie',
-    title: 'Menuiserie',
+    id: 'eaux-de-parfum',
+    title: 'Eaux de parfum',
     description:
-      'Placards, rangements et ilots centraux fabriques sur mesure pour maximiser l espace et l organisation.',
+      'Selection d eaux de parfum haut de gamme avec une tenue exceptionnelle et des notes de tete, de coeur et de fond harmonieuses.',
     features: [
-      'Placards hauts et bas sur mesure',
-      'Ilots centraux et peninsules',
-      'Rangements specifiques (epices, vaisselle)',
-      'Tiroirs et portes a fermeture douce',
-      'Fabrication locale et garantie',
+      'Eaux de parfum authentiques',
+      'Tenue longue et persistante',
+      'Notes equilibrees et complexes',
+      'Formats varies (50ml, 100ml)',
+      'Garantie d authenticite',
     ],
     image: '/picturs/10.jpg',
-    signature: 'Menuiserie d art',
+    signature: 'Qualite et authenticite',
   },
   {
-    id: 'renovation-complete',
-    title: 'Renovation complete',
+    id: 'coffrets-decouverte',
+    title: 'Coffrets decouverte',
     description:
-      'Transformation totale de votre cuisine, de la demolition a la finition, pour un resultat cles en main.',
+      'Coffrets elegants contenant plusieurs echantillons de parfums pour vous permettre de decouvrir et tester nos fragrances.',
     features: [
-      'Demolition et preparation des murs',
-      'Plomberie et electricite',
-      'Pose de carrelage et peinture',
-      'Installation complete de la cuisine',
-      'Suivi et garantie de finition',
+      'Coffrets elegants et soignes',
+      'Echantillons de parfums selectionnes',
+      'Guide des fragrances inclus',
+      'Parfait pour offrir ou decouvrir',
+      'Livraison soignee et emballage premium',
     ],
     image: '/picturs/2.jpg',
-    signature: 'Renovation cles en main',
+    signature: 'Decouverte et partage',
   },
 ]
 
@@ -139,7 +139,7 @@ export const ServicesList = (): JSX.Element => {
                 {service.signature}
               </span>
               <span className="text-xs uppercase tracking-[0.35em] text-kitchen-lux-dark-green-500">
-                Cellavie
+                Brahim Perfum
               </span>
             </div>
             </div>
@@ -170,7 +170,7 @@ export const ServicesList = (): JSX.Element => {
                 type="button"
                 className="rounded-full border border-kitchen-lux-dark-green-400 px-8 py-3 text-xs font-semibold uppercase tracking-[0.35em] text-kitchen-lux-dark-green-700 transition-colors duration-200 hover:border-kitchen-lux-dark-green-600 hover:text-kitchen-lux-dark-green-800 hover:bg-kitchen-lux-dark-green-50"
               >
-                Demander un devis
+                Decouvrir la collection
               </button>
             </div>
             </div>

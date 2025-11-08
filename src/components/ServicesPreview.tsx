@@ -12,38 +12,38 @@ type CategoryCard = {
 
 const categories: CategoryCard[] = [
   {
-    id: 'immunite-defenses',
-    title: 'IMMUNITÉ & DÉFENSES',
+    id: 'parfums-feminins',
+    title: 'PARFUMS FÉMININS',
     description:
-      'Les essentiels pour affronter les saisons et maintenir votre corps résistant.',
-    highlight: 'Défenses naturelles',
+      'Collection exclusive de fragrances feminines authentiques pour sublimer votre personnalite.',
+    highlight: 'Femininite et elegance',
     image: '/unnamed (2).jpg',
     href: '/services',
   },
   {
-    id: 'vitalite-energie',
-    title: 'VITALITÉ & ÉNERGIE',
+    id: 'parfums-masculins',
+    title: 'PARFUMS MASCULINS',
     description:
-      'Solutions pour combattre la fatigue et optimiser la concentration mentale.',
-    highlight: 'Énergie durable',
+      'Selection de fragrances masculines intemporelles pour affirmer votre style.',
+    highlight: 'Masculinite et caractere',
     image: '/unnamed (2).jpg',
     href: '/services',
   },
   {
-    id: 'sommeil-detente',
-    title: 'SOMMEIL & DÉTENTE',
+    id: 'parfums-unisexes',
+    title: 'PARFUMS UNISEXES',
     description:
-      'Retrouvez un sommeil réparateur et gérez le stress du quotidien.',
-    highlight: 'Bien-être quotidien',
+      'Fragrances universelles qui transcendent les genres pour une identite olfactive unique.',
+    highlight: 'Modernite et audace',
     image: '/unnamed (2).jpg',
     href: '/services',
   },
   {
-    id: 'beaute-articulations',
-    title: 'BEAUTÉ & ARTICULATIONS',
+    id: 'fragrances-rares',
+    title: 'FRAGRANCES RARES',
     description:
-      'Compléments ciblés pour la peau, les cheveux et le confort articulaire.',
-    highlight: 'Santé & beauté',
+      'Collection limitee de parfums rares et exclusifs pour les amateurs de fragrances uniques.',
+    highlight: 'Exclusivite et raffinement',
     image: '/unnamed (2).jpg',
     href: '/services',
   },
@@ -58,11 +58,11 @@ export const ServicesPreview = (): JSX.Element => {
             Nos catégories
           </p>
           <h2 className="mt-5 text-4xl font-elegant font-semibold text-kitchen-lux-dark-green-800 sm:text-5xl">
-            Trouvez Votre Complément Idéal
+            Trouvez Votre Fragrance Ideale
           </h2>
           <p className="mx-auto mt-6 max-w-2xl text-base leading-relaxed text-kitchen-lux-dark-green-700">
-            Quel que soit votre objectif – sommeil, digestion, énergie ou immunité – 
-            Cellavie a la formule qu&apos;il vous faut. Explorez nos catégories principales.
+            Quel que soit votre style – feminin, masculin, unisexe ou rare – 
+            Brahim Perfum a la fragrance qu&apos;il vous faut. Explorez nos categories principales.
           </p>
         </div>
 

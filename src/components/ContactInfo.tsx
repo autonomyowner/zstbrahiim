@@ -4,7 +4,7 @@ export const ContactInfo = (): JSX.Element => {
   const handleWhatsAppClick = (): void => {
     const phoneNumber = '+213673734578'
     const message =
-      'Bonjour! Je souhaite discuter de mon projet de cuisine sur mesure.'
+      'Bonjour! Je souhaite decouvrir votre collection de parfums de luxe.'
     const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(
       message,
     )}`
@@ -16,7 +16,7 @@ export const ContactInfo = (): JSX.Element => {
   }
 
   const handleEmailClick = (): void => {
-    window.open('mailto:contact@cuisine-alger.com', '_self')
+    window.open('mailto:contact@brahim-perfum.com', '_self')
   }
 
   return (
@@ -29,8 +29,8 @@ export const ContactInfo = (): JSX.Element => {
           Echanger avec notre equipe
         </h2>
         <p className="mt-4 text-sm leading-relaxed text-kitchen-lux-dark-green-700">
-          Nous sommes disponibles pour discuter de votre projet de cuisine, definir un
-          budget et planifier les prochaines etapes de conception et fabrication.
+          Nous sommes disponibles pour vous conseiller sur nos parfums de luxe, repondre
+          a vos questions et vous aider a trouver la fragrance qui vous correspond parfaitement.
         </p>
       </div>
 
@@ -42,7 +42,7 @@ export const ContactInfo = (): JSX.Element => {
           +213 79 733 94 51
         </p>
         <p className="mt-2 text-sm text-kitchen-lux-dark-green-700">
-          Reponse rapide et partage de plans 3D.
+          Reponse rapide et conseils personnalises sur nos fragrances.
         </p>
         <button
           onClick={handleWhatsAppClick}
@@ -62,7 +62,7 @@ export const ContactInfo = (): JSX.Element => {
             +213 79 733 94 51
           </p>
         <p className="mt-2 text-sm text-kitchen-lux-dark-green-700">
-          Pour un devis rapide ou un suivi de fabrication.
+          Pour des informations sur nos parfums ou une commande.
         </p>
           <button
             onClick={handlePhoneClick}
@@ -77,10 +77,10 @@ export const ContactInfo = (): JSX.Element => {
             Email
           </h3>
           <p className="mt-2 text-lg font-semibold text-kitchen-lux-dark-green-800">
-            contact@cuisine-alger.com
+            contact@brahim-perfum.com
           </p>
         <p className="mt-2 text-sm text-kitchen-lux-dark-green-700">
-          Pour partager vos plans et documents techniques.
+          Pour des questions sur nos produits et commandes.
         </p>
           <button
             onClick={handleEmailClick}

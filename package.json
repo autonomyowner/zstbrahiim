@@ -1,7 +1,7 @@
 {
-  "name": "cuisine-alger",
+  "name": "brahim-perfum",
   "version": "1.0.0",
-  "description": "Cellavie - Décoration événementielle à Bouzareah",
+  "description": "Brahim Perfum - Parfums de luxe et fragrances authentiques à Bouzareah",
   "private": true,
   "scripts": {
     "dev": "next dev",

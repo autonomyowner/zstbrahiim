@@ -15,9 +15,9 @@ export const LocationMap = (): JSX.Element => {
           Zone de service
         </h2>
         <p className="mt-4 text-sm leading-relaxed text-neutral-600">
-          Nous intervenons dans toutes les 58 wilayas d&apos;Algérie. 
-          Pour tout projet, contactez-nous afin d&apos;évaluer la faisabilité 
-          et les frais de déplacement selon votre localisation.
+          Nous livrons dans toutes les 58 wilayas d&apos;Algérie. 
+          Pour toute commande, contactez-nous afin d&apos;évaluer 
+          les frais de livraison selon votre localisation.
         </p>
         <div className="mt-6 grid grid-cols-1 gap-3 text-sm text-neutral-600 sm:grid-cols-2">
           {serviceAreas.map((area) => (
@@ -30,7 +30,7 @@ export const LocationMap = (): JSX.Element => {
           ))}
         </div>
         <p className="mt-6 text-xs uppercase tracking-[0.3em] text-neutral-500">
-          Frais de déplacement selon la distance
+          Frais de livraison selon la distance
         </p>
       </div>
 
@@ -44,14 +44,14 @@ export const LocationMap = (): JSX.Element => {
         
         <div className="mt-6 h-64 rounded-2xl border border-neutral-200 overflow-hidden">
           <iframe
-            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3193.123456789!2d3.1718739!3d36.5656777!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x128eff12c7cb1229%3A0xb92a54a68d5c140e!2sCuisine%20Alger!5e0!3m2!1sfr!2sdz!4v1234567890123!5m2!1sfr!2sdz"
+            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3193.123456789!2d3.1718739!3d36.5656777!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x128eff12c7cb1229%3A0xb92a54a68d5c140e!2sBrahim%20Perfum!5e0!3m2!1sfr!2sdz!4v1234567890123!5m2!1sfr!2sdz"
             width="100%"
             height="100%"
             style={{ border: 0 }}
             allowFullScreen
             loading="lazy"
             referrerPolicy="no-referrer-when-downgrade"
-            title="Cellavie - Nos localisations"
+            title="Brahim Perfum - Nos localisations"
             className="w-full h-full"
           />
         </div>
@@ -66,7 +66,7 @@ export const LocationMap = (): JSX.Element => {
             <div>
               <p className="font-semibold text-neutral-900">Bouzareah</p>
               <p className="mt-1">
-                Cellavie
+                Brahim Perfum
                 <br />
                 Bouzareah, Alger, Algérie
               </p>
@@ -82,7 +82,7 @@ export const LocationMap = (): JSX.Element => {
             <div>
               <p className="font-semibold text-neutral-900">Larbaâ</p>
               <p className="mt-1">
-                Cellavie
+                Brahim Perfum
                 <br />
                 Larbaâ, Blida, Algérie
               </p>
@@ -100,8 +100,8 @@ export const LocationMap = (): JSX.Element => {
           <div>
             <p className="font-semibold text-neutral-900">Couverture</p>
             <p className="mt-1">
-              Intervention dans toutes les 58 wilayas d&apos;Algérie avec 
-              frais de déplacement selon la distance.
+              Livraison dans toutes les 58 wilayas d&apos;Algérie avec 
+              frais de livraison selon la distance.
             </p>
           </div>
         </div>
@@ -113,17 +113,17 @@ export const LocationMap = (): JSX.Element => {
         </h3>
         <div className="mt-4 grid gap-4 text-sm text-neutral-600">
           <div>
-            <p className="font-semibold text-neutral-900">Rendez-vous</p>
+            <p className="font-semibold text-neutral-900">Visite boutique</p>
             <p className="mt-1">
-              Possibilite de rendez-vous sur site pour comprendre vos besoins et
-              prendre les mesures necessaires.
+              Possibilite de visiter notre boutique pour decouvrir nos parfums
+              et tester nos fragrances en personne.
             </p>
           </div>
           <div>
-            <p className="font-semibold text-neutral-900">Installation</p>
+            <p className="font-semibold text-neutral-900">Livraison</p>
             <p className="mt-1">
-              Equipe dediee pour installer et demonter les elements de decor,
-              avec respect des contraintes horaires.
+              Service de livraison disponible dans toute l&apos;Algerie,
+              avec emballage soigne pour proteger vos parfums.
             </p>
           </div>
           <div>
