@@ -3,7 +3,7 @@ import { Inter, Playfair_Display, Great_Vibes } from 'next/font/google'
 import './globals.css'
 import { PromotionalBanner } from '@/components/PromotionalBanner'
 import { Navbar } from '@/components/Navbar'
-import { WhatsAppButton } from '@/components/WhatsAppButton'
+import { Footer } from '@/components/Footer'
 
 const inter = Inter({
   subsets: ['latin'],
@@ -98,28 +98,8 @@ export default function RootLayout({
         className={`${inter.className} bg-gradient-elegant min-h-screen text-slate-900`}
       >
         <Navbar />
-        <main className="pt-28 md:pt-32 pb-20">{children}</main>
-        <footer 
-          className="backdrop-blur-md border-t border-green-600/20 text-white py-4"
-          style={{
-            background: 'linear-gradient(to right, #2E8B57 0%, #9AFE2E 50%, #2E8B57 100%)'
-          }}
-        >
-          <div className="container mx-auto px-4 text-center">
-            <p className="text-sm">
-              Made by{' '}
-              <a
-                href="https://www.sitedz.store"
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-white hover:text-white/80 transition-colors underline"
-              >
-                www.sitedz.store
-              </a>
-            </p>
-          </div>
-        </footer>
-        <WhatsAppButton />
+        <main className="pt-28 md:pt-32 pb-20 bg-gradient-to-br from-kitchen-lux-dark-green-50 to-kitchen-lux-dark-green-100">{children}</main>
+        <Footer />
       </body>
     </html>
   )
