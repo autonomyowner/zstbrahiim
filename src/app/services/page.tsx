@@ -4,7 +4,7 @@ import { useState, useMemo } from 'react'
 import { ProductGrid } from '@/components/ProductGrid'
 import { ShopFilters } from '@/components/ShopFilters'
 import { ProductControls } from '@/components/ProductControls'
-import { menPerfumes, type FilterState, type SortOption } from '@/data/products'
+import { menPerfumes, type FilterState, type SortOption, matchesCategory } from '@/data/products'
 
 export default function ShopPage(): JSX.Element {
   const [displayMode, setDisplayMode] = useState<'grid' | 'list'>('grid')
@@ -15,6 +15,7 @@ export default function ShopPage(): JSX.Element {
     priceRange: { min: 0, max: 100000 },
     productTypes: [],
     needs: [],
+    category: '',
   })
 
   // Filter products
@@ -46,6 +47,11 @@ export default function ShopPage(): JSX.Element {
     // Need filter
     if (filters.needs.length > 0) {
       result = result.filter((p) => p.need && filters.needs.includes(p.need))
+    }
+
+    // Category filter
+    if (filters.category) {
+      result = result.filter((p) => matchesCategory(p.category, filters.category))
     }
 
     return result

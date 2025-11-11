@@ -4,22 +4,29 @@ import { useState, useMemo } from 'react'
 import { ProductGrid } from '@/components/ProductGrid'
 import { ShopFilters } from '@/components/ShopFilters'
 import { ProductControls } from '@/components/ProductControls'
-import { womenPerfumes, type FilterState, type SortOption } from '@/data/products'
+import { womenPerfumes, type FilterState, type SortOption, matchesCategory } from '@/data/products'
+import { winterClothes } from '@/data/winter-clothes'
 
 export default function HomePage(): JSX.Element {
   const [displayMode, setDisplayMode] = useState<'grid' | 'list'>('grid')
   const [sortOption, setSortOption] = useState<SortOption>('best-sellers')
   const [filters, setFilters] = useState<FilterState>({
     availability: 'all',
-    brands: ['ZST'],
+    brands: [], // Empty array means show all brands
     priceRange: { min: 0, max: 100000 },
     productTypes: [],
     needs: [],
+    category: '',
   })
+
+  // Combine all products (perfumes + winter clothes)
+  const allProducts = useMemo(() => {
+    return [...womenPerfumes, ...winterClothes]
+  }, [])
 
   // Filter products
   const filteredProducts = useMemo(() => {
-    let result = [...womenPerfumes]
+    let result = [...allProducts]
 
     // Availability filter
     if (filters.availability === 'in-stock') {
@@ -48,8 +55,13 @@ export default function HomePage(): JSX.Element {
       result = result.filter((p) => p.need && filters.needs.includes(p.need))
     }
 
+    // Category filter
+    if (filters.category) {
+      result = result.filter((p) => matchesCategory(p.category, filters.category))
+    }
+
     return result
-  }, [filters])
+  }, [filters, allProducts])
 
   // Sort products
   const sortedProducts = useMemo(() => {
@@ -85,10 +97,10 @@ export default function HomePage(): JSX.Element {
 
   // Calculate product counts for filters
   const productCounts = useMemo(() => {
-    const inStock = womenPerfumes.filter((p) => p.inStock).length
-    const outOfStock = womenPerfumes.filter((p) => !p.inStock).length
+    const inStock = allProducts.filter((p) => p.inStock).length
+    const outOfStock = allProducts.filter((p) => !p.inStock).length
     return { inStock, outOfStock }
-  }, [])
+  }, [allProducts])
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-kitchen-lux-dark-green-50 to-kitchen-lux-dark-green-100 px-4 py-24 sm:px-6 lg:px-8">

@@ -35,7 +35,17 @@ export type Product = {
 }
 
 export function getProductById(id: string): Product | undefined {
-  return products.find((p) => p.id === id)
+  // Check in main products first
+  const product = products.find((p) => p.id === id)
+  if (product) return product
+  
+  // Check in winter clothes
+  try {
+    const { winterClothes } = require('./winter-clothes')
+    return winterClothes.find((p: Product) => p.id === id)
+  } catch {
+    return undefined
+  }
 }
 
 // Women's Perfumes (for purple boutique - home page)
@@ -637,4 +647,38 @@ export type FilterState = {
   priceRange: { min: number; max: number }
   productTypes: ProductType[]
   needs: ProductNeed[]
+  category: string // Format: 'categoryId' or 'categoryId-subcategoryIndex'
+}
+
+// Marketplace category mappings to product categories
+export const categoryMappings: Record<string, string[]> = {
+  // Main categories
+  'electronics': ['Électronique', 'Technologie', 'Informatique', 'Téléphones', 'Ordinateurs', 'Électroménager'],
+  'transportation': ['Automobiles', 'Véhicules', 'Pièces', 'Auto'],
+  'home': ['Maison', 'Jardin', 'Meubles', 'Équipement', 'Matériaux'],
+  'personal': ['Vêtements', 'Mode', 'Santé', 'Beauté', 'Parfum'],
+  'lifestyle': ['Loisirs', 'Divertissements', 'Sport', 'Jeux'],
+
+  // Subcategories - specific matching
+  'electronics-0': ['Téléphones', 'Accessoires', 'Mobile', 'Phone'],
+  'electronics-1': ['Informatique', 'Ordinateurs', 'PC', 'Laptop'],
+  'electronics-2': ['Électroménager', 'Électronique', 'Appliance'],
+  'transportation-0': ['Automobiles', 'Véhicules', 'Voiture', 'Car'],
+  'transportation-1': ['Pièces détachées', 'Pièces', 'Parts'],
+  'home-0': ['Meubles', 'Maison', 'Furniture', 'Home'],
+  'home-1': ['Matériaux', 'Équipement', 'Material', 'Equipment'],
+  'personal-0': ['Vêtements', 'Mode', 'Clothes', 'Fashion', 'Clothing'],
+  'personal-1': ['Santé', 'Beauté', 'Health', 'Beauty', 'Parfum', 'Cosmétique'],
+  'lifestyle-0': ['Loisirs', 'Divertissements', 'Entertainment', 'Leisure'],
+  'lifestyle-1': ['Sport', 'Fitness', 'Sports'],
+}
+
+// Helper function to check if a product matches a category filter
+export function matchesCategory(productCategory: string, filterCategoryId: string): boolean {
+  if (!filterCategoryId) return true // No filter applied
+
+  const categoryKeywords = categoryMappings[filterCategoryId] || []
+  return categoryKeywords.some(keyword =>
+    productCategory.toLowerCase().includes(keyword.toLowerCase())
+  )
 }

@@ -75,9 +75,14 @@ export const ShopFilters = ({
   productCounts,
 }: ShopFiltersProps): JSX.Element => {
   const [isMobileOpen, setIsMobileOpen] = React.useState(false)
-  const [selectedCategory, setSelectedCategory] = React.useState<string>('')
+  const [selectedCategory, setSelectedCategory] = React.useState<string>(filters.category || '')
   const [isCategoryOpen, setIsCategoryOpen] = React.useState(false)
   const categoryRef = React.useRef<HTMLDivElement>(null)
+
+  // Sync selectedCategory with filters.category
+  React.useEffect(() => {
+    setSelectedCategory(filters.category || '')
+  }, [filters.category])
 
   // Close dropdown when clicking outside
   React.useEffect(() => {
@@ -130,6 +135,7 @@ export const ShopFilters = ({
     options?: { closeDropdown?: boolean },
   ): void => {
     setSelectedCategory(categoryId)
+    updateFilter('category', categoryId)
     if (options?.closeDropdown !== false) {
       setIsCategoryOpen(false)
     }
