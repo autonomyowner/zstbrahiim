@@ -197,7 +197,20 @@ export function EditProductModal({ isOpen, product, onClose, onSubmit }: EditPro
                     className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-kitchen-lux-dark-green-500 focus:border-transparent ${
                       errors.category ? 'border-red-500' : 'border-kitchen-lux-dark-green-300'
                     }`}
+                    placeholder="Ex: Vêtements Hiver, Parfums, Accessoires..."
+                    list="category-suggestions-edit"
                   />
+                  <datalist id="category-suggestions-edit">
+                    <option value="Parfums Femme" />
+                    <option value="Parfums Homme" />
+                    <option value="Vêtements Hiver" />
+                    <option value="Vêtements Été" />
+                    <option value="Accessoires Mode" />
+                    <option value="Chaussures" />
+                    <option value="Sacs et Maroquinerie" />
+                    <option value="Cosmétiques" />
+                    <option value="Bijoux" />
+                  </datalist>
                   {errors.category && <p className="text-red-500 text-xs mt-1">{errors.category}</p>}
                 </div>
 
@@ -206,36 +219,57 @@ export function EditProductModal({ isOpen, product, onClose, onSubmit }: EditPro
                   <label htmlFor="productType" className="block text-sm font-medium text-kitchen-lux-dark-green-700 mb-2">
                     Type de Produit *
                   </label>
-                  <select
+                  <input
+                    type="text"
                     id="productType"
                     value={formData.productType}
                     onChange={(e) => updateField('productType', e.target.value as ProductType)}
                     className="w-full px-4 py-2 border border-kitchen-lux-dark-green-300 rounded-lg focus:ring-2 focus:ring-kitchen-lux-dark-green-500 focus:border-transparent"
-                  >
-                    <option value="Parfum Femme">Parfum Femme</option>
-                    <option value="Parfum Homme">Parfum Homme</option>
-                    <option value="Eau de Parfum">Eau de Parfum</option>
-                    <option value="Eau de Toilette">Eau de Toilette</option>
-                  </select>
+                    placeholder="Ex: Manteau, Robe, Parfum..."
+                    list="type-suggestions-edit"
+                  />
+                  <datalist id="type-suggestions-edit">
+                    <option value="Parfum Femme" />
+                    <option value="Parfum Homme" />
+                    <option value="Eau de Parfum" />
+                    <option value="Eau de Toilette" />
+                    <option value="Manteau" />
+                    <option value="Veste" />
+                    <option value="Pull" />
+                    <option value="Robe" />
+                    <option value="Pantalon" />
+                    <option value="Chemise" />
+                    <option value="T-Shirt" />
+                    <option value="Chaussures" />
+                    <option value="Sac" />
+                    <option value="Accessoire" />
+                  </datalist>
                 </div>
 
                 {/* Need */}
                 <div>
                   <label htmlFor="need" className="block text-sm font-medium text-kitchen-lux-dark-green-700 mb-2">
-                    Besoin - Optionnel
+                    Occasion / Usage - Optionnel
                   </label>
-                  <select
+                  <input
+                    type="text"
                     id="need"
                     value={formData.need || ''}
                     onChange={(e) => updateField('need', e.target.value || undefined)}
                     className="w-full px-4 py-2 border border-kitchen-lux-dark-green-300 rounded-lg focus:ring-2 focus:ring-kitchen-lux-dark-green-500 focus:border-transparent"
-                  >
-                    <option value="">Aucun</option>
-                    <option value="Journée">Journée</option>
-                    <option value="Soirée">Soirée</option>
-                    <option value="Quotidien">Quotidien</option>
-                    <option value="Spécial">Spécial</option>
-                  </select>
+                    placeholder="Ex: Journée, Soirée, Sport..."
+                    list="need-suggestions-edit"
+                  />
+                  <datalist id="need-suggestions-edit">
+                    <option value="Journée" />
+                    <option value="Soirée" />
+                    <option value="Quotidien" />
+                    <option value="Spécial" />
+                    <option value="Sport" />
+                    <option value="Travail" />
+                    <option value="Décontracté" />
+                    <option value="Formel" />
+                  </datalist>
                 </div>
 
                 {/* Delivery Estimate */}
@@ -286,7 +320,7 @@ export function EditProductModal({ isOpen, product, onClose, onSubmit }: EditPro
                 {/* Benefits */}
                 <div className="md:col-span-2">
                   <label htmlFor="benefits" className="block text-sm font-medium text-kitchen-lux-dark-green-700 mb-2">
-                    Avantages (un par ligne)
+                    Caractéristiques / Avantages (un par ligne)
                   </label>
                   <textarea
                     id="benefits"
@@ -294,13 +328,14 @@ export function EditProductModal({ isOpen, product, onClose, onSubmit }: EditPro
                     onChange={(e) => updateField('benefits', e.target.value)}
                     rows={3}
                     className="w-full px-4 py-2 border border-kitchen-lux-dark-green-300 rounded-lg focus:ring-2 focus:ring-kitchen-lux-dark-green-500 focus:border-transparent"
+                    placeholder="Haute qualité&#10;Confortable&#10;Design élégant&#10;Matière premium"
                   />
                 </div>
 
-                {/* Ingredients */}
+                {/* Ingredients / Materials */}
                 <div className="md:col-span-2">
                   <label htmlFor="ingredients" className="block text-sm font-medium text-kitchen-lux-dark-green-700 mb-2">
-                    Ingrédients
+                    Composition / Matériaux
                   </label>
                   <textarea
                     id="ingredients"
@@ -308,13 +343,14 @@ export function EditProductModal({ isOpen, product, onClose, onSubmit }: EditPro
                     onChange={(e) => updateField('ingredients', e.target.value)}
                     rows={2}
                     className="w-full px-4 py-2 border border-kitchen-lux-dark-green-300 rounded-lg focus:ring-2 focus:ring-kitchen-lux-dark-green-500 focus:border-transparent"
+                    placeholder="100% Coton, Polyester, Laine..."
                   />
                 </div>
 
-                {/* Usage Instructions */}
+                {/* Usage Instructions / Care */}
                 <div className="md:col-span-2">
                   <label htmlFor="usageInstructions" className="block text-sm font-medium text-kitchen-lux-dark-green-700 mb-2">
-                    Instructions d&apos;Utilisation
+                    Instructions d&apos;Entretien / Utilisation
                   </label>
                   <textarea
                     id="usageInstructions"
@@ -322,6 +358,7 @@ export function EditProductModal({ isOpen, product, onClose, onSubmit }: EditPro
                     onChange={(e) => updateField('usageInstructions', e.target.value)}
                     rows={2}
                     className="w-full px-4 py-2 border border-kitchen-lux-dark-green-300 rounded-lg focus:ring-2 focus:ring-kitchen-lux-dark-green-500 focus:border-transparent"
+                    placeholder="Lavage à 30°C, Séchage à l'air libre..."
                   />
                 </div>
 
