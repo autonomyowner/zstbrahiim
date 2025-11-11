@@ -2,7 +2,6 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import Image from 'next/image'
 
 export default function SignUpPage() {
   const [fullName, setFullName] = useState('')
@@ -24,17 +23,6 @@ export default function SignUpPage() {
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-kitchen-lux-dark-green-50 via-white to-purple-50 px-4 py-12">
       <div className="w-full max-w-md">
         <div className="bg-white rounded-2xl shadow-xl border border-gray-200 p-8">
-          {/* Logo */}
-          <div className="flex justify-center mb-6">
-            <Image
-              src="/picturs/logo2.jpg"
-              alt="ZST Logo"
-              width={80}
-              height={80}
-              className="rounded-full object-cover"
-            />
-          </div>
-
           {/* Title */}
           <h1 className="text-3xl font-bold text-center text-kitchen-black-deep mb-2">
             Create Account
