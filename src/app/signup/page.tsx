@@ -21,8 +21,18 @@ export default function SignUpPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-kitchen-lux-dark-green-50 via-white to-purple-50 px-4 py-12">
-      <div className="w-full max-w-md">
+    <div 
+      className="min-h-screen flex items-center justify-center bg-gradient-to-br from-kitchen-lux-dark-green-50 via-white to-purple-50 px-4 py-12 relative"
+      style={{
+        backgroundImage: 'url(/logo.png)',
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+        backgroundRepeat: 'no-repeat',
+        backgroundBlendMode: 'overlay'
+      }}
+    >
+      <div className="absolute inset-0 bg-gradient-to-br from-kitchen-lux-dark-green-50/80 via-white/80 to-purple-50/80"></div>
+      <div className="w-full max-w-md relative z-10">
         <div className="bg-white rounded-2xl shadow-xl border border-gray-200 p-8">
           {/* Title */}
           <h1 className="text-3xl font-bold text-center text-kitchen-black-deep mb-2">

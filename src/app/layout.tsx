@@ -34,9 +34,9 @@ export const metadata: Metadata = {
   creator: 'ZST',
   publisher: 'ZST',
   icons: {
-    icon: '/picturs/logo2.jpg',
-    shortcut: '/picturs/logo2.jpg',
-    apple: '/picturs/logo2.jpg',
+    icon: '/logo.png',
+    shortcut: '/logo.png',
+    apple: '/logo.png',
   },
   formatDetection: {
     email: false,

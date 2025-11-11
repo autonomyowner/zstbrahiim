@@ -84,7 +84,7 @@ export const Navbar = (): JSX.Element => {
               className="inline-flex items-center gap-2 rounded-full border border-kitchen-lux-dark-green-300 bg-gradient-to-r from-kitchen-lux-dark-green-50 to-kitchen-lux-dark-green-100 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-kitchen-lux-dark-green-800 transition-all duration-200 hover:border-kitchen-lux-dark-green-500 hover:bg-gradient-to-r hover:from-kitchen-lux-dark-green-100 hover:to-kitchen-lux-dark-green-200 hover:text-kitchen-lux-dark-green-900 hover:shadow-md hover:shadow-kitchen-lux-dark-green-200/30"
             >
               <Image
-                src="/picturs/logo2.jpg"
+                src="/logo.png"
                 alt="ZST Logo"
                 width={20}
                 height={20}
@@ -133,7 +133,7 @@ export const Navbar = (): JSX.Element => {
               className="inline-flex items-center gap-2 rounded-full border border-purple-300 bg-gradient-to-r from-purple-100 to-purple-200 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-purple-800 transition-all duration-200 hover:border-purple-500 hover:bg-gradient-to-r hover:from-purple-200 hover:to-purple-300 hover:text-purple-900 hover:shadow-md hover:shadow-purple-200/30"
             >
               <Image
-                src="/picturs/logo2.jpg"
+                src="/logo.png"
                 alt="ZST Logo"
                 width={20}
                 height={20}
@@ -168,7 +168,7 @@ export const Navbar = (): JSX.Element => {
               className="inline-flex items-center gap-1 rounded-full border border-purple-300 bg-gradient-to-r from-purple-100 to-purple-200 px-2 py-1 text-[8px] font-semibold uppercase tracking-[0.2em] text-purple-800 transition-all duration-200 hover:border-purple-500 hover:bg-gradient-to-r hover:from-purple-200 hover:to-purple-300 hover:text-purple-900 hover:shadow-md hover:shadow-purple-200/30"
             >
               <Image
-                src="/picturs/logo2.jpg"
+                src="/logo.png"
                 alt="ZST Logo"
                 width={14}
                 height={14}
@@ -201,7 +201,7 @@ export const Navbar = (): JSX.Element => {
               className="inline-flex items-center gap-1 rounded-full border border-kitchen-lux-dark-green-300 bg-gradient-to-r from-kitchen-lux-dark-green-50 to-kitchen-lux-dark-green-100 px-2 py-1 text-[8px] font-semibold uppercase tracking-[0.2em] text-kitchen-lux-dark-green-800 transition-all duration-200 hover:border-kitchen-lux-dark-green-500 hover:bg-gradient-to-r hover:from-kitchen-lux-dark-green-100 hover:to-kitchen-lux-dark-green-200 hover:text-kitchen-lux-dark-green-900 hover:shadow-md hover:shadow-kitchen-lux-dark-green-200/30"
             >
               <Image
-                src="/picturs/logo2.jpg"
+                src="/logo.png"
                 alt="ZST Logo"
                 width={14}
                 height={14}
