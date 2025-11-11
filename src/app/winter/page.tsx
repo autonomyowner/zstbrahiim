@@ -43,7 +43,7 @@ export default function WinterPage(): JSX.Element {
             Collection Hiver
           </h1>
           <p className="mt-4 text-lg text-kitchen-lux-dark-green-700">
-            Découvrez notre sélection de vestes d'hiver de qualité
+            Découvrez notre sélection de vestes d&apos;hiver de qualité
           </p>
         </div>
 
