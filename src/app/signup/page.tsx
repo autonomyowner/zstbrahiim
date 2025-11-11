@@ -8,6 +8,7 @@ export default function SignUpPage() {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
+  const [userType, setUserType] = useState('customer')
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -16,7 +17,7 @@ export default function SignUpPage() {
       alert('Passwords do not match!')
       return
     }
-    console.log('Sign up:', { fullName, email, password })
+    console.log('Sign up:', { fullName, email, password, userType })
   }
 
   return (
@@ -49,6 +50,28 @@ export default function SignUpPage() {
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-kitchen-lux-dark-green-500 focus:border-transparent transition-all"
                 placeholder="John Doe"
               />
+            </div>
+
+            <div>
+              <label
+                htmlFor="userType"
+                className="block text-sm font-medium text-kitchen-black-deep mb-2"
+              >
+                Account Type
+              </label>
+              <select
+                id="userType"
+                value={userType}
+                onChange={(e) => setUserType(e.target.value)}
+                required
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-kitchen-lux-dark-green-500 focus:border-transparent transition-all bg-white"
+              >
+                <option value="customer">Customer</option>
+                <option value="retailer">Retailer</option>
+                <option value="wholesaler">Wholesaler</option>
+                <option value="importer">Importer</option>
+                <option value="service_provider">Service Provider</option>
+              </select>
             </div>
 
             <div>

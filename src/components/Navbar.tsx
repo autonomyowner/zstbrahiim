@@ -42,14 +42,39 @@ export const Navbar = (): JSX.Element => {
   }, [])
 
   return (
-    <nav
-      className={`fixed inset-x-0 top-10 z-50 transition-colors duration-300 ${
-        isScrolled
-          ? 'bg-kitchen-white-clean/92 backdrop-blur border-b border-kitchen-marble-gray-light shadow-sm'
-          : 'bg-transparent'
-      }`}
-    >
-      <div className="mx-auto flex max-w-6xl flex-col px-4 sm:px-6 lg:px-8">
+    <>
+      {/* Top Bar */}
+      <div className="fixed inset-x-0 top-0 z-50 bg-kitchen-white-clean border-b border-kitchen-marble-gray-light">
+        <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+          <div className="flex h-10 items-center justify-between">
+            {/* Services - Left */}
+            <Link
+              href="/services"
+              className="text-xs font-medium uppercase tracking-[0.2em] text-kitchen-marble-gray transition-colors duration-200 hover:text-kitchen-black-deep"
+            >
+              Services
+            </Link>
+
+            {/* Sellers - Right */}
+            <Link
+              href="/sellers"
+              className="text-xs font-medium uppercase tracking-[0.2em] text-kitchen-marble-gray transition-colors duration-200 hover:text-kitchen-black-deep"
+            >
+              Sellers
+            </Link>
+          </div>
+        </div>
+      </div>
+
+      {/* Main Navbar */}
+      <nav
+        className={`fixed inset-x-0 top-10 z-50 transition-colors duration-300 ${
+          isScrolled
+            ? 'bg-kitchen-white-clean/92 backdrop-blur border-b border-kitchen-marble-gray-light shadow-sm'
+            : 'bg-transparent'
+        }`}
+      >
+        <div className="mx-auto flex max-w-6xl flex-col px-4 sm:px-6 lg:px-8">
         <div className="relative flex h-16 items-center md:h-20">
           {/* Left menu item - Desktop only */}
           <div className="hidden items-start gap-2 md:flex flex-col flex-1">
@@ -204,5 +229,6 @@ export const Navbar = (): JSX.Element => {
         </div>
       </div>
     </nav>
+    </>
   )
 }
