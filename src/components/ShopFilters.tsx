@@ -3,7 +3,7 @@
 import * as React from 'react'
 import type { ProductNeed, FilterState } from '@/data/products'
 import { cn } from '@/lib/utils'
-import { DualRangeSlider } from './DualRangeSlider'
+import { BudgetSlider } from './BudgetSlider'
 
 type ShopFiltersProps = {
   filters: FilterState
@@ -107,10 +107,8 @@ export const ShopFilters = ({
     onFiltersChange({ ...filters, [key]: value })
   }
 
-  const handlePriceChange = (range: number[]): void => {
-    if (range.length === 2) {
-      updateFilter('priceRange', { min: range[0], max: range[1] })
-    }
+  const handlePriceChange = (range: [number, number]): void => {
+    updateFilter('priceRange', { min: range[0], max: range[1] })
   }
 
   const toggleNeed = (need: ProductNeed): void => {
@@ -211,18 +209,15 @@ export const ShopFilters = ({
 
         {/* Prix Range Slider */}
         <div className="mt-6 pt-6 border-t border-kitchen-lux-dark-green-200">
-          <h3 className="text-sm font-semibold uppercase tracking-[0.2em] text-kitchen-lux-dark-green-800 mb-4">
+          <h3 className="text-sm font-semibold uppercase tracking-[0.2em] text-kitchen-lux-dark-green-800 mb-6">
             Prix
           </h3>
-          <DualRangeSlider
+          <BudgetSlider
             min={0}
             max={100000}
             step={100}
-            minStepsBetweenThumbs={5}
             value={[filters.priceRange.min, filters.priceRange.max]}
             onValueChange={handlePriceChange}
-            labelPosition="top"
-            label={(val) => (val !== undefined ? `${val.toLocaleString()} DA` : '')}
           />
         </div>
       </div>
