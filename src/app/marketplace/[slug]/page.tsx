@@ -15,7 +15,7 @@ export default function ServiceDetailPage() {
       <div className="min-h-screen bg-gradient-to-br from-kitchen-lux-dark-green-50 to-kitchen-lux-dark-green-100 flex items-center justify-center px-4 py-24 sm:px-6 lg:px-8">
         <div className="text-center">
           <h1 className="text-4xl font-elegant font-semibold text-kitchen-lux-dark-green-800 mb-4">Service non trouvé</h1>
-          <p className="text-kitchen-lux-dark-green-700 mb-8">Le service que vous recherchez n'existe pas.</p>
+          <p className="text-kitchen-lux-dark-green-700 mb-8">Le service que vous recherchez n&apos;existe pas.</p>
           <Link
             href="/marketplace"
             className="bg-kitchen-lux-dark-green-600 text-white px-6 py-3 rounded-lg font-semibold hover:bg-kitchen-lux-dark-green-700 transition-colors"
@@ -281,7 +281,7 @@ export default function ServiceDetailPage() {
                   href="/marketplace"
                   className="block text-center text-kitchen-lux-dark-green-600 font-semibold hover:text-kitchen-lux-dark-green-700 transition-colors"
                 >
-                  Voir d'autres services
+                  Voir d&apos;autres services
                 </Link>
               </div>
 

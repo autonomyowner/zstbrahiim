@@ -106,7 +106,7 @@ export function MarketplaceFilters({
           {/* Experience Level */}
           <div>
             <label className="block text-sm font-semibold text-kitchen-lux-dark-green-800 mb-3">
-              Niveau d'expérience
+              Niveau d&apos;expérience
             </label>
             <div className="flex flex-wrap gap-2">
               {experienceLevels.map((level) => (
