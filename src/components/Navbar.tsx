@@ -55,6 +55,14 @@ export const Navbar = (): JSX.Element => {
               Services
             </Link>
 
+            {/* Marketplace - Center */}
+            <Link
+              href="/marketplace"
+              className="text-xs font-medium uppercase tracking-[0.2em] text-kitchen-marble-gray transition-colors duration-200 hover:text-kitchen-black-deep"
+            >
+              Marketplace
+            </Link>
+
             {/* Sellers - Right */}
             <Link
               href="/sellers"
