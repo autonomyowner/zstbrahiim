@@ -209,7 +209,7 @@ export default function ServiceDetailPage() {
                   Portfolio
                 </h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {service.portfolio.map((item, index) => (
+                  {service.portfolio.map((item: any, index: number) => (
                     <div key={index} className="border border-kitchen-lux-dark-green-100 rounded-lg overflow-hidden hover:shadow-lg transition-shadow">
                       <div className="aspect-video bg-gradient-to-br from-kitchen-lux-dark-green-50 to-kitchen-lux-dark-green-100 flex items-center justify-center">
                         <span className="text-4xl">🎨</span>
