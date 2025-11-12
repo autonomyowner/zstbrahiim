@@ -4,6 +4,8 @@ import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { getCurrentUserProfile, signOut, updateUserProfile } from '@/lib/supabase/auth'
+import { getOrdersForCustomer } from '@/lib/supabase/orders'
+import { CustomerOrderHistory } from '@/components/CustomerOrderHistory'
 import type { UserProfile } from '@/lib/supabase/types'
 
 export default function AccountPage() {
@@ -11,6 +13,8 @@ export default function AccountPage() {
   const [user, setUser] = useState<UserProfile | null>(null)
   const [loading, setLoading] = useState(true)
   const [editing, setEditing] = useState(false)
+  const [orders, setOrders] = useState<any[]>([])
+  const [loadingOrders, setLoadingOrders] = useState(true)
   const [formData, setFormData] = useState({
     full_name: '',
     phone: '',
@@ -31,6 +35,12 @@ export default function AccountPage() {
           full_name: profile.full_name || '',
           phone: profile.phone || '',
         })
+        
+        // Fetch user's orders
+        setLoadingOrders(true)
+        const customerOrders = await getOrdersForCustomer(profile.id)
+        setOrders(customerOrders)
+        setLoadingOrders(false)
       } catch (error) {
         console.error('Error fetching user:', error)
         router.push('/signin')

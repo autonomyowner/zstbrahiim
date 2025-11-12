@@ -370,6 +370,37 @@ export const getOrdersForSeller = async (sellerId: string): Promise<any[]> => {
   }
 }
 
+// Get orders for a specific customer (user)
+export const getOrdersForCustomer = async (userId: string): Promise<any[]> => {
+  try {
+    const { data, error } = await supabase
+      .from('orders')
+      .select(`
+        *,
+        order_items (
+          product_id,
+          product_name,
+          product_image,
+          quantity,
+          price,
+          subtotal
+        )
+      `)
+      .eq('user_id', userId)
+      .order('created_at', { ascending: false })
+
+    if (error) {
+      console.error('Error fetching customer orders:', error)
+      throw error
+    }
+
+    return (data || []).map(adaptOrder)
+  } catch (error) {
+    console.error('Error in getOrdersForCustomer:', error)
+    return []
+  }
+}
+
 // Update order status (admin only)
 export const updateOrderStatus = async (
   updateData: UpdateOrderStatusRequest
