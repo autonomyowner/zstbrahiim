@@ -155,11 +155,12 @@ export default function SignUpPage() {
                 required
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-kitchen-lux-dark-green-500 focus:border-transparent transition-all bg-white"
               >
-                <option value="customer">Customer</option>
-                <option value="seller">Seller (All Types)</option>
+                <option value="customer">Client - Acheter des produits</option>
+                <option value="seller">Vendeur - Vendre des produits</option>
+                <option value="freelancer">Freelancer - Offrir des services</option>
               </select>
               <p className="mt-1 text-xs text-kitchen-marble-gray">
-                Select &quot;Seller&quot; if you want to sell products or services
+                Choisissez votre type de compte selon votre besoin
               </p>
             </div>
 

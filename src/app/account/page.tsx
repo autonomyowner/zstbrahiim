@@ -323,17 +323,36 @@ export default function AccountPage() {
             {(user.role === 'seller' || user.role === 'admin') && (
               <div className="mt-6 bg-kitchen-lux-dark-green-100 rounded-lg shadow-md p-6">
                 <h2 className="text-2xl font-elegant font-semibold text-kitchen-lux-dark-green-900 mb-4">
-                  Seller Information
+                  Espace Vendeur
                 </h2>
                 <p className="text-kitchen-lux-dark-green-700 mb-4">
-                  You have access to the seller dashboard where you can manage products,
-                  orders, and view analytics.
+                  Vous avez accès au tableau de bord vendeur pour gérer vos produits,
+                  commandes et analyser vos performances.
                 </p>
                 <Link
                   href="/services"
                   className="inline-block px-6 py-3 bg-kitchen-lux-dark-green-600 text-white rounded-lg font-semibold hover:bg-kitchen-lux-dark-green-700 transition-colors shadow-md hover:shadow-lg"
                 >
-                  Go to Seller Dashboard
+                  Tableau de Bord Vendeur →
+                </Link>
+              </div>
+            )}
+
+            {/* Additional Info for Freelancers */}
+            {(user.role === 'freelancer' || user.role === 'admin') && (
+              <div className="mt-6 bg-blue-100 rounded-lg shadow-md p-6">
+                <h2 className="text-2xl font-elegant font-semibold text-blue-900 mb-4">
+                  Espace Freelancer
+                </h2>
+                <p className="text-blue-700 mb-4">
+                  Vous avez accès au tableau de bord freelancer pour gérer vos services,
+                  portfolio et vos projets.
+                </p>
+                <Link
+                  href="/freelancer-dashboard"
+                  className="inline-block px-6 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors shadow-md hover:shadow-lg"
+                >
+                  Tableau de Bord Freelancer →
                 </Link>
               </div>
             )}

@@ -241,6 +241,12 @@ export const isSeller = async (): Promise<boolean> => {
   return profile?.role === 'seller' || profile?.role === 'admin'
 }
 
+// Check if user is freelancer
+export const isFreelancer = async (): Promise<boolean> => {
+  const profile = await getCurrentUserProfile()
+  return profile?.role === 'freelancer' || profile?.role === 'admin'
+}
+
 // Subscribe to auth state changes
 export const onAuthStateChange = (callback: (user: any) => void) => {
   return supabase.auth.onAuthStateChange((_event: any, session: any) => {

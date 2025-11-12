@@ -1,18 +1,40 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { ServiceCard } from '@/components/ServiceCard'
 import { MarketplaceFilters } from '@/components/MarketplaceFilters'
 import { freelanceServices, type ServiceCategory, type ExperienceLevel } from '@/data/freelance-services'
+import { getFreelanceServices } from '@/lib/supabase/services'
 
 export default function FreelancePage() {
   const [selectedCategory, setSelectedCategory] = useState<ServiceCategory | 'all'>('all')
   const [selectedExperience, setSelectedExperience] = useState<ExperienceLevel | 'all'>('all')
   const [selectedAvailability, setSelectedAvailability] = useState<'all' | 'available' | 'busy'>('all')
   const [searchQuery, setSearchQuery] = useState('')
+  const [databaseServices, setDatabaseServices] = useState<any[]>([])
+  const [isLoadingServices, setIsLoadingServices] = useState(true)
+
+  // Fetch database services
+  useEffect(() => {
+    const fetchServices = async () => {
+      try {
+        setIsLoadingServices(true)
+        const services = await getFreelanceServices()
+        setDatabaseServices(services)
+      } catch (error) {
+        console.error('Error fetching database services:', error)
+      } finally {
+        setIsLoadingServices(false)
+      }
+    }
+    fetchServices()
+  }, [])
+
+  // Combine static and database services
+  const allServices = [...freelanceServices, ...databaseServices]
 
   // Filter services based on selected filters
-  const filteredServices = freelanceServices.filter((service) => {
+  const filteredServices = allServices.filter((service) => {
     // Category filter
     if (selectedCategory !== 'all' && service.category !== selectedCategory) {
       return false

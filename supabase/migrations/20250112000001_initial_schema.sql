@@ -14,7 +14,7 @@ CREATE TYPE price_type AS ENUM ('fixed', 'hourly', 'starting-at');
 CREATE TYPE availability_status AS ENUM ('available', 'busy', 'unavailable');
 CREATE TYPE order_status AS ENUM ('pending', 'processing', 'shipped', 'delivered', 'cancelled');
 CREATE TYPE payment_status AS ENUM ('pending', 'paid', 'failed', 'refunded');
-CREATE TYPE user_role AS ENUM ('customer', 'seller', 'admin');
+CREATE TYPE user_role AS ENUM ('customer', 'seller', 'freelancer', 'admin');
 CREATE TYPE seller_type AS ENUM ('retailer', 'importer', 'wholesaler');
 
 -- =====================================================

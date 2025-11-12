@@ -1,7 +1,7 @@
 // TypeScript types matching Supabase database schema
 // These types correspond exactly to your database tables
 
-export type UserRole = 'customer' | 'seller' | 'admin'
+export type UserRole = 'customer' | 'seller' | 'freelancer' | 'admin'
 export type SellerType = 'retailer' | 'importer' | 'wholesaler'
 export type ProductType = 'Parfum Femme' | 'Parfum Homme' | 'Eau de Parfum' | 'Eau de Toilette'
 export type ProductNeed = 'Journée' | 'Soirée' | 'Quotidien' | 'Spécial'
