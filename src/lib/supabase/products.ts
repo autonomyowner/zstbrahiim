@@ -182,6 +182,9 @@ export const getProductById = async (id: string): Promise<any | null> => {
   }
 }
 
+// Export with different name for use in product page
+export const getProductByIdFromDb = getProductById
+
 // Get product by slug
 export const getProductBySlug = async (slug: string): Promise<any | null> => {
   try {
