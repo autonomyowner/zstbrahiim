@@ -17,6 +17,8 @@ import { type Product } from '@/data/products'
 import { printInvoice } from '@/utils/printInvoice'
 import { getProducts, createProduct, updateProduct, deleteProduct } from '@/lib/supabase/products'
 import { isSeller } from '@/lib/supabase/auth'
+import { supabase } from '@/lib/supabase/client'
+import { getOrdersForSeller, updateOrderStatus as updateOrderStatusInDb } from '@/lib/supabase/orders'
 
 type TabType = 'dashboard' | 'orders' | 'products' | 'analytics'
 
@@ -79,6 +81,24 @@ export default function SellerPortalPage(): JSX.Element {
     fetchProducts()
   }, [authChecking])
 
+  // Fetch orders for seller
+  useEffect(() => {
+    if (authChecking) return
+    
+    const fetchOrders = async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser()
+        if (!user) return
+        
+        const sellerOrders = await getOrdersForSeller(user.id)
+        setOrders(sellerOrders)
+      } catch (error) {
+        console.error('Error fetching orders:', error)
+      }
+    }
+    fetchOrders()
+  }, [authChecking])
+
   // Filter orders
   const filteredOrders = useMemo(() => {
     return orders.filter((order) => {
@@ -94,14 +114,32 @@ export default function SellerPortalPage(): JSX.Element {
     })
   }, [orders, statusFilter, paymentFilter, searchQuery])
 
-  const handleUpdateOrderStatus = (orderId: string, newStatus: OrderStatus) => {
-    setOrders((prevOrders) =>
-      prevOrders.map((order) =>
-        order.id === orderId
-          ? { ...order, status: newStatus, updatedAt: new Date().toISOString() }
-          : order
-      )
-    )
+  const handleUpdateOrderStatus = async (orderId: string, newStatus: OrderStatus) => {
+    try {
+      // Update in database
+      const success = await updateOrderStatusInDb({
+        order_id: orderId,
+        status: newStatus,
+      })
+      
+      if (success) {
+        // Update local state
+        setOrders((prevOrders) =>
+          prevOrders.map((order) =>
+            order.id === orderId
+              ? { ...order, status: newStatus, updatedAt: new Date().toISOString() }
+              : order
+          )
+        )
+        setSuccessMessage('Statut de commande mis à jour')
+        setTimeout(() => setSuccessMessage(null), 3000)
+      } else {
+        setProductError('Erreur lors de la mise à jour du statut')
+      }
+    } catch (error) {
+      console.error('Error updating order status:', error)
+      setProductError('Erreur lors de la mise à jour du statut')
+    }
   }
 
   const handleViewOrderDetails = (order: Order) => {
@@ -116,6 +154,14 @@ export default function SellerPortalPage(): JSX.Element {
   const handleAddProductSubmit = async (productData: ProductFormData) => {
     try {
       setProductError(null)
+      
+      // Get current user (seller)
+      const { data: { user } } = await supabase.auth.getUser()
+      
+      if (!user) {
+        setProductError('Vous devez être connecté pour ajouter un produit')
+        return
+      }
       
       // Prepare product data for Supabase
       const productPayload = {
@@ -143,6 +189,7 @@ export default function SellerPortalPage(): JSX.Element {
         payment_info: 'Paiement à la livraison',
         exclusive_offers: null,
         images: [productData.image],
+        seller_id: user.id, // Add seller ID to track product ownership
       }
 
       const productId = await createProduct(productPayload)

@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from 'react'
 import type { Product } from '@/data/products'
+import { supabase } from '@/lib/supabase/client'
+import { createOrderFromCheckout } from '@/lib/supabase/orders'
 
 type CheckoutModalProps = {
   product: Product
@@ -38,6 +40,8 @@ export const CheckoutModal = ({
     address: '',
   })
   const [errors, setErrors] = useState<Record<string, string>>({})
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [orderSuccess, setOrderSuccess] = useState(false)
 
   // Prevent body scroll when modal is open
   useEffect(() => {
@@ -97,56 +101,69 @@ export const CheckoutModal = ({
     return Object.keys(newErrors).length === 0
   }
 
-  const handleSubmit = (e: React.FormEvent): void => {
+  const handleSubmit = async (e: React.FormEvent): Promise<void> => {
     e.preventDefault()
 
     if (!validateForm()) {
       return
     }
 
-    const phoneNumber = '+213673734578'
-    const totalPrice = product.price * quantity
-    const deliveryTypeText = formData.deliveryType === 'house' ? 'À domicile' : 'Au bureau'
-    
-    const message = `Bonjour! Je souhaite acheter maintenant:
+    setIsSubmitting(true)
 
-📦 PRODUIT
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Nom: ${product.name}
-Prix unitaire: ${product.price.toLocaleString()} DA
-Quantité: ${quantity}
-Prix total: ${totalPrice.toLocaleString()} DA
-Type: ${product.productType}
-${product.category ? `Catégorie: ${product.category}` : ''}
-${product.need ? `Usage: ${product.need}` : ''}
-${product.originalPrice && product.originalPrice > product.price ? `🎯 Promotion: ${product.originalPrice.toLocaleString()} DA → ${product.price.toLocaleString()} DA` : ''}
-
-👤 INFORMATIONS CLIENT
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Nom: ${formData.name}
-Téléphone: ${formData.phone}
-Wilaya: ${formData.willaya}
-Baladia: ${formData.baladia}
-
-🚚 LIVRAISON
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-Type: ${deliveryTypeText}
-Adresse: ${formData.address}
-
-Merci!`
-
-    const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`
-    window.open(whatsappUrl, '_blank')
-    onClose()
-    // Reset form
-    setFormData({
-      name: '',
-      phone: '',
-      willaya: '',
-      baladia: '',
-      deliveryType: 'house',
-      address: '',
-    })
+    try {
+      // Get current user (customer can be guest or authenticated)
+      const { data: { user } } = await supabase.auth.getUser()
+      
+      const totalPrice = product.price * quantity
+      
+      // Get seller_id from product
+      const productWithSeller = product as any
+      const sellerId = productWithSeller.seller_id || null
+      
+      // Create order in database
+      const orderData = {
+        user_id: user?.id || null, // Can be null for guest checkout
+        seller_id: sellerId,
+        product_id: product.id,
+        quantity: quantity,
+        total_price: totalPrice,
+        customer_name: formData.name,
+        customer_phone: formData.phone,
+        shipping_wilaya: formData.willaya,
+        shipping_baladia: formData.baladia,
+        shipping_address: formData.address,
+        delivery_type: formData.deliveryType,
+        status: 'pending' as const,
+        payment_status: 'pending' as const,
+      }
+      
+      const orderId = await createOrderFromCheckout(orderData)
+      
+      if (orderId) {
+        setOrderSuccess(true)
+        
+        // Reset form after 2 seconds and close
+        setTimeout(() => {
+          setFormData({
+            name: '',
+            phone: '',
+            willaya: '',
+            baladia: '',
+            deliveryType: 'house',
+            address: '',
+          })
+          setOrderSuccess(false)
+          onClose()
+        }, 2000)
+      } else {
+        throw new Error('Failed to create order')
+      }
+    } catch (error) {
+      console.error('Error creating order:', error)
+      setErrors({ submit: 'Erreur lors de la création de la commande. Veuillez réessayer.' })
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   const handleBackdropClick = (e: React.MouseEvent<HTMLDivElement>): void => {
@@ -395,20 +412,36 @@ Merci!`
             )}
           </div>
 
+          {/* Success Message */}
+          {orderSuccess && (
+            <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg">
+              ✅ Commande créée avec succès! Le vendeur a été notifié.
+            </div>
+          )}
+
+          {/* Error Message */}
+          {errors.submit && (
+            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+              {errors.submit}
+            </div>
+          )}
+
           {/* Buttons */}
           <div className="flex gap-3 pt-4">
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 px-6 py-3 border-2 border-kitchen-lux-dark-green-300 text-kitchen-lux-dark-green-800 rounded-lg font-semibold hover:bg-kitchen-lux-dark-green-50 transition-colors"
+              disabled={isSubmitting}
+              className="flex-1 px-6 py-3 border-2 border-kitchen-lux-dark-green-300 text-kitchen-lux-dark-green-800 rounded-lg font-semibold hover:bg-kitchen-lux-dark-green-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Annuler
             </button>
             <button
               type="submit"
-              className="flex-1 px-6 py-3 bg-kitchen-lux-dark-green-600 text-white rounded-lg font-semibold hover:bg-kitchen-lux-dark-green-700 transition-colors"
+              disabled={isSubmitting || orderSuccess}
+              className="flex-1 px-6 py-3 bg-kitchen-lux-dark-green-600 text-white rounded-lg font-semibold hover:bg-kitchen-lux-dark-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Envoyer sur WhatsApp
+              {isSubmitting ? 'Création...' : orderSuccess ? 'Commande créée!' : 'Confirmer la commande'}
             </button>
           </div>
         </form>

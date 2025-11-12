@@ -252,6 +252,124 @@ export const createOrder = async (orderData: CreateOrderRequest): Promise<string
   }
 }
 
+// Create order from checkout (single product)
+export const createOrderFromCheckout = async (orderData: {
+  user_id: string | null
+  seller_id: string | null
+  product_id: string
+  quantity: number
+  total_price: number
+  customer_name: string
+  customer_phone: string
+  shipping_wilaya: string
+  shipping_baladia: string
+  shipping_address: string
+  delivery_type: string
+  status: OrderStatus
+  payment_status: PaymentStatus
+}): Promise<string | null> => {
+  try {
+    // Fetch product details
+    const { data: product, error: productError } = await supabase
+      .from('products')
+      .select(`
+        name,
+        price,
+        product_images (image_url)
+      `)
+      .eq('id', orderData.product_id)
+      .single()
+
+    if (productError || !product) {
+      console.error('Error fetching product:', productError)
+      throw new Error('Product not found')
+    }
+
+    // Insert order
+    const { data: order, error: orderError } = await supabase
+      .from('orders')
+      .insert({
+        user_id: orderData.user_id,
+        seller_id: orderData.seller_id,
+        customer_name: orderData.customer_name,
+        customer_email: null,
+        customer_phone: orderData.customer_phone,
+        customer_address: orderData.shipping_address,
+        customer_wilaya: orderData.shipping_wilaya,
+        total: orderData.total_price,
+        status: orderData.status,
+        payment_status: orderData.payment_status,
+        delivery_date: null,
+        tracking_number: null,
+        notes: `Baladia: ${orderData.shipping_baladia}, Type: ${orderData.delivery_type}`,
+      })
+      .select()
+      .single()
+
+    if (orderError) {
+      console.error('Error creating order:', orderError)
+      throw orderError
+    }
+
+    // Insert order item
+    const imageUrl = (product as any).product_images?.[0]?.image_url || ''
+    const { error: itemError } = await supabase
+      .from('order_items')
+      .insert({
+        order_id: order.id,
+        product_id: orderData.product_id,
+        product_name: product.name,
+        product_image: imageUrl,
+        quantity: orderData.quantity,
+        price: orderData.total_price / orderData.quantity,
+        subtotal: orderData.total_price,
+      })
+
+    if (itemError) {
+      console.error('Error creating order item:', itemError)
+      // Rollback order
+      await supabase.from('orders').delete().eq('id', order.id)
+      throw itemError
+    }
+
+    return order.id
+  } catch (error) {
+    console.error('Error in createOrderFromCheckout:', error)
+    return null
+  }
+}
+
+// Get orders for a specific seller
+export const getOrdersForSeller = async (sellerId: string): Promise<any[]> => {
+  try {
+    const { data, error } = await supabase
+      .from('orders')
+      .select(`
+        *,
+        order_items (
+          product_id,
+          product_name,
+          product_image,
+          quantity,
+          price,
+          subtotal
+        )
+      `)
+      .eq('seller_id', sellerId)
+      .order('created_at', { ascending: false })
+
+    if (error) {
+      console.error('Error fetching seller orders:', error)
+      throw error
+    }
+
+    return (data || []).map(adaptOrder)
+  } catch (error) {
+    console.error('Error in getOrdersForSeller:', error)
+    return []
+  }
+}
+
 // Update order status (admin only)
 export const updateOrderStatus = async (
   updateData: UpdateOrderStatusRequest
