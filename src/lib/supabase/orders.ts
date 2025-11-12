@@ -218,6 +218,9 @@ export const createOrder = async (orderData: CreateOrderRequest): Promise<string
         total,
         status: 'pending',
         payment_status: 'pending',
+        delivery_date: null,
+        tracking_number: null,
+        notes: null,
       })
       .select()
       .single()

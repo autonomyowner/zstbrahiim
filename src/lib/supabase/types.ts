@@ -248,45 +248,63 @@ export type Database = {
         Row: UserProfile
         Insert: Omit<UserProfile, 'created_at' | 'updated_at'>
         Update: Partial<Omit<UserProfile, 'id' | 'created_at' | 'updated_at'>>
+        Relationships: []
       }
       products: {
         Row: Product
         Insert: Omit<Product, 'id' | 'created_at' | 'updated_at' | 'viewers_count'>
         Update: Partial<Omit<Product, 'id' | 'created_at' | 'updated_at'>>
+        Relationships: []
       }
       product_images: {
         Row: ProductImage
         Insert: Omit<ProductImage, 'id' | 'created_at'>
         Update: Partial<Omit<ProductImage, 'id' | 'created_at'>>
+        Relationships: []
       }
       freelance_services: {
         Row: FreelanceService
         Insert: Omit<FreelanceService, 'id' | 'created_at' | 'updated_at' | 'rating' | 'reviews_count' | 'completed_projects'>
         Update: Partial<Omit<FreelanceService, 'id' | 'created_at' | 'updated_at'>>
+        Relationships: []
       }
       freelance_portfolios: {
         Row: FreelancePortfolio
         Insert: Omit<FreelancePortfolio, 'id' | 'created_at'>
         Update: Partial<Omit<FreelancePortfolio, 'id' | 'created_at'>>
+        Relationships: []
       }
       orders: {
         Row: Order
         Insert: Omit<Order, 'id' | 'order_number' | 'created_at' | 'updated_at'>
         Update: Partial<Omit<Order, 'id' | 'order_number' | 'created_at' | 'updated_at'>>
+        Relationships: []
       }
       order_items: {
         Row: OrderItem
         Insert: Omit<OrderItem, 'id' | 'created_at'>
         Update: Partial<Omit<OrderItem, 'id' | 'created_at'>>
+        Relationships: []
       }
     }
     Views: {
       seller_stats_view: {
         Row: SellerStats
+        Relationships: []
       }
       product_stats_view: {
         Row: ProductStats
+        Relationships: []
       }
+    }
+    Functions: {
+      [_ in never]: never
+    }
+    Enums: {
+      [_ in never]: never
+    }
+    CompositeTypes: {
+      [_ in never]: never
     }
   }
 }

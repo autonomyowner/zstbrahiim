@@ -1,6 +1,16 @@
 // Authentication helpers for Supabase
 import { supabase } from './client'
-import type { UserRole, UserProfile } from './types'
+import type { UserRole, UserProfile, Database, SellerType } from './types'
+
+type UserProfileUpdatePayload = {
+  email?: string
+  full_name?: string | null
+  phone?: string | null
+  provider_name?: string | null
+  provider_avatar?: string | null
+  bio?: string | null
+  seller_type?: SellerType | null
+}
 
 // Sign up with email and password
 export const signUp = async (
@@ -127,15 +137,7 @@ export const getCurrentUserProfile = async (): Promise<UserProfile | null> => {
 
 // Update user profile
 export const updateUserProfile = async (
-  updates: {
-    email?: string
-    full_name?: string
-    phone?: string
-    provider_name?: string
-    provider_avatar?: string
-    bio?: string
-    seller_type?: 'retailer' | 'importer' | 'wholesaler'
-  }
+  updates: UserProfileUpdatePayload
 ): Promise<boolean> => {
   try {
     const user = await getCurrentUser()
@@ -147,7 +149,7 @@ export const updateUserProfile = async (
 
     const { error } = await supabase
       .from('user_profiles')
-      .update(updates as any)
+      .update(updates)
       .eq('id', user.id)
 
     if (error) {
