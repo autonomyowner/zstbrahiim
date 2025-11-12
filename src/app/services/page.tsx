@@ -119,7 +119,7 @@ export default function SellerPortalPage(): JSX.Element {
       
       // Prepare product data for Supabase
       const productPayload = {
-        slug: productData.name.toLowerCase().replace(/\s+/g, '-'),
+        slug: `${productData.name.toLowerCase().replace(/\s+/g, '-')}-${Date.now()}`,
         name: productData.name,
         brand: productData.brand,
         price: productData.price,
