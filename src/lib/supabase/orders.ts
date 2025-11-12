@@ -272,12 +272,7 @@ export const createOrderFromCheckout = async (orderData: {
     // Fetch product details including seller_id
     const { data: product, error: productError } = await supabase
       .from('products')
-      .select(`
-        name,
-        price,
-        seller_id,
-        product_images (image_url)
-      `)
+      .select('name, price, seller_id, product_images(image_url)')
       .eq('id', orderData.product_id)
       .single()
 
@@ -287,7 +282,8 @@ export const createOrderFromCheckout = async (orderData: {
     }
 
     // Use seller_id from product (not from orderData which might be null)
-    const actualSellerId = (product as any).seller_id || orderData.seller_id
+    const productData = product as any
+    const actualSellerId = productData.seller_id || orderData.seller_id
 
     // Insert order
     const { data: order, error: orderError } = await supabase
@@ -316,13 +312,13 @@ export const createOrderFromCheckout = async (orderData: {
     }
 
     // Insert order item
-    const imageUrl = (product as any).product_images?.[0]?.image_url || ''
+    const imageUrl = productData.product_images?.[0]?.image_url || ''
     const { error: itemError } = await supabase
       .from('order_items')
       .insert({
         order_id: order.id,
         product_id: orderData.product_id,
-        product_name: product.name,
+        product_name: productData.name,
         product_image: imageUrl,
         quantity: orderData.quantity,
         price: orderData.total_price / orderData.quantity,
