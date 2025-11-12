@@ -14,6 +14,7 @@ const adaptService = (dbService: any): any => {
   return {
     id: dbService.id,
     slug: dbService.slug,
+    providerId: dbService.provider_id, // Add provider_id for filtering
     providerName: dbService.user_profiles?.provider_name || dbService.provider_name || 'Unknown',
     providerAvatar: dbService.user_profiles?.provider_avatar || dbService.provider_avatar || '',
     serviceTitle: dbService.service_title,
