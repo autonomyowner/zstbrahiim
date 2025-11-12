@@ -1,5 +1,6 @@
 import { notFound } from 'next/navigation'
 import { getProductById } from '@/data/products'
+import { getProductByIdFromDb } from '@/lib/supabase/products'
 import { ProductGallery } from '@/components/ProductGallery'
 import { ProductDetails } from '@/components/ProductDetails'
 
@@ -11,7 +12,14 @@ type ProductPageProps = {
 
 export default async function ProductPage({ params }: ProductPageProps): Promise<JSX.Element> {
   const resolvedParams = await params
-  const product = getProductById(resolvedParams.id)
+  
+  // Try to get product from static data first, then from database
+  let product = getProductById(resolvedParams.id)
+  
+  if (!product) {
+    // Try to get from database
+    product = await getProductByIdFromDb(resolvedParams.id)
+  }
 
   if (!product) {
     notFound()
