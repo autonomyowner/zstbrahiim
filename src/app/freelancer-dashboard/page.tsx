@@ -89,6 +89,9 @@ export default function FreelancerDashboardPage() {
         languages: serviceData.languages.split(',').map(s => s.trim()).filter(s => s),
         response_time: serviceData.responseTime,
         availability: 'available' as const,
+        featured: false,
+        verified: false,
+        top_rated: false,
         portfolio: serviceData.portfolioImages.map((url, index) => ({
           title: `Work ${index + 1}`,
           description: '',
