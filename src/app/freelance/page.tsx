@@ -5,7 +5,7 @@ import { ServiceCard } from '@/components/ServiceCard'
 import { MarketplaceFilters } from '@/components/MarketplaceFilters'
 import { freelanceServices, type ServiceCategory, type ExperienceLevel } from '@/data/freelance-services'
 
-export default function MarketplacePage() {
+export default function FreelancePage() {
   const [selectedCategory, setSelectedCategory] = useState<ServiceCategory | 'all'>('all')
   const [selectedExperience, setSelectedExperience] = useState<ExperienceLevel | 'all'>('all')
   const [selectedAvailability, setSelectedAvailability] = useState<'all' | 'available' | 'busy'>('all')
@@ -51,7 +51,7 @@ export default function MarketplacePage() {
         {/* Header */}
         <div className="text-center mb-12">
           <h1 className="mt-4 text-4xl font-elegant font-semibold text-kitchen-lux-dark-green-800 sm:text-5xl">
-            Marketplace des Talents
+            Freelance des Talents
           </h1>
           <p className="mt-4 text-lg text-kitchen-lux-dark-green-700 max-w-2xl mx-auto">
             Trouvez le freelance parfait pour votre projet. Développeurs, designers,
@@ -172,7 +172,7 @@ export default function MarketplacePage() {
               Vous êtes freelance ?
             </h2>
             <p className="text-lg text-kitchen-lux-dark-green-200 mb-8 max-w-2xl mx-auto">
-              Rejoignez notre marketplace et trouvez de nouveaux clients pour vos services.
+              Rejoignez notre plateforme freelance et trouvez de nouveaux clients pour vos services.
             </p>
             <button className="bg-white text-kitchen-lux-dark-green-600 px-8 py-4 rounded-lg font-bold text-lg hover:bg-kitchen-lux-dark-green-50 transition-colors shadow-lg">
               Devenir Prestataire

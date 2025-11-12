@@ -11,8 +11,8 @@ type NavItem = {
 }
 
 const navItems: NavItem[] = [
-  { label: 'Boutique', href: '/' },
-  { label: 'Boutique', href: '/services' },
+  { label: 'Marketplace', href: '/' },
+  { label: 'Dashboard', href: '/services' },
 ]
 
 // Split menu items: first on left, rest on right
@@ -55,12 +55,12 @@ export const Navbar = (): JSX.Element => {
               Services
             </Link>
 
-            {/* Marketplace - Center */}
+            {/* Freelance - Center */}
             <Link
-              href="/marketplace"
+              href="/freelance"
               className="text-xs font-medium uppercase tracking-[0.2em] text-kitchen-marble-gray transition-colors duration-200 hover:text-kitchen-black-deep"
             >
-              Marketplace
+              Freelance
             </Link>
 
             {/* Sellers - Right */}

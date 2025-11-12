@@ -30,7 +30,7 @@ export function ServiceCard({ service }: ServiceCardProps) {
   }
 
   return (
-    <Link href={`/marketplace/${service.slug}`}>
+    <Link href={`/freelance/${service.slug}`}>
       <div className="group bg-white rounded-lg overflow-hidden shadow-md hover:shadow-2xl transition-all duration-300 border border-kitchen-lux-dark-green-100 hover:border-kitchen-lux-dark-green-400/50 h-full flex flex-col">
         {/* Provider Header */}
         <div className="p-4 border-b border-kitchen-lux-dark-green-50 flex items-center gap-3">
