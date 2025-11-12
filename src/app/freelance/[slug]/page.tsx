@@ -155,7 +155,7 @@ export default function ServiceDetailPage() {
                 Description du service
               </h2>
               <div className="prose prose-slate max-w-none">
-                {service.description.split('\n').map((paragraph, index) => {
+                {service.description.split('\n').map((paragraph: string, index: number) => {
                   // Check if it's a heading (starts with **)
                   if (paragraph.startsWith('**') && paragraph.endsWith('**')) {
                     return (
