@@ -1,14 +1,44 @@
 'use client'
 
 import { useParams } from 'next/navigation'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import { freelanceServices } from '@/data/freelance-services'
+import { getServiceBySlug } from '@/lib/supabase/services'
 
 export default function ServiceDetailPage() {
   const params = useParams()
   const slug = params?.slug as string
+  const [service, setService] = useState<any>(null)
+  const [loading, setLoading] = useState(true)
 
-  const service = freelanceServices.find(s => s.slug === slug)
+  useEffect(() => {
+    const fetchService = async () => {
+      // Try static services first
+      let foundService = freelanceServices.find(s => s.slug === slug)
+      
+      // If not found, try database
+      if (!foundService) {
+        foundService = await getServiceBySlug(slug)
+      }
+      
+      setService(foundService)
+      setLoading(false)
+    }
+    
+    fetchService()
+  }, [slug])
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-kitchen-lux-dark-green-50 to-kitchen-lux-dark-green-100 flex items-center justify-center px-4 py-24">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-kitchen-lux-dark-green-900 mx-auto mb-4"></div>
+          <p className="text-kitchen-lux-dark-green-700">Chargement du service...</p>
+        </div>
+      </div>
+    )
+  }
 
   if (!service) {
     return (
