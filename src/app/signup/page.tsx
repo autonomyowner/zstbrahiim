@@ -46,21 +46,40 @@ export default function SignUpPage() {
       )
 
       if (signUpError) {
-        setError(signUpError.message || 'Failed to sign up')
+        // Handle specific error cases
+        if (signUpError.message?.includes('already registered')) {
+          setError('This email is already registered. Please sign in instead.')
+        } else if (signUpError.message?.includes('Password')) {
+          setError('Password is too weak. Please use a stronger password.')
+        } else {
+          setError(signUpError.message || 'Failed to sign up')
+        }
         setLoading(false)
         return
       }
 
       if (user) {
         setSuccess(true)
-        // Wait 2 seconds to show success message, then redirect
-        setTimeout(() => {
-          router.push('/')
-          router.refresh()
-        }, 2000)
+        // Check if email confirmation is required
+        const confirmationRequired = user.identities?.length === 0
+        
+        if (confirmationRequired) {
+          // User needs to verify email
+          setError(null)
+          setTimeout(() => {
+            router.push('/signin')
+          }, 3000)
+        } else {
+          // User is auto-confirmed and can login immediately
+          setTimeout(() => {
+            router.push('/')
+            router.refresh()
+          }, 2000)
+        }
       }
     } catch (err) {
-      setError('An unexpected error occurred')
+      console.error('Signup error:', err)
+      setError('An unexpected error occurred. Please try again.')
       setLoading(false)
     }
   }
@@ -96,8 +115,9 @@ export default function SignUpPage() {
 
           {/* Success Message */}
           {success && (
-            <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg">
-              Account created successfully! Redirecting...
+            <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg mb-4">
+              <p className="font-semibold">Account created successfully!</p>
+              <p className="text-sm mt-1">Redirecting to homepage...</p>
             </div>
           )}
 

@@ -21,7 +21,21 @@ export default function SignInPage() {
       const { user, error: signInError } = await signIn(email, password)
 
       if (signInError) {
-        setError(signInError.message || 'Failed to sign in')
+        // Handle specific error cases
+        const errorMessage = signInError.message?.toLowerCase() || ''
+        
+        if (errorMessage.includes('invalid login credentials') || 
+            errorMessage.includes('invalid email or password')) {
+          setError('Invalid email or password. Please check your credentials and try again.')
+        } else if (errorMessage.includes('email not confirmed')) {
+          setError('Please verify your email address before signing in. Check your inbox for the verification link.')
+        } else if (errorMessage.includes('user not found')) {
+          setError('No account found with this email address. Please sign up first.')
+        } else if (errorMessage.includes('too many requests')) {
+          setError('Too many login attempts. Please wait a few minutes and try again.')
+        } else {
+          setError(signInError.message || 'Failed to sign in. Please try again.')
+        }
         setLoading(false)
         return
       }
@@ -32,7 +46,8 @@ export default function SignInPage() {
         router.refresh()
       }
     } catch (err) {
-      setError('An unexpected error occurred')
+      console.error('Sign in error:', err)
+      setError('An unexpected error occurred. Please try again later.')
       setLoading(false)
     }
   }
@@ -61,8 +76,9 @@ export default function SignInPage() {
 
           {/* Error Message */}
           {error && (
-            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
-              {error}
+            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6">
+              <p className="font-semibold text-sm">Sign In Failed</p>
+              <p className="text-sm mt-1">{error}</p>
             </div>
           )}
 

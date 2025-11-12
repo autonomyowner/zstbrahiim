@@ -1,6 +1,7 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
+import { useRouter } from 'next/navigation'
 import { DashboardStats } from '@/components/seller/DashboardStats'
 import { QuickActions } from '@/components/seller/QuickActions'
 import { OrdersTable } from '@/components/seller/OrdersTable'
@@ -12,15 +13,22 @@ import { EditProductModal } from '@/components/seller/EditProductModal'
 import { OrderDetailsModal } from '@/components/seller/OrderDetailsModal'
 import { ExportButton } from '@/components/seller/ExportButton'
 import { mockOrders, mockSellerStats, type Order, type OrderStatus, type PaymentStatus } from '@/data/orders'
-import { products, type Product } from '@/data/products'
+import { type Product } from '@/data/products'
 import { printInvoice } from '@/utils/printInvoice'
+import { getProducts, createProduct, updateProduct, deleteProduct } from '@/lib/supabase/products'
+import { isSeller } from '@/lib/supabase/auth'
 
 type TabType = 'dashboard' | 'orders' | 'products' | 'analytics'
 
 export default function SellerPortalPage(): JSX.Element {
+  const router = useRouter()
   const [activeTab, setActiveTab] = useState<TabType>('dashboard')
   const [orders, setOrders] = useState<Order[]>(mockOrders)
-  const [productsList, setProductsList] = useState<Product[]>(products)
+  const [productsList, setProductsList] = useState<Product[]>([])
+  const [loading, setLoading] = useState(true)
+  const [authChecking, setAuthChecking] = useState(true)
+  const [productError, setProductError] = useState<string | null>(null)
+  const [successMessage, setSuccessMessage] = useState<string | null>(null)
 
   // Modal states
   const [isAddProductModalOpen, setIsAddProductModalOpen] = useState(false)
@@ -33,6 +41,43 @@ export default function SellerPortalPage(): JSX.Element {
   const [statusFilter, setStatusFilter] = useState<OrderStatus | 'all'>('all')
   const [paymentFilter, setPaymentFilter] = useState<PaymentStatus | 'all'>('all')
   const [searchQuery, setSearchQuery] = useState('')
+
+  // Check authentication and seller role
+  useEffect(() => {
+    const checkAuth = async () => {
+      try {
+        const hasSellerAccess = await isSeller()
+        if (!hasSellerAccess) {
+          router.push('/signin')
+          return
+        }
+        setAuthChecking(false)
+      } catch (error) {
+        console.error('Auth check failed:', error)
+        router.push('/signin')
+      }
+    }
+    checkAuth()
+  }, [router])
+
+  // Fetch products from Supabase
+  useEffect(() => {
+    if (authChecking) return
+    
+    const fetchProducts = async () => {
+      try {
+        setLoading(true)
+        const fetchedProducts = await getProducts()
+        setProductsList(fetchedProducts)
+      } catch (error) {
+        console.error('Error fetching products:', error)
+        setProductError('Failed to load products')
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchProducts()
+  }, [authChecking])
 
   // Filter orders
   const filteredOrders = useMemo(() => {
@@ -68,38 +113,50 @@ export default function SellerPortalPage(): JSX.Element {
     setIsAddProductModalOpen(true)
   }
 
-  const handleAddProductSubmit = (productData: ProductFormData) => {
-    // In a real app, this would make an API call
-    const newProduct: Product = {
-      id: `new-${Date.now()}`,
-      slug: productData.name.toLowerCase().replace(/\s+/g, '-'),
-      name: productData.name,
-      brand: productData.brand,
-      price: productData.price,
-      originalPrice: productData.originalPrice,
-      image: productData.image,
-      images: [productData.image],
-      category: productData.category,
-      productType: productData.productType,
-      need: productData.need,
-      inStock: productData.inStock,
-      isPromo: productData.isPromo,
-      isNew: productData.isNew,
-      description: productData.description,
-      benefits: productData.benefits.split('\n').filter((b) => b.trim()),
-      ingredients: productData.ingredients,
-      usageInstructions: productData.usageInstructions,
-      deliveryEstimate: productData.deliveryEstimate,
-      viewersCount: 0,
-      additionalInfo: {
-        shipping: 'Livraison gratuite à partir de 20 000 DA',
-        returns: 'Retours acceptés sous 14 jours',
-        payment: 'Paiement à la livraison',
-      },
-    }
+  const handleAddProductSubmit = async (productData: ProductFormData) => {
+    try {
+      setProductError(null)
+      
+      // Prepare product data for Supabase
+      const productPayload = {
+        slug: productData.name.toLowerCase().replace(/\s+/g, '-'),
+        name: productData.name,
+        brand: productData.brand,
+        price: productData.price,
+        original_price: productData.originalPrice,
+        category: productData.category,
+        product_type: productData.productType,
+        product_category: 'perfume' as const,
+        need: productData.need,
+        in_stock: productData.inStock,
+        is_promo: productData.isPromo,
+        is_new: productData.isNew,
+        description: productData.description,
+        benefits: productData.benefits.split('\n').filter((b: string) => b.trim()),
+        ingredients: productData.ingredients,
+        usage_instructions: productData.usageInstructions,
+        delivery_estimate: productData.deliveryEstimate,
+        shipping_info: 'Livraison gratuite à partir de 20 000 DA',
+        returns_info: 'Retours acceptés sous 14 jours',
+        payment_info: 'Paiement à la livraison',
+        images: [productData.image],
+      }
 
-    setProductsList((prev) => [newProduct, ...prev])
-    alert(`Produit "${productData.name}" ajouté avec succès!`)
+      const productId = await createProduct(productPayload)
+      
+      if (productId) {
+        setSuccessMessage(`Produit "${productData.name}" ajouté avec succès!`)
+        // Refresh products list
+        const updatedProducts = await getProducts()
+        setProductsList(updatedProducts)
+        setTimeout(() => setSuccessMessage(null), 3000)
+      } else {
+        setProductError('Failed to create product')
+      }
+    } catch (error) {
+      console.error('Error adding product:', error)
+      setProductError('Error adding product. Please try again.')
+    }
   }
 
   const handleEditProduct = (product: Product) => {
@@ -107,39 +164,67 @@ export default function SellerPortalPage(): JSX.Element {
     setIsEditProductModalOpen(true)
   }
 
-  const handleEditProductSubmit = (productId: string, productData: ProductFormData) => {
-    // In a real app, this would make an API call
-    setProductsList((prev) =>
-      prev.map((p) =>
-        p.id === productId
-          ? {
-              ...p,
-              name: productData.name,
-              brand: productData.brand,
-              price: productData.price,
-              originalPrice: productData.originalPrice,
-              category: productData.category,
-              productType: productData.productType,
-              need: productData.need,
-              inStock: productData.inStock,
-              isPromo: productData.isPromo,
-              isNew: productData.isNew,
-              description: productData.description,
-              benefits: productData.benefits.split('\n').filter((b) => b.trim()),
-              ingredients: productData.ingredients,
-              usageInstructions: productData.usageInstructions,
-              deliveryEstimate: productData.deliveryEstimate,
-              image: productData.image,
-            }
-          : p
-      )
-    )
-    alert(`Produit "${productData.name}" modifié avec succès!`)
+  const handleEditProductSubmit = async (productId: string, productData: ProductFormData) => {
+    try {
+      setProductError(null)
+      
+      const updatePayload = {
+        id: productId,
+        name: productData.name,
+        brand: productData.brand,
+        price: productData.price,
+        original_price: productData.originalPrice,
+        category: productData.category,
+        product_type: productData.productType,
+        need: productData.need,
+        in_stock: productData.inStock,
+        is_promo: productData.isPromo,
+        is_new: productData.isNew,
+        description: productData.description,
+        benefits: productData.benefits.split('\n').filter((b: string) => b.trim()),
+        ingredients: productData.ingredients,
+        usage_instructions: productData.usageInstructions,
+        delivery_estimate: productData.deliveryEstimate,
+        images: [productData.image],
+      }
+
+      const success = await updateProduct(updatePayload)
+      
+      if (success) {
+        setSuccessMessage(`Produit "${productData.name}" modifié avec succès!`)
+        // Refresh products list
+        const updatedProducts = await getProducts()
+        setProductsList(updatedProducts)
+        setTimeout(() => setSuccessMessage(null), 3000)
+      } else {
+        setProductError('Failed to update product')
+      }
+    } catch (error) {
+      console.error('Error updating product:', error)
+      setProductError('Error updating product. Please try again.')
+    }
   }
 
-  const handleDeleteProduct = (productId: string) => {
-    setProductsList((prev) => prev.filter((p) => p.id !== productId))
-    alert('Produit supprimé avec succès!')
+  const handleDeleteProduct = async (productId: string) => {
+    if (confirm('Êtes-vous sûr de vouloir supprimer ce produit?')) {
+      try {
+        setProductError(null)
+        const success = await deleteProduct(productId)
+        
+        if (success) {
+          setSuccessMessage('Produit supprimé avec succès!')
+          // Refresh products list
+          const updatedProducts = await getProducts()
+          setProductsList(updatedProducts)
+          setTimeout(() => setSuccessMessage(null), 3000)
+        } else {
+          setProductError('Failed to delete product')
+        }
+      } catch (error) {
+        console.error('Error deleting product:', error)
+        setProductError('Error deleting product. Please try again.')
+      }
+    }
   }
 
   const handlePrintInvoice = (order: Order) => {
@@ -153,9 +238,33 @@ export default function SellerPortalPage(): JSX.Element {
     { id: 'analytics' as TabType, label: 'Analytiques' },
   ]
 
+  // Show loading while checking auth
+  if (authChecking) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-kitchen-lux-dark-green-50 to-kitchen-lux-dark-green-100 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-kitchen-lux-dark-green-900 mx-auto mb-4"></div>
+          <p className="text-kitchen-lux-dark-green-700">Vérification de l'authentification...</p>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-kitchen-lux-dark-green-50 to-kitchen-lux-dark-green-100 px-4 py-24 sm:px-6 lg:px-8">
       <div className="mx-auto max-w-7xl">
+        {/* Success/Error Messages */}
+        {successMessage && (
+          <div className="mb-6 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg">
+            {successMessage}
+          </div>
+        )}
+        {productError && (
+          <div className="mb-6 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+            {productError}
+          </div>
+        )}
+
         {/* Header */}
         <div className="mb-8">
           <h1 className="text-4xl font-elegant font-semibold text-kitchen-lux-dark-green-900 mb-2">
