@@ -234,7 +234,7 @@ export function AddProductModal({ isOpen, onClose, onSubmit }: AddProductModalPr
                     type="text"
                     id="productType"
                     value={formData.productType}
-                    onChange={(e) => updateField('productType', e.target.value as ProductType)}
+                    onChange={(e) => updateField('productType', e.target.value)}
                     className="w-full px-4 py-2 border border-kitchen-lux-dark-green-300 rounded-lg focus:ring-2 focus:ring-kitchen-lux-dark-green-500 focus:border-transparent"
                     placeholder="Ex: Manteau, Robe, Parfum..."
                     list="type-suggestions"
