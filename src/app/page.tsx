@@ -16,7 +16,7 @@ export default function HomePage(): JSX.Element {
   const [filters, setFilters] = useState<FilterState>({
     availability: 'all',
     brands: [], // Empty array means show all brands
-    priceRange: { min: 0, max: 100000 },
+    priceRange: { min: 0, max: 900000 },
     productTypes: [],
     needs: [],
     category: '',

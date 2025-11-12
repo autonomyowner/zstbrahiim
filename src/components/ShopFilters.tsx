@@ -231,8 +231,8 @@ export const ShopFilters = ({
           </h3>
           <BudgetSlider
             min={0}
-            max={100000}
-            step={100}
+            max={900000}
+            step={1000}
             value={[filters.priceRange.min, filters.priceRange.max]}
             onValueChange={handlePriceChange}
           />
