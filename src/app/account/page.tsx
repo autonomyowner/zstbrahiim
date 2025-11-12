@@ -338,6 +338,22 @@ export default function AccountPage() {
               </div>
             )}
           </div>
+
+          {/* Order History Section */}
+          <div className="mt-8">
+            <h2 className="text-3xl font-elegant font-semibold text-kitchen-lux-dark-green-900 mb-6">
+              Mes Commandes
+            </h2>
+            
+            {loadingOrders ? (
+              <div className="bg-white rounded-lg shadow-md p-8 text-center">
+                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-kitchen-lux-dark-green-900 mx-auto mb-4"></div>
+                <p className="text-kitchen-lux-dark-green-600">Chargement des commandes...</p>
+              </div>
+            ) : (
+              <CustomerOrderHistory orders={orders} />
+            )}
+          </div>
         </div>
       </div>
     </div>
