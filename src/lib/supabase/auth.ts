@@ -164,11 +164,22 @@ export const updateUserProfile = async (
   }
 }
 
+// Helper to get site URL dynamically
+const getSiteUrl = () => {
+  if (typeof window !== 'undefined') {
+    return window.location.origin
+  }
+  if (process.env.NEXT_PUBLIC_VERCEL_URL) {
+    return `https://${process.env.NEXT_PUBLIC_VERCEL_URL}`
+  }
+  return process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
+}
+
 // Reset password
 export const resetPassword = async (email: string): Promise<{ error: any }> => {
   try {
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${process.env.NEXT_PUBLIC_SITE_URL}/reset-password`,
+      redirectTo: `${getSiteUrl()}/reset-password`,
     })
 
     if (error) {

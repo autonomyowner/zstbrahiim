@@ -2,22 +2,67 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
+import { signUp } from '@/lib/supabase/auth'
+import type { UserRole } from '@/lib/supabase/types'
 
 export default function SignUpPage() {
+  const router = useRouter()
   const [fullName, setFullName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
-  const [userType, setUserType] = useState('customer')
+  const [userType, setUserType] = useState<UserRole>('customer')
+  const [error, setError] = useState<string | null>(null)
+  const [success, setSuccess] = useState(false)
+  const [loading, setLoading] = useState(false)
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    // Handle sign up logic here
+    setError(null)
+    setLoading(true)
+
+    // Validate passwords match
     if (password !== confirmPassword) {
-      alert('Passwords do not match!')
+      setError('Passwords do not match!')
+      setLoading(false)
       return
     }
-    console.log('Sign up:', { fullName, email, password, userType })
+
+    // Validate password length
+    if (password.length < 8) {
+      setError('Password must be at least 8 characters long')
+      setLoading(false)
+      return
+    }
+
+    try {
+      const { user, error: signUpError } = await signUp(
+        email,
+        password,
+        fullName,
+        undefined, // phone is optional
+        userType
+      )
+
+      if (signUpError) {
+        setError(signUpError.message || 'Failed to sign up')
+        setLoading(false)
+        return
+      }
+
+      if (user) {
+        setSuccess(true)
+        // Wait 2 seconds to show success message, then redirect
+        setTimeout(() => {
+          router.push('/')
+          router.refresh()
+        }, 2000)
+      }
+    } catch (err) {
+      setError('An unexpected error occurred')
+      setLoading(false)
+    }
   }
 
   return (
@@ -41,6 +86,20 @@ export default function SignUpPage() {
           <p className="text-center text-kitchen-marble-gray mb-8">
             Join us today and start shopping
           </p>
+
+          {/* Error Message */}
+          {error && (
+            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+              {error}
+            </div>
+          )}
+
+          {/* Success Message */}
+          {success && (
+            <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg">
+              Account created successfully! Redirecting...
+            </div>
+          )}
 
           {/* Form */}
           <form onSubmit={handleSubmit} className="space-y-6">
@@ -72,16 +131,16 @@ export default function SignUpPage() {
               <select
                 id="userType"
                 value={userType}
-                onChange={(e) => setUserType(e.target.value)}
+                onChange={(e) => setUserType(e.target.value as UserRole)}
                 required
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-kitchen-lux-dark-green-500 focus:border-transparent transition-all bg-white"
               >
                 <option value="customer">Customer</option>
-                <option value="retailer">Retailer</option>
-                <option value="wholesaler">Wholesaler</option>
-                <option value="importer">Importer</option>
-                <option value="service_provider">Service Provider</option>
+                <option value="seller">Seller (All Types)</option>
               </select>
+              <p className="mt-1 text-xs text-kitchen-marble-gray">
+                Select &quot;Seller&quot; if you want to sell products or services
+              </p>
             </div>
 
             <div>
@@ -166,9 +225,10 @@ export default function SignUpPage() {
 
             <button
               type="submit"
-              className="w-full bg-gradient-to-r from-kitchen-lux-dark-green-600 to-kitchen-lux-dark-green-700 text-white py-3 rounded-lg font-semibold hover:from-kitchen-lux-dark-green-700 hover:to-kitchen-lux-dark-green-800 transition-all duration-200 shadow-md hover:shadow-lg"
+              disabled={loading || success}
+              className="w-full bg-gradient-to-r from-kitchen-lux-dark-green-600 to-kitchen-lux-dark-green-700 text-white py-3 rounded-lg font-semibold hover:from-kitchen-lux-dark-green-700 hover:to-kitchen-lux-dark-green-800 transition-all duration-200 shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              Sign Up
+              {loading ? 'Creating Account...' : success ? 'Success!' : 'Sign Up'}
             </button>
           </form>
 

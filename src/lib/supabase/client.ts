@@ -12,12 +12,23 @@ if (!supabaseUrl || !supabaseAnonKey) {
   )
 }
 
+// Get the site URL (supports both localhost and production)
+const getSiteUrl = () => {
+  // Check if we're on Vercel
+  if (process.env.NEXT_PUBLIC_VERCEL_URL) {
+    return `https://${process.env.NEXT_PUBLIC_VERCEL_URL}`
+  }
+  // Fallback to NEXT_PUBLIC_SITE_URL or localhost
+  return process.env.NEXT_PUBLIC_SITE_URL || 'http://localhost:3000'
+}
+
 // Create a single supabase client for interacting with your database
 export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
   auth: {
     persistSession: true,
     autoRefreshToken: true,
     detectSessionInUrl: true,
+    flowType: 'pkce',
   },
 })
 
