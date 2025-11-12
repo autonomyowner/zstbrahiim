@@ -116,8 +116,9 @@ export type Order = {
   id: string
   order_number: string
   user_id: string | null
+  seller_id?: string | null
   customer_name: string
-  customer_email: string
+  customer_email: string | null
   customer_phone: string
   customer_address: string
   customer_wilaya: string
