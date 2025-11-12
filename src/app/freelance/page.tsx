@@ -57,7 +57,7 @@ export default function FreelancePage() {
         service.serviceTitle.toLowerCase().includes(query) ||
         service.providerName.toLowerCase().includes(query) ||
         service.category.toLowerCase().includes(query) ||
-        service.skills.some(skill => skill.toLowerCase().includes(query))
+        service.skills.some((skill: string) => skill.toLowerCase().includes(query))
       )
     }
 

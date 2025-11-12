@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import Image from 'next/image'
 import { ImageUpload } from '@/components/ImageUpload'
 
 type ServiceCategory = 'Développement Web' | 'Design Graphique' | 'Montage Vidéo' | 'Marketing Digital' | 'Rédaction' | 'Photographie' | 'Traduction' | 'Consultation'
@@ -356,11 +357,11 @@ export function AddServiceModal({ isOpen, onClose, onSubmit }: AddServiceModalPr
                 <div className="grid grid-cols-3 gap-4 mb-4">
                   {formData.portfolioImages.map((url, index) => (
                     <div key={index} className="relative aspect-video bg-gray-100 rounded-lg overflow-hidden">
-                      <img src={url} alt={`Portfolio ${index + 1}`} className="w-full h-full object-cover" />
+                      <Image src={url} alt={`Portfolio ${index + 1}`} fill className="object-cover" />
                       <button
                         type="button"
                         onClick={() => removePortfolioImage(index)}
-                        className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
+                        className="absolute top-2 right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600 z-10"
                       >
                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
