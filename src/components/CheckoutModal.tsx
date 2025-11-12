@@ -33,6 +33,7 @@ export const CheckoutModal = ({
 }: CheckoutModalProps): JSX.Element | null => {
   const [formData, setFormData] = useState({
     name: '',
+    email: '',
     phone: '',
     willaya: '',
     baladia: '',
@@ -77,6 +78,12 @@ export const CheckoutModal = ({
 
     if (!formData.name.trim()) {
       newErrors.name = 'Le nom est requis'
+    }
+
+    if (!formData.email.trim()) {
+      newErrors.email = 'L\'email est requis'
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      newErrors.email = 'Email invalide'
     }
 
     if (!formData.phone.trim()) {
@@ -128,6 +135,7 @@ export const CheckoutModal = ({
         quantity: quantity,
         total_price: totalPrice,
         customer_name: formData.name,
+        customer_email: formData.email,
         customer_phone: formData.phone,
         shipping_wilaya: formData.willaya,
         shipping_baladia: formData.baladia,
@@ -146,6 +154,7 @@ export const CheckoutModal = ({
         setTimeout(() => {
           setFormData({
             name: '',
+            email: '',
             phone: '',
             willaya: '',
             baladia: '',
@@ -251,6 +260,30 @@ export const CheckoutModal = ({
             />
             {errors.name && (
               <p className="mt-1 text-sm text-red-500">{errors.name}</p>
+            )}
+          </div>
+
+          {/* Email */}
+          <div>
+            <label
+              htmlFor="email"
+              className="block text-sm font-semibold text-kitchen-lux-dark-green-800 mb-2"
+            >
+              Email <span className="text-red-500">*</span>
+            </label>
+            <input
+              type="email"
+              id="email"
+              name="email"
+              value={formData.email}
+              onChange={handleInputChange}
+              className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-kitchen-lux-dark-green-500 ${
+                errors.email ? 'border-red-500' : 'border-kitchen-lux-dark-green-300'
+              }`}
+              placeholder="votre.email@exemple.com"
+            />
+            {errors.email && (
+              <p className="mt-1 text-sm text-red-500">{errors.email}</p>
             )}
           </div>
 

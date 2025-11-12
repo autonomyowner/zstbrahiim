@@ -260,6 +260,7 @@ export const createOrderFromCheckout = async (orderData: {
   quantity: number
   total_price: number
   customer_name: string
+  customer_email: string
   customer_phone: string
   shipping_wilaya: string
   shipping_baladia: string
@@ -292,7 +293,7 @@ export const createOrderFromCheckout = async (orderData: {
         user_id: orderData.user_id,
         seller_id: actualSellerId,
         customer_name: orderData.customer_name,
-        customer_email: null,
+        customer_email: orderData.customer_email,
         customer_phone: orderData.customer_phone,
         customer_address: orderData.shipping_address,
         customer_wilaya: orderData.shipping_wilaya,
