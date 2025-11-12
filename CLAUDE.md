@@ -5,8 +5,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Project Overview
 
 ZST is a luxury perfume e-commerce website with an integrated freelance marketplace, built for a boutique in Bouzareah, Algeria. The site features:
-1. **E-commerce**: Women's perfumes (home page) and men's perfumes (services page)
-2. **Marketplace**: Fiverr/Upwork-style platform for freelancers to offer services (web development, design, video editing, marketing, etc.)
+1. **E-commerce**: Women's perfumes (home page), men's perfumes (services page), and winter clothes collection
+2. **Freelance Marketplace**: Fiverr/Upwork-style platform for freelancers to offer services (web development, design, video editing, marketing, etc.)
+3. **Seller Dashboard**: Order management, product management, analytics, and data export tools
 
 **Tech Stack:**
 - Next.js 15 with App Router
@@ -35,10 +36,17 @@ npm run lint
 
 ### Product Data Structure
 
-Products are centrally managed in `src/data/products.ts`:
-- **womenPerfumes**: Array of women's perfumes (displayed on home page - purple boutique theme)
+Products are centrally managed across multiple data files:
+
+**Perfumes** (`src/data/products.ts`):
+- **womenPerfumes**: Array of women's perfumes (displayed on home page)
 - **menPerfumes**: Array of men's perfumes (displayed on services page)
 - **products**: Combined array of both for backward compatibility
+- **getProductById()**: Helper function that searches both perfumes and winter clothes
+
+**Winter Clothes** (`src/data/winter-clothes.ts`):
+- **winterClothes**: Array of winter clothing products (displayed on /winter page)
+- Uses same Product type structure as perfumes
 
 Each product has:
 - Basic info: id, slug, name, brand, price, images
@@ -65,20 +73,25 @@ Each product has:
 **E-commerce Pages:**
 - `/` (page.tsx): Home page showing women's perfumes
 - `/services` (services/page.tsx): Services page showing men's perfumes
-- `/products/[id]` (products/[id]/page.tsx): Dynamic product detail pages
+- `/winter` (winter/page.tsx): Winter clothes collection with sorting and display modes
+- `/products/[id]` (products/[id]/page.tsx): Dynamic product detail pages (works for both perfumes and winter clothes)
 - `/signin`, `/signup`: Authentication pages with logo.png as background
 - Custom 404 (not-found.tsx) and 500 (pages/500.tsx) error pages
 
-**Marketplace Pages:**
-- `/marketplace` (marketplace/page.tsx): Main marketplace with search, filters, and service listings
-- `/marketplace/[slug]` (marketplace/[slug]/page.tsx): Individual service detail pages with provider info and portfolio
+**Freelance Marketplace Pages:**
+- `/freelance` (freelance/page.tsx): Main marketplace with search, filters, and service listings
+- `/freelance/[slug]` (freelance/[slug]/page.tsx): Individual service detail pages with provider info and portfolio
+
+**Seller Dashboard Pages:**
+- `/sellers`: Seller dashboard with order management, product management, analytics, and export tools
 
 ### Component Organization
 
 Components in `src/components/`:
-- **Navigation**: Navbar.tsx (sticky header with marketplace link), WhatsAppButton.tsx (floating button)
+- **Navigation**: Navbar.tsx (two-tier navigation: top bar with Services/Freelance/Sellers, main nav with auth and branding), WhatsAppButton.tsx (floating button)
 - **Product Display**: ProductGrid.tsx, ProductDetails.tsx, ProductGallery.tsx, ProductControls.tsx, ProductFocus.tsx
-- **Marketplace**: ServiceCard.tsx (freelance service card), MarketplaceFilters.tsx (category/experience/availability filters)
+- **Freelance Marketplace**: ServiceCard.tsx (freelance service card), MarketplaceFilters.tsx (category/experience/availability filters)
+- **Seller Dashboard** (in `seller/` subdirectory): DashboardStats.tsx, OrdersTable.tsx, ProductManagement.tsx, AnalyticsSection.tsx, ExportButton.tsx, AddProductModal.tsx, EditProductModal.tsx, OrderDetailsModal.tsx, OrderFilters.tsx, QuickActions.tsx
 - **UI Elements**: BudgetSlider.tsx, DualRangeSlider.tsx, ShopFilters.tsx, QuantitySelector.tsx
 - **Sections**: HeroSection.tsx, ServicesPreview.tsx, ServicesList.tsx, TestimonialsSection.tsx, etc.
 - **Interactive**: CheckoutModal.tsx, CountdownTimer.tsx, ImageCarousel.tsx, Accordion.tsx
@@ -103,10 +116,12 @@ The site targets: "Parfums de luxe et fragrances authentiques à Bouzareah"
 ## Code Patterns
 
 **TypeScript**: All components use TypeScript with proper type definitions
-**Component Style**: Functional components with const declarations
-**Naming**: Event handlers prefixed with "handle" (e.g., handleAddToCart)
-**Styling**: Tailwind CSS utility classes, custom gradients via bg-gradient-elegant
+**Component Style**: Functional components with const declarations (use `const ComponentName = () =>` instead of `function ComponentName()`)
+**Naming**: Event handlers prefixed with "handle" (e.g., handleAddToCart, handleClick, handleKeyDown, handleSubmit)
+**Styling**: Tailwind CSS utility classes exclusively, custom gradients via bg-gradient-elegant. NEVER use CSS or inline styles
 **Images**: Use Next.js Image component for optimization (configured for via.placeholder.com domain)
+**Code Structure**: Use early returns whenever possible to improve readability
+**Accessibility**: Implement proper ARIA attributes, keyboard navigation support (tabindex, onKeyDown, aria-label on interactive elements)
 
 ## Data Management
 
@@ -145,13 +160,26 @@ Each service has:
 1. Open `src/data/freelance-services.ts`
 2. Add to `freelanceServices` array following the FreelanceService type structure
 3. Ensure all required fields are populated, especially:
-   - Unique id and slug (slug is used in URL: `/marketplace/[slug]`)
+   - Unique id and slug (slug is used in URL: `/freelance/[slug]`)
    - Category must match one of the 8 defined ServiceCategory types
    - Skills array for filtering/search
    - Portfolio items (at least 2-3 for credibility)
 4. Set `featured: true` to display on marketplace homepage featured section
 5. Provider avatars should be in `/avatars/` directory
 6. Portfolio images should be in `/portfolio/` directory
+
+### Orders & Seller Data
+
+Orders and seller statistics are managed in `src/data/orders.ts`:
+- **Order**: Full order details including customer info, items, status, payment
+- **OrderStatus**: pending | processing | shipped | delivered | cancelled
+- **PaymentStatus**: pending | paid | failed | refunded
+- **SellerStats**: Dashboard statistics (total orders, revenue, pending orders, etc.)
+- **SellerType**: retailer | importer | wholesaler
+
+Seller utilities (`src/utils/`):
+- **exportData.ts**: Export orders and products to TXT format ("Rapport Complet")
+- **printInvoice.ts**: Generate printable invoices for orders
 
 ## Design Guidelines
 
@@ -167,7 +195,32 @@ Each service has:
 ## Navigation Structure
 
 The Navbar has a two-tier system:
-- **Top bar**: Links to Services (left), Marketplace (center), Sellers (right)
-- **Main nav**: Sign In/Up buttons (with logo.png), Boutique links, ZST brand (center with fade animation)
+- **Top bar** (40px height): Three key links
+  - Services (left) → `/services`
+  - Freelance (center) → `/freelance`
+  - Sellers (right) → `/sellers`
+- **Main nav**: Authentication and branding
+  - Sign In/Up buttons (with logo.png background image)
+  - Boutique navigation links (Marketplace, Dashboard)
+  - ZST brand text at center with fade in/out animation (2s interval)
 
-Marketplace is accessible from top navigation and integrated seamlessly with the e-commerce site.
+All three sections (e-commerce, freelance marketplace, seller dashboard) are integrated under one cohesive navigation system.
+
+## Important Development Notes
+
+1. **Function declarations**: Always use const arrow functions with TypeScript types
+   ```typescript
+   // Good
+   const handleClick = (): void => { ... }
+
+   // Avoid
+   function handleClick() { ... }
+   ```
+
+2. **No placeholder code**: Implement all functionality completely. No TODOs, placeholders, or missing pieces.
+
+3. **DRY principle**: Follow Don't Repeat Yourself - create reusable components and utilities.
+
+4. **Agent mode**: Make direct code changes to the codebase using tool calls. Don't just provide code snippets.
+
+5. **No emojis**: User preference to avoid emojis in code and communication (except in user-facing content if explicitly requested).
