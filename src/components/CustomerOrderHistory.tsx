@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import Image from 'next/image'
+import Link from 'next/link'
 
 type Order = {
   id: string
@@ -104,12 +105,12 @@ export function CustomerOrderHistory({ orders }: CustomerOrderHistoryProps) {
           <p className="text-lg font-medium">Aucune commande</p>
           <p className="text-sm mt-2">Vous n&apos;avez pas encore passé de commande.</p>
         </div>
-        <a
+        <Link
           href="/"
           className="inline-block mt-4 px-6 py-2 bg-kitchen-lux-dark-green-600 text-white rounded-lg hover:bg-kitchen-lux-dark-green-700 transition-colors"
         >
           Découvrir nos produits
-        </a>
+        </Link>
       </div>
     )
   }
