@@ -24,6 +24,7 @@ const adaptProduct = (dbProduct: Product, images: { image_url: string }[]): any 
     images: imageUrls,
     category: dbProduct.category,
     productType: dbProduct.product_type,
+    product_category: (dbProduct as any).product_category, // Add for filtering
     need: dbProduct.need,
     inStock: dbProduct.in_stock,
     isPromo: dbProduct.is_promo,
@@ -36,6 +37,7 @@ const adaptProduct = (dbProduct: Product, images: { image_url: string }[]): any 
     deliveryEstimate: dbProduct.delivery_estimate,
     viewersCount: dbProduct.viewers_count,
     countdownEndDate: dbProduct.countdown_end_date,
+    seller_id: (dbProduct as any).seller_id, // Add for checkout
     additionalInfo: {
       shipping: dbProduct.shipping_info,
       returns: dbProduct.returns_info,
