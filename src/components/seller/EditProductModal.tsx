@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { type Product, type ProductType, type ProductNeed } from '@/data/products'
 import { type ProductFormData } from './AddProductModal'
+import { ImageUpload } from '@/components/ImageUpload'
 
 type EditProductModalProps = {
   isOpen: boolean
