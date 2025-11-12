@@ -56,9 +56,10 @@ CREATE TABLE public.products (
   price NUMERIC(10, 2) NOT NULL CHECK (price >= 0),
   original_price NUMERIC(10, 2) CHECK (original_price >= 0),
   category TEXT NOT NULL,
-  product_type product_type NOT NULL,
+  product_type TEXT NOT NULL,
   product_category product_category_type NOT NULL DEFAULT 'perfume',
-  need product_need,
+  need TEXT,
+  seller_id UUID REFERENCES auth.users(id),
 
   -- Status flags
   in_stock BOOLEAN NOT NULL DEFAULT true,
@@ -102,6 +103,7 @@ CREATE INDEX idx_products_slug ON public.products(slug);
 CREATE INDEX idx_products_category ON public.products(product_category);
 CREATE INDEX idx_products_type ON public.products(product_type);
 CREATE INDEX idx_products_in_stock ON public.products(in_stock);
+CREATE INDEX idx_products_seller_id ON public.products(seller_id);
 CREATE INDEX idx_products_is_promo ON public.products(is_promo);
 CREATE INDEX idx_product_images_product_id ON public.product_images(product_id);
 
