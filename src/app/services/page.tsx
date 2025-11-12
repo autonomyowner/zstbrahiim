@@ -244,7 +244,7 @@ export default function SellerPortalPage(): JSX.Element {
       <div className="min-h-screen bg-gradient-to-br from-kitchen-lux-dark-green-50 to-kitchen-lux-dark-green-100 flex items-center justify-center">
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-kitchen-lux-dark-green-900 mx-auto mb-4"></div>
-          <p className="text-kitchen-lux-dark-green-700">Vérification de l'authentification...</p>
+          <p className="text-kitchen-lux-dark-green-700">Vérification de l&apos;authentification...</p>
         </div>
       </div>
     )
