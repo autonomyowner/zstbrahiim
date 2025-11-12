@@ -138,15 +138,15 @@ CREATE POLICY "Freelance services are viewable by everyone"
   FOR SELECT
   USING (true);
 
--- Authenticated users with seller role can create services
-CREATE POLICY "Sellers can insert their own services"
+-- Authenticated users with seller or freelancer role can create services
+CREATE POLICY "Freelancers and sellers can insert their own services"
   ON public.freelance_services
   FOR INSERT
   WITH CHECK (
     auth.uid() = provider_id AND
     EXISTS (
       SELECT 1 FROM public.user_profiles
-      WHERE id = auth.uid() AND role IN ('seller', 'admin')
+      WHERE id = auth.uid() AND role IN ('seller', 'freelancer', 'admin')
     )
   );
 
