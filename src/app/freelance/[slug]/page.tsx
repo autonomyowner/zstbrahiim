@@ -191,7 +191,7 @@ export default function ServiceDetailPage() {
                 Compétences
               </h2>
               <div className="flex flex-wrap gap-2">
-                {service.skills.map((skill) => (
+                {service.skills.map((skill: string) => (
                   <span
                     key={skill}
                     className="bg-kitchen-lux-dark-green-50 text-kitchen-lux-dark-green-700 px-4 py-2 rounded-lg font-medium hover:bg-kitchen-lux-dark-green-100 transition-colors"
