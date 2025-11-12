@@ -131,6 +131,8 @@ export default function SellerPortalPage(): JSX.Element {
         in_stock: productData.inStock,
         is_promo: productData.isPromo,
         is_new: productData.isNew,
+        rating: null,
+        countdown_end_date: null,
         description: productData.description,
         benefits: productData.benefits.split('\n').filter((b: string) => b.trim()),
         ingredients: productData.ingredients,
@@ -139,6 +141,7 @@ export default function SellerPortalPage(): JSX.Element {
         shipping_info: 'Livraison gratuite à partir de 20 000 DA',
         returns_info: 'Retours acceptés sous 14 jours',
         payment_info: 'Paiement à la livraison',
+        exclusive_offers: null,
         images: [productData.image],
       }
 
