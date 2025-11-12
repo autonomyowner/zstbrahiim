@@ -50,8 +50,7 @@ export const BudgetSlider = ({
         label={(val) => (val !== undefined ? formatPrice(val) : '')}
       />
       <div className="flex items-center justify-between text-sm font-medium text-kitchen-lux-dark-green-700">
-        <span>{formatPrice(currentValue[0])}</span>
-        <span>{formatPrice(currentValue[1])}</span>
+        <span>{formatPrice(currentValue[0])} - {formatPrice(currentValue[1])}</span>
       </div>
     </div>
   )
