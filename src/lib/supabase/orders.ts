@@ -269,12 +269,13 @@ export const createOrderFromCheckout = async (orderData: {
   payment_status: PaymentStatus
 }): Promise<string | null> => {
   try {
-    // Fetch product details
+    // Fetch product details including seller_id
     const { data: product, error: productError } = await supabase
       .from('products')
       .select(`
         name,
         price,
+        seller_id,
         product_images (image_url)
       `)
       .eq('id', orderData.product_id)
@@ -285,12 +286,15 @@ export const createOrderFromCheckout = async (orderData: {
       throw new Error('Product not found')
     }
 
+    // Use seller_id from product (not from orderData which might be null)
+    const actualSellerId = (product as any).seller_id || orderData.seller_id
+
     // Insert order
     const { data: order, error: orderError } = await supabase
       .from('orders')
       .insert({
         user_id: orderData.user_id,
-        seller_id: orderData.seller_id,
+        seller_id: actualSellerId,
         customer_name: orderData.customer_name,
         customer_email: null,
         customer_phone: orderData.customer_phone,
