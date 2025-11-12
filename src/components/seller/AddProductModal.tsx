@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { type ProductType, type ProductNeed } from '@/data/products'
+import { ImageUpload } from '@/components/ImageUpload'
 
 type AddProductModalProps = {
   isOpen: boolean
@@ -296,18 +297,13 @@ export function AddProductModal({ isOpen, onClose, onSubmit }: AddProductModalPr
                   />
                 </div>
 
-                {/* Image URL */}
+                {/* Image Upload */}
                 <div className="md:col-span-2">
-                  <label htmlFor="image" className="block text-sm font-medium text-kitchen-lux-dark-green-700 mb-2">
-                    URL de l&apos;Image
-                  </label>
-                  <input
-                    type="text"
-                    id="image"
-                    value={formData.image}
-                    onChange={(e) => updateField('image', e.target.value)}
-                    className="w-full px-4 py-2 border border-kitchen-lux-dark-green-300 rounded-lg focus:ring-2 focus:ring-kitchen-lux-dark-green-500 focus:border-transparent"
-                    placeholder="/perfums/women/product.jpg"
+                  <ImageUpload
+                    onImageUploaded={(url) => updateField('image', url)}
+                    currentImageUrl={formData.image}
+                    label="Image du produit"
+                    required={false}
                   />
                 </div>
 

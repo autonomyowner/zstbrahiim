@@ -52,36 +52,36 @@ CREATE POLICY "Products are viewable by everyone"
   FOR SELECT
   USING (true);
 
--- Only admins can insert products
-CREATE POLICY "Only admins can insert products"
+-- Sellers and admins can insert products
+CREATE POLICY "Sellers and admins can insert products"
   ON public.products
   FOR INSERT
   WITH CHECK (
     EXISTS (
       SELECT 1 FROM public.user_profiles
-      WHERE id = auth.uid() AND role = 'admin'
+      WHERE id = auth.uid() AND role IN ('seller', 'admin')
     )
   );
 
--- Only admins can update products
-CREATE POLICY "Only admins can update products"
+-- Sellers and admins can update products
+CREATE POLICY "Sellers and admins can update products"
   ON public.products
   FOR UPDATE
   USING (
     EXISTS (
       SELECT 1 FROM public.user_profiles
-      WHERE id = auth.uid() AND role = 'admin'
+      WHERE id = auth.uid() AND role IN ('seller', 'admin')
     )
   );
 
--- Only admins can delete products
-CREATE POLICY "Only admins can delete products"
+-- Sellers and admins can delete products
+CREATE POLICY "Sellers and admins can delete products"
   ON public.products
   FOR DELETE
   USING (
     EXISTS (
       SELECT 1 FROM public.user_profiles
-      WHERE id = auth.uid() AND role = 'admin'
+      WHERE id = auth.uid() AND role IN ('seller', 'admin')
     )
   );
 
@@ -95,36 +95,36 @@ CREATE POLICY "Product images are viewable by everyone"
   FOR SELECT
   USING (true);
 
--- Only admins can insert product images
-CREATE POLICY "Only admins can insert product images"
+-- Sellers and admins can insert product images
+CREATE POLICY "Sellers and admins can insert product images"
   ON public.product_images
   FOR INSERT
   WITH CHECK (
     EXISTS (
       SELECT 1 FROM public.user_profiles
-      WHERE id = auth.uid() AND role = 'admin'
+      WHERE id = auth.uid() AND role IN ('seller', 'admin')
     )
   );
 
--- Only admins can update product images
-CREATE POLICY "Only admins can update product images"
+-- Sellers and admins can update product images
+CREATE POLICY "Sellers and admins can update product images"
   ON public.product_images
   FOR UPDATE
   USING (
     EXISTS (
       SELECT 1 FROM public.user_profiles
-      WHERE id = auth.uid() AND role = 'admin'
+      WHERE id = auth.uid() AND role IN ('seller', 'admin')
     )
   );
 
--- Only admins can delete product images
-CREATE POLICY "Only admins can delete product images"
+-- Sellers and admins can delete product images
+CREATE POLICY "Sellers and admins can delete product images"
   ON public.product_images
   FOR DELETE
   USING (
     EXISTS (
       SELECT 1 FROM public.user_profiles
-      WHERE id = auth.uid() AND role = 'admin'
+      WHERE id = auth.uid() AND role IN ('seller', 'admin')
     )
   );
 

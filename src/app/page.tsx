@@ -1,15 +1,18 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { ProductGrid } from '@/components/ProductGrid'
 import { ShopFilters } from '@/components/ShopFilters'
 import { ProductControls } from '@/components/ProductControls'
-import { womenPerfumes, type FilterState, type SortOption, matchesCategory } from '@/data/products'
+import { womenPerfumes, type FilterState, type SortOption, matchesCategory, type Product } from '@/data/products'
 import { winterClothes } from '@/data/winter-clothes'
+import { getProducts } from '@/lib/supabase/products'
 
 export default function HomePage(): JSX.Element {
   const [displayMode, setDisplayMode] = useState<'grid' | 'list'>('grid')
   const [sortOption, setSortOption] = useState<SortOption>('best-sellers')
+  const [databaseProducts, setDatabaseProducts] = useState<Product[]>([])
+  const [isLoadingProducts, setIsLoadingProducts] = useState(true)
   const [filters, setFilters] = useState<FilterState>({
     availability: 'all',
     brands: [], // Empty array means show all brands
@@ -19,10 +22,27 @@ export default function HomePage(): JSX.Element {
     category: '',
   })
 
-  // Combine all products (perfumes + winter clothes)
-  const allProducts = useMemo(() => {
-    return [...womenPerfumes, ...winterClothes]
+  // Fetch products from database
+  useEffect(() => {
+    const fetchDatabaseProducts = async () => {
+      try {
+        setIsLoadingProducts(true)
+        const products = await getProducts()
+        setDatabaseProducts(products)
+      } catch (error) {
+        console.error('Error fetching database products:', error)
+      } finally {
+        setIsLoadingProducts(false)
+      }
+    }
+
+    fetchDatabaseProducts()
   }, [])
+
+  // Combine all products (static perfumes + winter clothes + database products)
+  const allProducts = useMemo(() => {
+    return [...womenPerfumes, ...winterClothes, ...databaseProducts]
+  }, [databaseProducts])
 
   // Filter products
   const filteredProducts = useMemo(() => {
@@ -55,9 +75,20 @@ export default function HomePage(): JSX.Element {
       result = result.filter((p) => p.need && filters.needs.includes(p.need))
     }
 
-    // Category filter
+    // Category filter - support both static and database products
     if (filters.category) {
-      result = result.filter((p) => matchesCategory(p.category, filters.category))
+      result = result.filter((p) => {
+        // For static products, use matchesCategory
+        if (matchesCategory(p.category, filters.category)) {
+          return true
+        }
+        // For database products, check product_category field if it exists
+        const dbProduct = p as any
+        if (dbProduct.product_category) {
+          return dbProduct.product_category === filters.category
+        }
+        return false
+      })
     }
 
     return result
@@ -133,7 +164,13 @@ export default function HomePage(): JSX.Element {
               />
             </div>
 
-            {sortedProducts.length > 0 ? (
+            {isLoadingProducts ? (
+              <div className="text-center py-12">
+                <p className="text-kitchen-lux-dark-green-700">
+                  Chargement des produits...
+                </p>
+              </div>
+            ) : sortedProducts.length > 0 ? (
               <ProductGrid products={sortedProducts} displayMode={displayMode} />
             ) : (
               <div className="text-center py-12">

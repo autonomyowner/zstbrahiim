@@ -29,36 +29,39 @@ CREATE POLICY "Product images are publicly accessible"
   ON storage.objects FOR SELECT
   USING (bucket_id = 'products');
 
--- Only admins can upload product images
-CREATE POLICY "Only admins can upload product images"
+-- Sellers and admins can upload product images
+CREATE POLICY "Sellers and admins can upload product images"
   ON storage.objects FOR INSERT
   WITH CHECK (
     bucket_id = 'products' AND
+    auth.uid() IS NOT NULL AND
     EXISTS (
       SELECT 1 FROM public.user_profiles
-      WHERE id = auth.uid() AND role = 'admin'
+      WHERE id = auth.uid() AND role IN ('seller', 'admin')
     )
   );
 
--- Only admins can update product images
-CREATE POLICY "Only admins can update product images"
+-- Sellers and admins can update product images
+CREATE POLICY "Sellers and admins can update product images"
   ON storage.objects FOR UPDATE
   USING (
     bucket_id = 'products' AND
+    auth.uid() IS NOT NULL AND
     EXISTS (
       SELECT 1 FROM public.user_profiles
-      WHERE id = auth.uid() AND role = 'admin'
+      WHERE id = auth.uid() AND role IN ('seller', 'admin')
     )
   );
 
--- Only admins can delete product images
-CREATE POLICY "Only admins can delete product images"
+-- Sellers and admins can delete product images
+CREATE POLICY "Sellers and admins can delete product images"
   ON storage.objects FOR DELETE
   USING (
     bucket_id = 'products' AND
+    auth.uid() IS NOT NULL AND
     EXISTS (
       SELECT 1 FROM public.user_profiles
-      WHERE id = auth.uid() AND role = 'admin'
+      WHERE id = auth.uid() AND role IN ('seller', 'admin')
     )
   );
 
