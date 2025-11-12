@@ -117,7 +117,7 @@ export const getProducts = async (filters?: ProductFilters): Promise<any[]> => {
     }
 
     // Adapt products to frontend format
-    return (data || []).map(product =>
+    return (data || []).map((product: any) =>
       adaptProduct(product, (product as any).product_images || [])
     )
   } catch (error) {
@@ -273,7 +273,7 @@ export const searchProducts = async (query: string, filters?: ProductFilters): P
       throw error
     }
 
-    return (data || []).map(product =>
+    return (data || []).map((product: any) =>
       adaptProduct(product, (product as any).product_images || [])
     )
   } catch (error) {
@@ -428,8 +428,8 @@ export const getBrands = async (): Promise<string[]> => {
       return []
     }
 
-    const uniqueBrands = [...new Set(data?.map(p => p.brand) || [])]
-    return uniqueBrands
+    const uniqueBrands = [...new Set(data?.map((p: any) => p.brand) || [])]
+    return uniqueBrands.filter((brand): brand is string => typeof brand === 'string')
   } catch (error) {
     console.error('Error in getBrands:', error)
     return []

@@ -127,7 +127,15 @@ export const getCurrentUserProfile = async (): Promise<UserProfile | null> => {
 
 // Update user profile
 export const updateUserProfile = async (
-  updates: Partial<Omit<UserProfile, 'id' | 'created_at' | 'updated_at'>>
+  updates: {
+    email?: string
+    full_name?: string
+    phone?: string
+    provider_name?: string
+    provider_avatar?: string
+    bio?: string
+    seller_type?: 'retailer' | 'importer' | 'wholesaler'
+  }
 ): Promise<boolean> => {
   try {
     const user = await getCurrentUser()
@@ -139,7 +147,7 @@ export const updateUserProfile = async (
 
     const { error } = await supabase
       .from('user_profiles')
-      .update(updates)
+      .update(updates as any)
       .eq('id', user.id)
 
     if (error) {
@@ -222,7 +230,7 @@ export const isSeller = async (): Promise<boolean> => {
 
 // Subscribe to auth state changes
 export const onAuthStateChange = (callback: (user: any) => void) => {
-  return supabase.auth.onAuthStateChange((event, session) => {
+  return supabase.auth.onAuthStateChange((_event: any, session: any) => {
     callback(session?.user || null)
   })
 }
