@@ -208,19 +208,22 @@ export function AddProductModal({ isOpen, onClose, onSubmit }: AddProductModalPr
                     className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-kitchen-lux-dark-green-500 focus:border-transparent ${
                       errors.category ? 'border-red-500' : 'border-kitchen-lux-dark-green-300'
                     }`}
-                    placeholder="Ex: Vêtements Hiver, Parfums, Accessoires..."
+                    placeholder="Ex: Électronique, Vêtements, Automobiles..."
                     list="category-suggestions"
                   />
                   <datalist id="category-suggestions">
-                    <option value="Parfums Femme" />
-                    <option value="Parfums Homme" />
-                    <option value="Vêtements Hiver" />
-                    <option value="Vêtements Été" />
-                    <option value="Accessoires Mode" />
-                    <option value="Chaussures" />
-                    <option value="Sacs et Maroquinerie" />
-                    <option value="Cosmétiques" />
-                    <option value="Bijoux" />
+                    <option value="Téléphones & Accessoires" />
+                    <option value="Informatique" />
+                    <option value="Électroménager & Électronique" />
+                    <option value="Automobiles & Véhicules" />
+                    <option value="Pièces détachées" />
+                    <option value="Meubles & Maison" />
+                    <option value="Matériaux & Équipement" />
+                    <option value="Vêtements & Mode" />
+                    <option value="Santé & Beauté" />
+                    <option value="Loisirs & Divertissements" />
+                    <option value="Parfums" />
+                    <option value="Accessoires" />
                   </datalist>
                   {errors.category && <p className="text-red-500 text-xs mt-1">{errors.category}</p>}
                 </div>
@@ -228,7 +231,7 @@ export function AddProductModal({ isOpen, onClose, onSubmit }: AddProductModalPr
                 {/* Product Type */}
                 <div>
                   <label htmlFor="productType" className="block text-sm font-medium text-kitchen-lux-dark-green-700 mb-2">
-                    Type de Produit *
+                    Type de Produit - Optionnel
                   </label>
                   <input
                     type="text"
@@ -236,31 +239,30 @@ export function AddProductModal({ isOpen, onClose, onSubmit }: AddProductModalPr
                     value={formData.productType}
                     onChange={(e) => updateField('productType', e.target.value)}
                     className="w-full px-4 py-2 border border-kitchen-lux-dark-green-300 rounded-lg focus:ring-2 focus:ring-kitchen-lux-dark-green-500 focus:border-transparent"
-                    placeholder="Ex: Manteau, Robe, Parfum..."
+                    placeholder="Ex: Smartphone, Voiture, Meuble..."
                     list="type-suggestions"
                   />
                   <datalist id="type-suggestions">
-                    <option value="Parfum Femme" />
-                    <option value="Parfum Homme" />
-                    <option value="Eau de Parfum" />
-                    <option value="Eau de Toilette" />
-                    <option value="Manteau" />
-                    <option value="Veste" />
-                    <option value="Pull" />
-                    <option value="Robe" />
-                    <option value="Pantalon" />
-                    <option value="Chemise" />
-                    <option value="T-Shirt" />
+                    <option value="Smartphone" />
+                    <option value="Ordinateur Portable" />
+                    <option value="Tablette" />
+                    <option value="Télévision" />
+                    <option value="Réfrigérateur" />
+                    <option value="Voiture" />
+                    <option value="Moto" />
+                    <option value="Canapé" />
+                    <option value="Table" />
+                    <option value="Vêtement" />
                     <option value="Chaussures" />
-                    <option value="Sac" />
-                    <option value="Accessoire" />
+                    <option value="Parfum" />
+                    <option value="Cosmétique" />
                   </datalist>
                 </div>
 
-                {/* Need */}
+                {/* Condition / État (Optional) */}
                 <div>
                   <label htmlFor="need" className="block text-sm font-medium text-kitchen-lux-dark-green-700 mb-2">
-                    Occasion / Usage - Optionnel
+                    État / Condition - Optionnel
                   </label>
                   <input
                     type="text"
@@ -268,18 +270,17 @@ export function AddProductModal({ isOpen, onClose, onSubmit }: AddProductModalPr
                     value={formData.need || ''}
                     onChange={(e) => updateField('need', e.target.value || undefined)}
                     className="w-full px-4 py-2 border border-kitchen-lux-dark-green-300 rounded-lg focus:ring-2 focus:ring-kitchen-lux-dark-green-500 focus:border-transparent"
-                    placeholder="Ex: Journée, Soirée, Sport..."
+                    placeholder="Ex: Neuf, Occasion, Comme Neuf..."
                     list="need-suggestions"
                   />
                   <datalist id="need-suggestions">
-                    <option value="Journée" />
-                    <option value="Soirée" />
-                    <option value="Quotidien" />
-                    <option value="Spécial" />
-                    <option value="Sport" />
-                    <option value="Travail" />
-                    <option value="Décontracté" />
-                    <option value="Formel" />
+                    <option value="Neuf" />
+                    <option value="Occasion" />
+                    <option value="Comme Neuf" />
+                    <option value="Reconditionné" />
+                    <option value="Bon État" />
+                    <option value="Très Bon État" />
+                    <option value="État Moyen" />
                   </datalist>
                 </div>
 
