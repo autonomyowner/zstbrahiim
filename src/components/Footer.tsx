@@ -22,7 +22,7 @@ export const Footer = (): JSX.Element => {
           className="transition-opacity duration-200 hover:opacity-80 inline-block"
         >
           <span
-            className={`text-4xl md:text-5xl lg:text-7xl font-artistic tracking-wide normal-case transition-opacity duration-1000 ${
+            className={`text-4xl md:text-5xl lg:text-7xl font-elegant tracking-wide normal-case transition-opacity duration-1000 ${
               isBrandVisible ? 'opacity-100' : 'opacity-50'
             }`}
           >
