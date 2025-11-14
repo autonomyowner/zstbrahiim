@@ -1,13 +1,18 @@
 'use client'
 
 import { useState } from 'react'
-import { type ProductType, type ProductNeed } from '@/data/products'
+import { type ProductType, type ProductNeed, productCategoryOptions } from '@/data/products'
 import { ImageUpload } from '@/components/ImageUpload'
+import { extractVideoMetadata } from '@/utils/video'
+import {
+  MAX_PRODUCT_VIDEO_SIZE_BYTES,
+  MAX_PRODUCT_VIDEO_DURATION_SECONDS,
+} from '@/constants/media'
 
 type AddProductModalProps = {
   isOpen: boolean
   onClose: () => void
-  onSubmit: (productData: ProductFormData) => void
+  onSubmit: (productData: ProductFormData, video?: ProductVideoFormValue | null) => void
 }
 
 export type ProductFormData = {
@@ -29,6 +34,13 @@ export type ProductFormData = {
   image: string
 }
 
+export type ProductVideoFormValue = {
+  file: File
+  durationSeconds: number
+  thumbnailBlob: Blob
+  thumbnailDataUrl: string
+}
+
 export function AddProductModal({ isOpen, onClose, onSubmit }: AddProductModalProps): JSX.Element | null {
   const [formData, setFormData] = useState<ProductFormData>({
     name: '',
@@ -48,6 +60,9 @@ export function AddProductModal({ isOpen, onClose, onSubmit }: AddProductModalPr
   })
 
   const [errors, setErrors] = useState<Record<string, string>>({})
+  const [videoSelection, setVideoSelection] = useState<ProductVideoFormValue | null>(null)
+  const [videoError, setVideoError] = useState<string | null>(null)
+  const [isProcessingVideo, setIsProcessingVideo] = useState(false)
 
   if (!isOpen) return null
 
@@ -67,7 +82,7 @@ export function AddProductModal({ isOpen, onClose, onSubmit }: AddProductModalPr
       return
     }
 
-    onSubmit(formData)
+    onSubmit(formData, videoSelection)
     handleClose()
   }
 
@@ -89,8 +104,45 @@ export function AddProductModal({ isOpen, onClose, onSubmit }: AddProductModalPr
       image: '/perfums/placeholder.jpg',
     })
     setErrors({})
+    setVideoSelection(null)
+    setVideoError(null)
+    setIsProcessingVideo(false)
     onClose()
   }
+  const handleVideoChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+
+    if (!file) {
+      setVideoSelection(null)
+      setVideoError(null)
+      return
+    }
+
+    if (file.size > MAX_PRODUCT_VIDEO_SIZE_BYTES) {
+      setVideoSelection(null)
+      setVideoError('La vidéo doit faire moins de 10 MB.')
+      return
+    }
+
+    setIsProcessingVideo(true)
+    setVideoError(null)
+
+    try {
+      const metadata = await extractVideoMetadata(file)
+      setVideoSelection({
+        file,
+        durationSeconds: metadata.durationSeconds,
+        thumbnailBlob: metadata.thumbnailBlob,
+        thumbnailDataUrl: metadata.thumbnailDataUrl,
+      })
+    } catch (error: any) {
+      setVideoSelection(null)
+      setVideoError(error?.message || 'Impossible de traiter cette vidéo.')
+    } finally {
+      setIsProcessingVideo(false)
+    }
+  }
+
 
   const updateField = (field: keyof ProductFormData, value: any) => {
     setFormData((prev) => ({ ...prev, [field]: value }))
@@ -212,51 +264,11 @@ export function AddProductModal({ isOpen, onClose, onSubmit }: AddProductModalPr
                     list="category-suggestions"
                   />
                   <datalist id="category-suggestions">
-                    <option value="Téléphones & Accessoires" />
-                    <option value="Informatique" />
-                    <option value="Électroménager & Électronique" />
-                    <option value="Automobiles & Véhicules" />
-                    <option value="Pièces détachées" />
-                    <option value="Meubles & Maison" />
-                    <option value="Matériaux & Équipement" />
-                    <option value="Vêtements & Mode" />
-                    <option value="Santé & Beauté" />
-                    <option value="Loisirs & Divertissements" />
-                    <option value="Parfums" />
-                    <option value="Accessoires" />
+                    {productCategoryOptions.map((category) => (
+                      <option key={category} value={category} />
+                    ))}
                   </datalist>
                   {errors.category && <p className="text-red-500 text-xs mt-1">{errors.category}</p>}
-                </div>
-
-                {/* Product Type */}
-                <div>
-                  <label htmlFor="productType" className="block text-sm font-medium text-kitchen-lux-dark-green-700 mb-2">
-                    Type de Produit - Optionnel
-                  </label>
-                  <input
-                    type="text"
-                    id="productType"
-                    value={formData.productType}
-                    onChange={(e) => updateField('productType', e.target.value)}
-                    className="w-full px-4 py-2 border border-kitchen-lux-dark-green-300 rounded-lg focus:ring-2 focus:ring-kitchen-lux-dark-green-500 focus:border-transparent"
-                    placeholder="Ex: Smartphone, Voiture, Meuble..."
-                    list="type-suggestions"
-                  />
-                  <datalist id="type-suggestions">
-                    <option value="Smartphone" />
-                    <option value="Ordinateur Portable" />
-                    <option value="Tablette" />
-                    <option value="Télévision" />
-                    <option value="Réfrigérateur" />
-                    <option value="Voiture" />
-                    <option value="Moto" />
-                    <option value="Canapé" />
-                    <option value="Table" />
-                    <option value="Vêtement" />
-                    <option value="Chaussures" />
-                    <option value="Parfum" />
-                    <option value="Cosmétique" />
-                  </datalist>
                 </div>
 
                 {/* Condition / État (Optional) */}
@@ -302,10 +314,75 @@ export function AddProductModal({ isOpen, onClose, onSubmit }: AddProductModalPr
                 <div className="md:col-span-2">
                   <ImageUpload
                     onImageUploaded={(url) => updateField('image', url)}
-                    currentImageUrl={formData.image}
+                    showPreview={false}
                     label="Image du produit"
                     required={false}
                   />
+                </div>
+
+                {/* Video Upload */}
+                <div className="md:col-span-2 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <label className="block text-sm font-medium text-kitchen-lux-dark-green-700 mb-1">
+                        Vidéo de démonstration (optionnel)
+                      </label>
+                      <p className="text-xs text-kitchen-lux-dark-green-500">
+                        MP4/WebM • {MAX_PRODUCT_VIDEO_DURATION_SECONDS}s max • 10 MB max
+                      </p>
+                    </div>
+                    {videoSelection && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setVideoSelection(null)
+                          setVideoError(null)
+                        }}
+                        className="text-xs text-red-600 hover:text-red-700"
+                      >
+                        Supprimer la vidéo
+                      </button>
+                    )}
+                  </div>
+                  <input
+                    type="file"
+                    accept="video/mp4,video/webm"
+                    onChange={handleVideoChange}
+                    className="w-full text-sm text-kitchen-lux-dark-green-700 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-kitchen-lux-dark-green-50 file:text-kitchen-lux-dark-green-700 hover:file:bg-kitchen-lux-dark-green-100"
+                  />
+                  {videoError && <p className="text-xs text-red-600">{videoError}</p>}
+                  {isProcessingVideo && (
+                    <p className="text-xs text-kitchen-lux-dark-green-600">Analyse de la vidéo...</p>
+                  )}
+                  {videoSelection && (
+                    <div className="flex items-center gap-4 rounded-xl border border-kitchen-lux-dark-green-200 bg-kitchen-lux-dark-green-50 p-3">
+                      <div className="relative w-24 h-24 rounded-lg overflow-hidden border border-kitchen-lux-dark-green-200">
+                        <img
+                          src={videoSelection.thumbnailDataUrl}
+                          alt="Miniature vidéo"
+                          className="object-cover w-full h-full"
+                        />
+                        <span className="absolute bottom-1 right-1 bg-black/70 text-white text-xs px-2 py-0.5 rounded-full">
+                          {videoSelection.durationSeconds}s
+                        </span>
+                        <span className="absolute inset-0 flex items-center justify-center">
+                          <svg
+                            className="w-6 h-6 text-white drop-shadow"
+                            fill="currentColor"
+                            viewBox="0 0 20 20"
+                          >
+                            <path d="M6.5 5.5v9l7-4.5-7-4.5z" />
+                          </svg>
+                        </span>
+                      </div>
+                      <div className="text-sm text-kitchen-lux-dark-green-700">
+                        <p className="font-semibold">Vidéo prête</p>
+                        <p className="text-xs text-kitchen-lux-dark-green-500">
+                          {Math.round(videoSelection.file.size / 1024)} Ko
+                        </p>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 {/* Description */}

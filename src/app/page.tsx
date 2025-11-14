@@ -1,26 +1,37 @@
 'use client'
 
-import { useState, useMemo, useEffect } from 'react'
+import { useState, useMemo, useEffect, type MouseEvent } from 'react'
+import Link from 'next/link'
+import { HeroSection } from '@/components/HeroSection'
 import { ProductGrid } from '@/components/ProductGrid'
 import { ShopFilters } from '@/components/ShopFilters'
 import { ProductControls } from '@/components/ProductControls'
-import { womenPerfumes, type FilterState, type SortOption, matchesCategory, type Product } from '@/data/products'
-import { winterClothes } from '@/data/winter-clothes'
+import {
+  womenPerfumes,
+  type FilterState,
+  type SortOption,
+  matchesCategory,
+  type Product,
+} from '@/data/products'
 import { getProducts } from '@/lib/supabase/products'
+
+const createDefaultFilters = (): FilterState => ({
+  availability: 'all',
+  brands: [],
+  priceRange: { min: 0, max: 900000 },
+  productTypes: [],
+  needs: [],
+  category: '',
+})
 
 export default function HomePage(): JSX.Element {
   const [displayMode, setDisplayMode] = useState<'grid' | 'list'>('grid')
   const [sortOption, setSortOption] = useState<SortOption>('best-sellers')
   const [databaseProducts, setDatabaseProducts] = useState<Product[]>([])
   const [isLoadingProducts, setIsLoadingProducts] = useState(true)
-  const [filters, setFilters] = useState<FilterState>({
-    availability: 'all',
-    brands: [], // Empty array means show all brands
-    priceRange: { min: 0, max: 900000 },
-    productTypes: [],
-    needs: [],
-    category: '',
-  })
+  const [filters, setFilters] = useState<FilterState>(() => createDefaultFilters())
+  const [searchQuery, setSearchQuery] = useState('')
+  const [activeTrendingVideoId, setActiveTrendingVideoId] = useState<string | null>(null)
 
   // Fetch products from database
   useEffect(() => {
@@ -28,7 +39,11 @@ export default function HomePage(): JSX.Element {
       try {
         setIsLoadingProducts(true)
         const products = await getProducts()
-        setDatabaseProducts(products)
+        const filtered = (products as Product[]).filter(
+          (product) =>
+            product.sellerCategory !== 'importateur' && product.sellerCategory !== 'grossiste'
+        )
+        setDatabaseProducts(filtered)
       } catch (error) {
         console.error('Error fetching database products:', error)
       } finally {
@@ -41,7 +56,7 @@ export default function HomePage(): JSX.Element {
 
   // Combine all products (static perfumes + winter clothes + database products)
   const allProducts = useMemo(() => {
-    return [...womenPerfumes, ...winterClothes, ...databaseProducts]
+    return [...womenPerfumes, ...databaseProducts]
   }, [databaseProducts])
 
   // Filter products
@@ -78,11 +93,9 @@ export default function HomePage(): JSX.Element {
     // Category filter - support both static and database products
     if (filters.category) {
       result = result.filter((p) => {
-        // For static products, use matchesCategory
         if (matchesCategory(p.category, filters.category)) {
           return true
         }
-        // For database products, check product_category field if it exists
         const dbProduct = p as any
         if (dbProduct.product_category) {
           return dbProduct.product_category === filters.category
@@ -91,8 +104,17 @@ export default function HomePage(): JSX.Element {
       })
     }
 
+    // Search filter
+    if (searchQuery.trim()) {
+      const query = searchQuery.toLowerCase()
+      result = result.filter((p) => {
+        const fields = [p.name, p.brand, p.category, p.productType]
+        return fields.some((field) => field?.toLowerCase().includes(query))
+      })
+    }
+
     return result
-  }, [filters, allProducts])
+  }, [filters, allProducts, searchQuery])
 
   // Sort products
   const sortedProducts = useMemo(() => {
@@ -133,55 +155,180 @@ export default function HomePage(): JSX.Element {
     return { inStock, outOfStock }
   }, [allProducts])
 
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-kitchen-lux-dark-green-50 to-kitchen-lux-dark-green-100 px-4 py-24 sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-7xl">
-        {/* Header */}
-        <div className="text-center mb-12">
-          <h1 className="mt-4 text-4xl font-elegant font-semibold text-kitchen-lux-dark-green-800 sm:text-5xl">
-            ZST marketplace
-          </h1>
-        </div>
+  const heroStats = [
+    { label: 'Listings actives', value: `${allProducts.length}+` },
+    { label: 'Sellers vérifiés', value: '45+' },
+    { label: 'Commandes sécurisées', value: '3K+' },
+  ]
 
-        {/* Main Content */}
-        <div className="flex flex-col lg:flex-row gap-8">
-          {/* Sidebar - Desktop only, handled by ShopFilters */}
+  const trendingShowcase = sortedProducts.slice(0, 6)
+
+  const handleResetFilters = () => setFilters(createDefaultFilters())
+
+  const TrianglePlayIcon = ({ className = '' }: { className?: string }) => (
+    <svg
+      viewBox="0 0 14 16"
+      className={className}
+      fill="currentColor"
+      role="presentation"
+      aria-hidden="true"
+    >
+      <path d="M3 2.5L12 8l-9 5.5V2.5z" />
+    </svg>
+  )
+
+  const handleTrendingVideoToggle = (
+    event: MouseEvent<HTMLButtonElement>,
+    productId: string,
+    hasVideo: boolean,
+  ) => {
+    event.preventDefault()
+    event.stopPropagation()
+    if (!hasVideo) return
+    setActiveTrendingVideoId((prev) => (prev === productId ? null : productId))
+  }
+
+  return (
+    <div className="space-y-12 pb-10">
+      <HeroSection stats={heroStats} />
+
+      <section className="space-y-10 bg-transparent">
+        <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 space-y-10">
+          <div className="rounded-2xl sm:rounded-3xl border border-brand-border bg-white/95 backdrop-blur-sm p-5 sm:p-8 shadow-card-md">
+            <div className="flex items-center justify-between gap-3 sm:gap-4 mb-6 sm:mb-8">
+              <div className="min-w-0 flex-1">
+                <p className="text-[10px] sm:text-xs font-bold uppercase tracking-[0.2em] sm:tracking-[0.3em] text-text-muted">
+                  Trending
+                </p>
+                <h2 className="text-2xl sm:text-3xl font-black text-text-primary mt-1 break-words">
+                  Produits à la une
+                </h2>
+              </div>
+              <span className="text-xs sm:text-sm font-bold text-brand-dark hover:text-text-primary transition-colors cursor-pointer whitespace-nowrap">
+                Voir tout →
+              </span>
+            </div>
+            <div className="flex gap-4 sm:gap-5 overflow-x-auto pb-4 scrollbar-hide">
+              {trendingShowcase.map((product) => {
+                const hasVideo = Boolean(product.video?.url)
+                const isVideoActive = activeTrendingVideoId === product.id
+                const poster = product.video?.thumbnailUrl || product.image
+
+                return (
+                  <Link
+                    key={product.id}
+                    href={`/products/${product.id}`}
+                    className="group flex-shrink-0 w-44 sm:w-60 transition-transform duration-300 hover:-translate-y-2"
+                  >
+                    <div className="relative aspect-[9/16] overflow-hidden rounded-[28px] border border-brand-border bg-neutral-950/80 shadow-card-sm">
+                      {product.isPromo && (
+                        <span className="absolute left-3 top-3 z-10 rounded-full bg-brand-dark px-3 py-1 text-[10px] font-semibold uppercase tracking-[0.3em] text-white">
+                          Promo
+                        </span>
+                      )}
+                      {hasVideo && (
+                        <button
+                          type="button"
+                          onClick={(event) => handleTrendingVideoToggle(event, product.id, hasVideo)}
+                          className="absolute right-3 top-3 z-20 inline-flex items-center justify-center rounded-full bg-black/70 p-2 text-white transition hover:bg-black/90"
+                          aria-label={isVideoActive ? 'Voir la photo' : 'Regarder la vidéo'}
+                        >
+                          {isVideoActive ? (
+                            <span className="material-symbols-outlined text-base">image</span>
+                          ) : (
+                            <TrianglePlayIcon className="h-4 w-4" />
+                          )}
+                          <span className="sr-only">{isVideoActive ? 'Photo' : 'Regarder'}</span>
+                        </button>
+                      )}
+                      {hasVideo && isVideoActive ? (
+                        <video
+                          key={product.video?.url}
+                          src={product.video?.url}
+                          poster={poster}
+                          className="absolute inset-0 h-full w-full object-cover"
+                          controls
+                          playsInline
+                          muted
+                          loop
+                          autoPlay
+                          onClick={(event) => {
+                            event.preventDefault()
+                            event.stopPropagation()
+                          }}
+                        />
+                      ) : (
+                        <img
+                          src={product.image}
+                          alt={product.name}
+                          className="absolute inset-0 h-full w-full object-cover"
+                        />
+                      )}
+                      <div className="pointer-events-none absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/85 via-black/50 to-transparent" />
+                      <div className="absolute inset-x-3 bottom-3 rounded-2xl bg-white/75 p-4 text-black shadow-lg backdrop-blur">
+                        <p className="text-[10px] font-semibold uppercase tracking-[0.3em] text-brand-dark">
+                          {product.category}
+                        </p>
+                        <h3 className="mt-1 text-base font-black text-neutral-900 line-clamp-1">{product.name}</h3>
+                        <p className="mt-1 text-[11px] text-neutral-700 line-clamp-2">
+                          {product.description || product.productType}
+                        </p>
+                        <div className="mt-2 flex items-center justify-between">
+                          <span className="text-lg font-black text-neutral-900">
+                            {product.price.toLocaleString()} <span className="text-xs font-medium">DA</span>
+                          </span>
+                          {hasVideo && (
+                            <button
+                              type="button"
+                              onClick={(event) => handleTrendingVideoToggle(event, product.id, hasVideo)}
+                              className="pointer-events-auto inline-flex items-center justify-center rounded-full bg-neutral-900 p-2.5 text-white shadow-md transition hover:bg-neutral-800"
+                              aria-label={isVideoActive ? 'Voir la photo' : 'Regarder la vidéo'}
+                            >
+                              {isVideoActive ? (
+                                <span className="material-symbols-outlined text-base">image</span>
+                              ) : (
+                                <TrianglePlayIcon className="h-4 w-4" />
+                              )}
+                              <span className="sr-only">{isVideoActive ? 'Photo' : 'Regarder'}</span>
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </Link>
+                )
+              })}
+            </div>
+          </div>
+
           <ShopFilters
             filters={filters}
             onFiltersChange={setFilters}
+            onResetFilters={handleResetFilters}
             productCounts={productCounts}
           />
 
-          {/* Products Section */}
-          <div className="flex-1">
-            <div className="mb-6">
-              <ProductControls
-                productCount={sortedProducts.length}
-                displayMode={displayMode}
-                onDisplayModeChange={setDisplayMode}
-                sortOption={sortOption}
-                onSortChange={setSortOption}
-              />
-            </div>
+          <ProductControls
+            productCount={sortedProducts.length}
+            displayMode={displayMode}
+            onDisplayModeChange={setDisplayMode}
+            sortOption={sortOption}
+            onSortChange={setSortOption}
+          />
 
-            {isLoadingProducts ? (
-              <div className="text-center py-12">
-                <p className="text-kitchen-lux-dark-green-700">
-                  Chargement des produits...
-                </p>
-              </div>
-            ) : sortedProducts.length > 0 ? (
-              <ProductGrid products={sortedProducts} displayMode={displayMode} />
-            ) : (
-              <div className="text-center py-12">
-                <p className="text-kitchen-lux-dark-green-700">
-                  Aucun produit ne correspond à vos critères de recherche.
-                </p>
-              </div>
-            )}
-          </div>
+          {isLoadingProducts ? (
+            <div className="rounded-3xl border border-brand-border bg-white/80 py-12 text-center text-text-muted shadow-card-sm">
+              Chargement des produits...
+            </div>
+          ) : sortedProducts.length > 0 ? (
+            <ProductGrid products={sortedProducts} displayMode={displayMode} />
+          ) : (
+            <div className="rounded-3xl border border-brand-border bg-white/80 py-12 text-center text-text-muted shadow-card-sm">
+              Aucun produit ne correspond à vos critères.
+            </div>
+          )}
         </div>
-      </div>
+      </section>
     </div>
   )
-} 
+}

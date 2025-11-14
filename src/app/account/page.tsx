@@ -1,12 +1,14 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { getCurrentUserProfile, signOut, updateUserProfile } from '@/lib/supabase/auth'
 import { getOrdersForCustomer } from '@/lib/supabase/orders'
 import { CustomerOrderHistory } from '@/components/CustomerOrderHistory'
-import type { UserProfile } from '@/lib/supabase/types'
+import type { SellerCategory, UserProfile } from '@/lib/supabase/types'
+
+type OrderStatusFilter = 'all' | 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled'
 
 export default function AccountPage() {
   const router = useRouter()
@@ -15,9 +17,16 @@ export default function AccountPage() {
   const [editing, setEditing] = useState(false)
   const [orders, setOrders] = useState<any[]>([])
   const [loadingOrders, setLoadingOrders] = useState(true)
-  const [formData, setFormData] = useState({
+  const [orderSearch, setOrderSearch] = useState('')
+  const [orderStatusFilter, setOrderStatusFilter] = useState<OrderStatusFilter>('all')
+  const [formData, setFormData] = useState<{
+    full_name: string
+    phone: string
+    seller_category: SellerCategory
+  }>({
     full_name: '',
     phone: '',
+    seller_category: 'fournisseur',
   })
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
@@ -34,6 +43,7 @@ export default function AccountPage() {
         setFormData({
           full_name: profile.full_name || '',
           phone: profile.phone || '',
+          seller_category: (profile.seller_category as SellerCategory) || 'fournisseur',
         })
         
         // Fetch user's orders
@@ -60,6 +70,11 @@ export default function AccountPage() {
       const updated = await updateUserProfile({
         full_name: formData.full_name,
         phone: formData.phone,
+        ...(user?.role === 'seller'
+          ? {
+              seller_category: formData.seller_category,
+            }
+          : {}),
       })
 
       if (updated) {
@@ -91,12 +106,25 @@ export default function AccountPage() {
     }
   }
 
+  const visibleOrders = useMemo(() => {
+    return orders.filter((order) => {
+      const matchesStatus = orderStatusFilter === 'all' || order.status === orderStatusFilter
+      const query = orderSearch.trim().toLowerCase()
+      const matchesSearch =
+        query === '' ||
+        order.orderNumber?.toLowerCase().includes(query) ||
+        order.items?.some((item: any) => item.productName?.toLowerCase().includes(query))
+
+      return matchesStatus && matchesSearch
+    })
+  }, [orders, orderStatusFilter, orderSearch])
+
   if (loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-kitchen-lux-dark-green-50 to-kitchen-lux-dark-green-100 flex items-center justify-center px-4 py-24">
+      <div className="flex min-h-screen items-center justify-center bg-brand-light px-4 py-24">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-kitchen-lux-dark-green-900 mx-auto mb-4"></div>
-          <p className="text-kitchen-lux-dark-green-700">Loading your account...</p>
+          <div className="mx-auto mb-4 h-12 w-12 animate-spin rounded-full border-b-2 border-brand-dark"></div>
+          <p className="text-text-muted">Chargement de votre compte...</p>
         </div>
       </div>
     )
@@ -107,273 +135,246 @@ export default function AccountPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-kitchen-lux-dark-green-50 to-kitchen-lux-dark-green-100 px-4 py-24 sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-4xl">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-4xl font-elegant font-semibold text-kitchen-lux-dark-green-900 mb-2">
-            My Account
-          </h1>
-          <p className="text-kitchen-lux-dark-green-700">
-            Manage your profile and preferences
-          </p>
-        </div>
-
-        {/* Success/Error Messages */}
+    <div className="min-h-screen bg-gradient-to-br from-neutral-50 via-white to-brand-light px-4 py-16 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-5xl space-y-8">
         {success && (
-          <div className="mb-6 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg">
-            {success}
+          <div className="rounded-2xl border border-green-200 bg-green-50 px-5 py-4 text-green-800 shadow-card-md animate-fade-in">
+            <div className="flex items-center gap-2">
+              <span className="material-symbols-outlined text-green-600">check_circle</span>
+              <span className="font-semibold">{success}</span>
+            </div>
           </div>
         )}
         {error && (
-          <div className="mb-6 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
-            {error}
+          <div className="rounded-2xl border border-red-200 bg-red-50 px-5 py-4 text-red-700 shadow-card-md animate-fade-in">
+            <div className="flex items-center gap-2">
+              <span className="material-symbols-outlined text-red-600">error</span>
+              <span className="font-semibold">{error}</span>
+            </div>
           </div>
         )}
 
-        <div className="grid gap-6 md:grid-cols-3">
-          {/* Sidebar */}
-          <div className="md:col-span-1">
-            <div className="bg-white rounded-lg shadow-md p-6">
-              <div className="space-y-4">
-                <div>
-                  <h3 className="text-sm font-medium text-gray-500 uppercase tracking-wide">
-                    Navigation
-                  </h3>
-                  <nav className="mt-4 space-y-2">
-                    <Link
-                      href="/"
-                      className="block px-3 py-2 text-sm text-kitchen-lux-dark-green-700 hover:bg-kitchen-lux-dark-green-50 rounded-md transition-colors"
-                    >
-                      Marketplace
-                    </Link>
-                    {(user.role === 'seller' || user.role === 'admin') && (
-                      <Link
-                        href="/services"
-                        className="block px-3 py-2 text-sm text-kitchen-lux-dark-green-700 hover:bg-kitchen-lux-dark-green-50 rounded-md transition-colors"
-                      >
-                        Seller Dashboard
-                      </Link>
-                    )}
-                    <button
-                      onClick={handleSignOut}
-                      className="w-full text-left px-3 py-2 text-sm text-red-700 hover:bg-red-50 rounded-md transition-colors"
-                    >
-                      Sign Out
-                    </button>
-                  </nav>
-                </div>
+        <section className="rounded-3xl border border-brand-border bg-white/95 backdrop-blur-sm p-8 shadow-card-md space-y-8">
+          <div className="flex flex-wrap items-start justify-between gap-4">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-[0.3em] text-text-muted">Profil</p>
+              <h1 className="text-4xl font-black text-text-primary mt-2">Mon compte</h1>
+              <p className="mt-3 text-sm font-medium text-text-muted">
+                Mettez à jour vos coordonnées et accédez à vos espaces vendeur / freelance.
+              </p>
+            </div>
+            {!editing && (
+              <button
+                onClick={() => setEditing(true)}
+                className="rounded-xl border border-brand-border bg-white px-6 py-3 text-sm font-bold text-text-primary hover:border-brand-dark hover:bg-neutral-50 transition-all shadow-sm hover:shadow-card-sm"
+              >
+                Modifier le profil
+              </button>
+            )}
+          </div>
 
-                <div className="pt-4 border-t border-gray-200">
-                  <h3 className="text-sm font-medium text-gray-500 uppercase tracking-wide">
-                    Account Type
-                  </h3>
-                  <p className="mt-2 text-lg font-semibold text-kitchen-lux-dark-green-900 capitalize">
-                    {user.role}
+          {editing ? (
+            <form onSubmit={handleUpdateProfile} className="space-y-6">
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div>
+                  <label className="text-xs uppercase tracking-[0.3em] text-text-muted">Email</label>
+                  <input
+                    type="email"
+                    value={user.email}
+                    disabled
+                    className="mt-2 w-full rounded-2xl border border-brand-border bg-neutral-50 px-4 py-3 text-sm text-text-muted"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs uppercase tracking-[0.3em] text-text-muted">Nom complet</label>
+                  <input
+                    type="text"
+                    value={formData.full_name}
+                    onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
+                    className="mt-2 w-full rounded-2xl border border-brand-border px-4 py-3 text-sm focus:border-brand-dark focus:outline-none focus:ring-2 focus:ring-brand-primary/30"
+                    required
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="text-xs uppercase tracking-[0.3em] text-text-muted">Téléphone</label>
+                <input
+                  type="tel"
+                  value={formData.phone}
+                  onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                  placeholder="+213 555 123 456"
+                  className="mt-2 w-full rounded-2xl border border-brand-border px-4 py-3 text-sm focus:border-brand-dark focus:outline-none focus:ring-2 focus:ring-brand-primary/30"
+                />
+              </div>
+              {user.role === 'seller' && (
+                <div>
+                  <label className="text-xs uppercase tracking-[0.3em] text-text-muted">
+                    Segment vendeur
+                  </label>
+                  <select
+                    value={formData.seller_category}
+                    onChange={(e) =>
+                      setFormData({
+                        ...formData,
+                        seller_category: e.target.value as SellerCategory,
+                      })
+                    }
+                    className="mt-2 w-full rounded-2xl border border-brand-border bg-white px-4 py-3 text-sm focus:border-brand-dark focus:outline-none focus:ring-2 focus:ring-brand-primary/30"
+                  >
+                    <option value="fournisseur">Fournisseur</option>
+                    <option value="grossiste">Grossiste</option>
+                    <option value="importateur">Importateur</option>
+                  </select>
+                  <p className="mt-2 text-xs text-text-muted">
+                    Ce réglage contrôle les espaces professionnels auxquels vous avez accès.
                   </p>
                 </div>
+              )}
+              <div className="flex flex-wrap gap-4">
+                <button
+                  type="submit"
+                  className="flex-1 rounded-xl bg-brand-dark py-3.5 text-sm font-bold text-brand-primary transition-all hover:bg-black shadow-card-sm hover:shadow-card-md transform hover:scale-[1.02]"
+                >
+                  Enregistrer
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setEditing(false)
+                    setFormData({
+                      full_name: user.full_name || '',
+                      phone: user.phone || '',
+                      seller_category: (user.seller_category as SellerCategory) || 'fournisseur',
+                    })
+                    setError(null)
+                    setSuccess(null)
+                  }}
+                  className="rounded-xl border border-brand-border bg-white px-8 py-3.5 text-sm font-bold text-text-primary hover:border-brand-dark hover:bg-neutral-50 transition-all shadow-sm"
+                >
+                  Annuler
+                </button>
               </div>
-            </div>
-          </div>
-
-          {/* Main Content */}
-          <div className="md:col-span-2">
-            <div className="bg-white rounded-lg shadow-md p-6">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-2xl font-elegant font-semibold text-kitchen-lux-dark-green-900">
-                  Profile Information
-                </h2>
-                {!editing && (
-                  <button
-                    onClick={() => setEditing(true)}
-                    className="px-4 py-2 text-sm font-medium text-kitchen-lux-dark-green-700 bg-kitchen-lux-dark-green-100 rounded-md hover:bg-kitchen-lux-dark-green-200 transition-colors"
-                  >
-                    Edit Profile
-                  </button>
-                )}
+            </form>
+          ) : (
+            <div className="grid gap-6 sm:grid-cols-2">
+              <div>
+                <p className="text-xs uppercase tracking-[0.3em] text-text-muted">Email</p>
+                <p className="mt-2 text-lg font-semibold text-text-primary">{user.email}</p>
               </div>
-
-              {editing ? (
-                <form onSubmit={handleUpdateProfile} className="space-y-6">
-                  <div>
-                    <label
-                      htmlFor="email"
-                      className="block text-sm font-medium text-gray-700 mb-2"
-                    >
-                      Email Address
-                    </label>
-                    <input
-                      id="email"
-                      type="email"
-                      value={user.email}
-                      disabled
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg bg-gray-50 text-gray-500 cursor-not-allowed"
-                    />
-                    <p className="mt-1 text-xs text-gray-500">
-                      Email cannot be changed
-                    </p>
-                  </div>
-
-                  <div>
-                    <label
-                      htmlFor="full_name"
-                      className="block text-sm font-medium text-gray-700 mb-2"
-                    >
-                      Full Name
-                    </label>
-                    <input
-                      id="full_name"
-                      type="text"
-                      value={formData.full_name}
-                      onChange={(e) =>
-                        setFormData({ ...formData, full_name: e.target.value })
-                      }
-                      required
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-kitchen-lux-dark-green-500 focus:border-transparent transition-all"
-                    />
-                  </div>
-
-                  <div>
-                    <label
-                      htmlFor="phone"
-                      className="block text-sm font-medium text-gray-700 mb-2"
-                    >
-                      Phone Number
-                    </label>
-                    <input
-                      id="phone"
-                      type="tel"
-                      value={formData.phone}
-                      onChange={(e) =>
-                        setFormData({ ...formData, phone: e.target.value })
-                      }
-                      className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-kitchen-lux-dark-green-500 focus:border-transparent transition-all"
-                      placeholder="+213 555 123 456"
-                    />
-                  </div>
-
-                  <div className="flex gap-4">
-                    <button
-                      type="submit"
-                      className="flex-1 bg-gradient-to-r from-kitchen-lux-dark-green-600 to-kitchen-lux-dark-green-700 text-white py-3 rounded-lg font-semibold hover:from-kitchen-lux-dark-green-700 hover:to-kitchen-lux-dark-green-800 transition-all duration-200 shadow-md hover:shadow-lg"
-                    >
-                      Save Changes
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setEditing(false)
-                        setFormData({
-                          full_name: user.full_name || '',
-                          phone: user.phone || '',
-                        })
-                        setError(null)
-                        setSuccess(null)
-                      }}
-                      className="px-6 py-3 border border-gray-300 rounded-lg font-semibold text-gray-700 hover:bg-gray-50 transition-colors"
-                    >
-                      Cancel
-                    </button>
-                  </div>
-                </form>
-              ) : (
-                <div className="space-y-6">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-500 mb-2">
-                      Email Address
-                    </label>
-                    <p className="text-lg text-gray-900">{user.email}</p>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-500 mb-2">
-                      Full Name
-                    </label>
-                    <p className="text-lg text-gray-900">
-                      {user.full_name || 'Not provided'}
-                    </p>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-500 mb-2">
-                      Phone Number
-                    </label>
-                    <p className="text-lg text-gray-900">
-                      {user.phone || 'Not provided'}
-                    </p>
-                  </div>
-
-                  <div>
-                    <label className="block text-sm font-medium text-gray-500 mb-2">
-                      Account Created
-                    </label>
-                    <p className="text-lg text-gray-900">
-                      {new Date(user.created_at).toLocaleDateString('fr-FR', {
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric',
-                      })}
-                    </p>
-                  </div>
+              <div>
+                <p className="text-xs uppercase tracking-[0.3em] text-text-muted">Nom complet</p>
+                <p className="mt-2 text-lg font-semibold text-text-primary">
+                  {user.full_name || 'Non renseigné'}
+                </p>
+              </div>
+              <div>
+                <p className="text-xs uppercase tracking-[0.3em] text-text-muted">Téléphone</p>
+                <p className="mt-2 text-lg font-semibold text-text-primary">
+                  {user.phone || 'Non renseigné'}
+                </p>
+              </div>
+              {user.role === 'seller' && (
+                <div>
+                  <p className="text-xs uppercase tracking-[0.3em] text-text-muted">Segment vendeur</p>
+                  <p className="mt-2 text-lg font-semibold text-text-primary">
+                    {user.seller_category === 'grossiste'
+                      ? 'Grossiste'
+                      : user.seller_category === 'importateur'
+                      ? 'Importateur'
+                      : 'Fournisseur'}
+                  </p>
                 </div>
               )}
+              <div>
+                <p className="text-xs uppercase tracking-[0.3em] text-text-muted">Créé le</p>
+                <p className="mt-2 text-lg font-semibold text-text-primary">
+                  {new Date(user.created_at).toLocaleDateString('fr-FR', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                  })}
+                </p>
+              </div>
             </div>
+          )}
 
-            {/* Additional Info for Sellers */}
+          <div className="flex flex-wrap gap-3 pt-6 border-t border-brand-border">
+            <Link href="/" className="rounded-xl border border-brand-border bg-white px-5 py-2.5 text-xs font-bold uppercase tracking-[0.25em] text-text-primary hover:border-brand-dark hover:bg-neutral-50 transition-all shadow-sm">
+              Marketplace
+            </Link>
             {(user.role === 'seller' || user.role === 'admin') && (
-              <div className="mt-6 bg-kitchen-lux-dark-green-100 rounded-lg shadow-md p-6">
-                <h2 className="text-2xl font-elegant font-semibold text-kitchen-lux-dark-green-900 mb-4">
-                  Espace Vendeur
-                </h2>
-                <p className="text-kitchen-lux-dark-green-700 mb-4">
-                  Vous avez accès au tableau de bord vendeur pour gérer vos produits,
-                  commandes et analyser vos performances.
-                </p>
-                <Link
-                  href="/services"
-                  className="inline-block px-6 py-3 bg-kitchen-lux-dark-green-600 text-white rounded-lg font-semibold hover:bg-kitchen-lux-dark-green-700 transition-colors shadow-md hover:shadow-lg"
-                >
-                  Tableau de Bord Vendeur →
-                </Link>
-              </div>
+              <Link href="/services" className="rounded-xl border border-brand-border bg-white px-5 py-2.5 text-xs font-bold uppercase tracking-[0.25em] text-text-primary hover:border-brand-dark hover:bg-neutral-50 transition-all shadow-sm">
+                Tableau vendeur
+              </Link>
             )}
-
-            {/* Additional Info for Freelancers */}
             {(user.role === 'freelancer' || user.role === 'admin') && (
-              <div className="mt-6 bg-blue-100 rounded-lg shadow-md p-6">
-                <h2 className="text-2xl font-elegant font-semibold text-blue-900 mb-4">
-                  Espace Freelancer
-                </h2>
-                <p className="text-blue-700 mb-4">
-                  Vous avez accès au tableau de bord freelancer pour gérer vos services,
-                  portfolio et vos projets.
-                </p>
-                <Link
-                  href="/freelancer-dashboard"
-                  className="inline-block px-6 py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 transition-colors shadow-md hover:shadow-lg"
-                >
-                  Tableau de Bord Freelancer →
-                </Link>
-              </div>
+              <Link href="/freelancer-dashboard" className="rounded-xl border border-brand-border bg-white px-5 py-2.5 text-xs font-bold uppercase tracking-[0.25em] text-text-primary hover:border-brand-dark hover:bg-neutral-50 transition-all shadow-sm">
+                Tableau freelance
+              </Link>
             )}
+            <button
+              onClick={handleSignOut}
+              className="rounded-xl border border-red-200 bg-white px-5 py-2.5 text-xs font-bold uppercase tracking-[0.25em] text-red-600 hover:border-red-400 hover:bg-red-50 transition-all shadow-sm"
+            >
+              Déconnexion
+            </button>
+          </div>
+        </section>
+
+        <section className="rounded-3xl border border-brand-border bg-white/95 backdrop-blur-sm p-8 shadow-card-md space-y-8">
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <div>
+              <p className="text-xs font-bold uppercase tracking-[0.3em] text-text-muted">Historique</p>
+              <h2 className="text-3xl font-black text-text-primary mt-2">Mes commandes</h2>
+            </div>
           </div>
 
-          {/* Order History Section */}
-          <div className="mt-8">
-            <h2 className="text-3xl font-elegant font-semibold text-kitchen-lux-dark-green-900 mb-6">
-              Mes Commandes
-            </h2>
-            
-            {loadingOrders ? (
-              <div className="bg-white rounded-lg shadow-md p-8 text-center">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-kitchen-lux-dark-green-900 mx-auto mb-4"></div>
-                <p className="text-kitchen-lux-dark-green-600">Chargement des commandes...</p>
-              </div>
-            ) : (
-              <CustomerOrderHistory orders={orders} />
-            )}
+          <div className="flex flex-col gap-4">
+            <div className="relative">
+              <span className="material-symbols-outlined pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-text-muted">
+                search
+              </span>
+              <input
+                type="text"
+                value={orderSearch}
+                onChange={(e) => setOrderSearch(e.target.value)}
+                placeholder="Rechercher une commande ou un article..."
+                className="w-full rounded-xl border border-brand-border px-4 py-3.5 pl-12 text-sm text-text-primary focus:border-brand-primary focus:outline-none focus:ring-2 focus:ring-brand-primary/40 transition-all bg-white"
+              />
+            </div>
+            <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+              {[
+                { label: 'Toutes', value: 'all' },
+                { label: 'En attente', value: 'pending' },
+                { label: 'En traitement', value: 'processing' },
+                { label: 'Expédiée', value: 'shipped' },
+                { label: 'Livrée', value: 'delivered' },
+                { label: 'Annulée', value: 'cancelled' },
+              ].map((status) => (
+                <button
+                  key={status.value}
+                  onClick={() => setOrderStatusFilter(status.value as OrderStatusFilter)}
+                  className={`rounded-xl px-5 py-2.5 text-sm font-bold transition-all whitespace-nowrap ${
+                    orderStatusFilter === status.value
+                      ? 'bg-brand-dark text-brand-primary shadow-card-sm'
+                      : 'bg-neutral-100 text-text-muted hover:text-text-primary hover:bg-neutral-200'
+                  }`}
+                >
+                  {status.label}
+                </button>
+              ))}
+            </div>
           </div>
-        </div>
+
+          {loadingOrders ? (
+            <div className="rounded-3xl border border-brand-border bg-white/95 p-8 text-center">
+              <div className="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-b-2 border-brand-dark"></div>
+              <p className="text-text-muted">Chargement des commandes...</p>
+            </div>
+          ) : (
+            <CustomerOrderHistory orders={visibleOrders} />
+          )}
+        </section>
       </div>
     </div>
   )

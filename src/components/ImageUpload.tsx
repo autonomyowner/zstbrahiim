@@ -9,13 +9,15 @@ type ImageUploadProps = {
   currentImageUrl?: string
   label?: string
   required?: boolean
+  showPreview?: boolean
 }
 
 export function ImageUpload({
   onImageUploaded,
   currentImageUrl,
-  label = "Image du produit",
+  label = 'Image du produit',
   required = false,
+  showPreview = true,
 }: ImageUploadProps) {
   const [previewUrl, setPreviewUrl] = useState<string | null>(currentImageUrl || null)
   const [isUploading, setIsUploading] = useState(false)
@@ -104,6 +106,8 @@ export function ImageUpload({
     onImageUploaded('')
   }
 
+  const shouldShowPreviewImage = showPreview && Boolean(previewUrl)
+
   return (
     <div className="space-y-3">
       <label className="block text-sm font-medium text-kitchen-lux-dark-green-700">
@@ -111,7 +115,7 @@ export function ImageUpload({
       </label>
 
       {/* Preview Area */}
-      {previewUrl ? (
+      {shouldShowPreviewImage ? (
         <div className="relative w-full h-64 rounded-lg border-2 border-kitchen-lux-dark-green-300 bg-white overflow-hidden">
           <Image
             src={previewUrl}
@@ -169,6 +173,25 @@ export function ImageUpload({
           <p className="text-xs text-kitchen-lux-dark-green-500">
             JPG, PNG, WebP ou GIF (max. 5MB)
           </p>
+          {!showPreview && previewUrl && (
+            <p className="mt-3 text-xs font-semibold text-kitchen-lux-dark-green-600">
+              Image sélectionnée – cliquez pour changer
+            </p>
+          )}
+        </div>
+      )}
+
+      {!showPreview && previewUrl && (
+        <div className="flex items-center justify-between rounded-lg border border-kitchen-lux-dark-green-200 bg-white px-4 py-2 text-xs text-kitchen-lux-dark-green-600">
+          <span>Image prête à être utilisée</span>
+          <button
+            type="button"
+            onClick={handleRemoveImage}
+            disabled={isUploading}
+            className="text-red-600 hover:text-red-700 disabled:opacity-50"
+          >
+            Supprimer
+          </button>
         </div>
       )}
 
@@ -188,7 +211,7 @@ export function ImageUpload({
       )}
 
       {/* Upload Button (Alternative) */}
-      {!previewUrl && (
+      {(!previewUrl || !showPreview) && (
         <button
           type="button"
           onClick={handleButtonClick}

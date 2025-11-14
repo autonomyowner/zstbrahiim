@@ -20,140 +20,91 @@ export function AnalyticsSection({ stats }: AnalyticsSectionProps): JSX.Element 
 
   return (
     <div className="space-y-6">
-      <h2 className="text-2xl font-elegant font-semibold text-kitchen-lux-dark-green-900">
-        Analytiques & Rapports
-      </h2>
+      <div>
+        <p className="text-xs uppercase tracking-[0.3em] text-text-muted">Analytiques</p>
+        <h2 className="text-2xl font-semibold text-text-primary">Rapports intelligents</h2>
+      </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Performance Overview */}
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <h3 className="text-lg font-semibold text-kitchen-lux-dark-green-900 mb-4">
-            Aperçu des Performances
-          </h3>
-          <div className="space-y-4">
-            <div className="flex justify-between items-center">
-              <span className="text-kitchen-lux-dark-green-700">Taux de complétion:</span>
-              <span className="text-lg font-bold text-kitchen-lux-dark-green-900">
-                {orderCompletionRate}%
-              </span>
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        <div className="rounded-3xl border border-brand-border bg-white/95 p-6 shadow-card-sm">
+          <h3 className="text-lg font-semibold text-text-primary">Aperçu des performances</h3>
+          <div className="mt-4 space-y-4 text-sm text-text-muted">
+            <div className="flex items-center justify-between">
+              <span>Taux de complétion</span>
+              <span className="text-lg font-bold text-text-primary">{orderCompletionRate}%</span>
             </div>
-            <div className="w-full bg-kitchen-lux-dark-green-200 rounded-full h-2">
+            <div className="h-2 w-full rounded-full bg-neutral-100">
               <div
-                className="bg-green-600 h-2 rounded-full transition-all"
+                className="h-2 rounded-full bg-brand-dark transition-all"
                 style={{ width: `${orderCompletionRate}%` }}
               />
             </div>
-            <div className="flex justify-between items-center pt-2">
-              <span className="text-kitchen-lux-dark-green-700">Valeur moyenne commande:</span>
-              <span className="text-lg font-bold text-kitchen-lux-dark-green-900">
-                {formatCurrency(averageOrderValue)}
-              </span>
+            <div className="flex items-center justify-between">
+              <span>Valeur moyenne commande</span>
+              <span className="text-lg font-bold text-text-primary">{formatCurrency(averageOrderValue)}</span>
             </div>
-            <div className="flex justify-between items-center">
-              <span className="text-kitchen-lux-dark-green-700">Commandes totales:</span>
-              <span className="text-lg font-bold text-kitchen-lux-dark-green-900">
-                {stats.totalOrders}
-              </span>
+            <div className="flex items-center justify-between">
+              <span>Commandes totales</span>
+              <span className="text-lg font-bold text-text-primary">{stats.totalOrders}</span>
             </div>
           </div>
         </div>
 
-        {/* Revenue Breakdown */}
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <h3 className="text-lg font-semibold text-kitchen-lux-dark-green-900 mb-4">
-            Répartition des Revenus
-          </h3>
-          <div className="space-y-4">
-            <div className="flex justify-between items-center">
-              <span className="text-kitchen-lux-dark-green-700">Revenu total:</span>
-              <span className="text-lg font-bold text-kitchen-lux-dark-green-900">
-                {formatCurrency(stats.totalRevenue)}
-              </span>
+        <div className="rounded-3xl border border-brand-border bg-white/95 p-6 shadow-card-sm">
+          <h3 className="text-lg font-semibold text-text-primary">Répartition des revenus</h3>
+          <div className="mt-4 space-y-4 text-sm text-text-muted">
+            <div className="flex items-center justify-between">
+              <span>Revenu total</span>
+              <span className="text-lg font-bold text-text-primary">{formatCurrency(stats.totalRevenue)}</span>
             </div>
-            <div className="flex justify-between items-center">
-              <span className="text-kitchen-lux-dark-green-700">Ce mois:</span>
-              <span className="text-lg font-bold text-green-600">
-                {formatCurrency(stats.monthlyRevenue)}
-              </span>
+            <div className="flex items-center justify-between">
+              <span>Ce mois</span>
+              <span className="text-lg font-bold text-green-600">{formatCurrency(stats.monthlyRevenue)}</span>
             </div>
-            <div className="flex justify-between items-center">
-              <span className="text-kitchen-lux-dark-green-700">Croissance mensuelle:</span>
+            <div className="flex items-center justify-between">
+              <span>Croissance mensuelle</span>
               <span className="text-lg font-bold text-green-600">+15%</span>
             </div>
           </div>
         </div>
 
-        {/* Order Status Distribution */}
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <h3 className="text-lg font-semibold text-kitchen-lux-dark-green-900 mb-4">
-            Distribution des Commandes
-          </h3>
-          <div className="space-y-3">
-            <div>
-              <div className="flex justify-between items-center mb-1">
-                <span className="text-sm text-kitchen-lux-dark-green-700">En attente</span>
-                <span className="text-sm font-semibold text-kitchen-lux-dark-green-900">
-                  {stats.pendingOrders}
-                </span>
+        <div className="rounded-3xl border border-brand-border bg-white/95 p-6 shadow-card-sm">
+          <h3 className="text-lg font-semibold text-text-primary">Distribution des commandes</h3>
+          <div className="mt-4 space-y-4 text-sm text-text-muted">
+            {[
+              { label: 'En attente', value: stats.pendingOrders, color: 'bg-amber-400' },
+              { label: 'En traitement', value: stats.processingOrders, color: 'bg-sky-500' },
+              { label: 'Complétées', value: stats.completedOrders, color: 'bg-green-500' },
+            ].map((item) => (
+              <div key={item.label}>
+                <div className="mb-1 flex items-center justify-between">
+                  <span>{item.label}</span>
+                  <span className="font-semibold text-text-primary">{item.value}</span>
+                </div>
+                <div className="h-2 w-full rounded-full bg-neutral-100">
+                  <div
+                    className={`h-2 rounded-full ${item.color}`}
+                    style={{ width: `${(item.value / stats.totalOrders) * 100}%` }}
+                  />
+                </div>
               </div>
-              <div className="w-full bg-kitchen-lux-dark-green-200 rounded-full h-2">
-                <div
-                  className="bg-yellow-500 h-2 rounded-full"
-                  style={{ width: `${(stats.pendingOrders / stats.totalOrders) * 100}%` }}
-                />
-              </div>
-            </div>
-            <div>
-              <div className="flex justify-between items-center mb-1">
-                <span className="text-sm text-kitchen-lux-dark-green-700">En traitement</span>
-                <span className="text-sm font-semibold text-kitchen-lux-dark-green-900">
-                  {stats.processingOrders}
-                </span>
-              </div>
-              <div className="w-full bg-kitchen-lux-dark-green-200 rounded-full h-2">
-                <div
-                  className="bg-blue-500 h-2 rounded-full"
-                  style={{ width: `${(stats.processingOrders / stats.totalOrders) * 100}%` }}
-                />
-              </div>
-            </div>
-            <div>
-              <div className="flex justify-between items-center mb-1">
-                <span className="text-sm text-kitchen-lux-dark-green-700">Complétées</span>
-                <span className="text-sm font-semibold text-kitchen-lux-dark-green-900">
-                  {stats.completedOrders}
-                </span>
-              </div>
-              <div className="w-full bg-kitchen-lux-dark-green-200 rounded-full h-2">
-                <div
-                  className="bg-green-500 h-2 rounded-full"
-                  style={{ width: `${(stats.completedOrders / stats.totalOrders) * 100}%` }}
-                />
-              </div>
-            </div>
+            ))}
           </div>
         </div>
 
-        {/* Product Performance */}
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <h3 className="text-lg font-semibold text-kitchen-lux-dark-green-900 mb-4">
-            Performance des Produits
-          </h3>
-          <div className="space-y-4">
-            <div className="flex justify-between items-center">
-              <span className="text-kitchen-lux-dark-green-700">Produits actifs:</span>
-              <span className="text-lg font-bold text-kitchen-lux-dark-green-900">
-                {stats.totalProducts}
-              </span>
+        <div className="rounded-3xl border border-brand-border bg-white/95 p-6 shadow-card-sm">
+          <h3 className="text-lg font-semibold text-text-primary">Performance des produits</h3>
+          <div className="mt-4 space-y-4 text-sm text-text-muted">
+            <div className="flex items-center justify-between">
+              <span>Produits actifs</span>
+              <span className="text-lg font-bold text-text-primary">{stats.totalProducts}</span>
             </div>
-            <div className="flex justify-between items-center">
-              <span className="text-kitchen-lux-dark-green-700">Stock faible:</span>
-              <span className="text-lg font-bold text-orange-600">
-                {stats.lowStockProducts}
-              </span>
+            <div className="flex items-center justify-between">
+              <span>Stock faible</span>
+              <span className="text-lg font-bold text-orange-500">{stats.lowStockProducts}</span>
             </div>
-            <div className="flex justify-between items-center">
-              <span className="text-kitchen-lux-dark-green-700">Taux de disponibilité:</span>
+            <div className="flex items-center justify-between">
+              <span>Taux de disponibilité</span>
               <span className="text-lg font-bold text-green-600">
                 {Math.round(((stats.totalProducts - stats.lowStockProducts) / stats.totalProducts) * 100)}%
               </span>
@@ -162,29 +113,20 @@ export function AnalyticsSection({ stats }: AnalyticsSectionProps): JSX.Element 
         </div>
       </div>
 
-      {/* Recent Activity Summary */}
-      <div className="bg-white rounded-lg shadow-md p-6">
-        <h3 className="text-lg font-semibold text-kitchen-lux-dark-green-900 mb-4">
-          Résumé d&apos;Activité Récente
-        </h3>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="text-center p-4 bg-kitchen-lux-dark-green-50 rounded-lg">
-            <p className="text-3xl font-bold text-kitchen-lux-dark-green-900 mb-2">
-              {stats.pendingOrders + stats.processingOrders}
-            </p>
-            <p className="text-sm text-kitchen-lux-dark-green-700">Commandes actives</p>
+      <div className="rounded-3xl border border-brand-border bg-white/95 p-6 shadow-card-sm">
+        <h3 className="text-lg font-semibold text-text-primary">Résumé d&apos;activité</h3>
+        <div className="mt-4 grid grid-cols-1 gap-4 text-center md:grid-cols-3">
+          <div className="rounded-2xl bg-brand-light/60 p-4">
+            <p className="text-3xl font-bold text-text-primary">{stats.pendingOrders + stats.processingOrders}</p>
+            <p className="text-sm text-text-muted">Commandes actives</p>
           </div>
-          <div className="text-center p-4 bg-kitchen-lux-dark-green-50 rounded-lg">
-            <p className="text-3xl font-bold text-kitchen-lux-dark-green-900 mb-2">
-              {formatCurrency(stats.monthlyRevenue)}
-            </p>
-            <p className="text-sm text-kitchen-lux-dark-green-700">Revenu ce mois</p>
+          <div className="rounded-2xl bg-brand-light/60 p-4">
+            <p className="text-3xl font-bold text-text-primary">{formatCurrency(stats.monthlyRevenue)}</p>
+            <p className="text-sm text-text-muted">Revenu ce mois</p>
           </div>
-          <div className="text-center p-4 bg-kitchen-lux-dark-green-50 rounded-lg">
-            <p className="text-3xl font-bold text-kitchen-lux-dark-green-900 mb-2">
-              {orderCompletionRate}%
-            </p>
-            <p className="text-sm text-kitchen-lux-dark-green-700">Taux de réussite</p>
+          <div className="rounded-2xl bg-brand-light/60 p-4">
+            <p className="text-3xl font-bold text-text-primary">{orderCompletionRate}%</p>
+            <p className="text-sm text-text-muted">Taux de réussite</p>
           </div>
         </div>
       </div>

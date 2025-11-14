@@ -7,11 +7,31 @@ import type {
   SortOption,
   CreateProductRequest,
   UpdateProductRequest,
+  ProductVideo,
+  SellerCategory,
 } from './types'
+import { deleteProductVideo } from './productVideos'
+
+type ProductQueryOptions = {
+  sellerCategories?: SellerCategory[]
+}
 
 // Adapter to convert database format to frontend format
-const adaptProduct = (dbProduct: Product, images: { image_url: string }[]): any => {
-  const imageUrls = images.map(img => img.image_url)
+const adaptProduct = (
+  dbProduct: Product,
+  images: { image_url: string }[],
+  video?: Partial<ProductVideo> | null
+): any => {
+  const imageUrls = images.map((img) => img.image_url)
+  const enhancedVideo = video
+    ? {
+        url: video.video_url,
+        thumbnailUrl: video.thumbnail_url,
+        durationSeconds: video.duration_seconds,
+        fileSizeBytes: video.file_size_bytes,
+      }
+    : undefined
+  const primaryImage = imageUrls[0] || enhancedVideo?.thumbnailUrl || ''
 
   return {
     id: dbProduct.id,
@@ -20,7 +40,7 @@ const adaptProduct = (dbProduct: Product, images: { image_url: string }[]): any 
     brand: dbProduct.brand,
     price: Number(dbProduct.price),
     originalPrice: dbProduct.original_price ? Number(dbProduct.original_price) : undefined,
-    image: imageUrls[0] || '',
+    image: primaryImage,
     images: imageUrls,
     category: dbProduct.category,
     productType: dbProduct.product_type,
@@ -37,18 +57,23 @@ const adaptProduct = (dbProduct: Product, images: { image_url: string }[]): any 
     deliveryEstimate: dbProduct.delivery_estimate,
     viewersCount: dbProduct.viewers_count,
     countdownEndDate: dbProduct.countdown_end_date,
-    seller_id: (dbProduct as any).seller_id, // Add for checkout
+    seller_id: dbProduct.seller_id || null, // Add for checkout
+    sellerCategory: dbProduct.seller_category ?? null,
     additionalInfo: {
       shipping: dbProduct.shipping_info,
       returns: dbProduct.returns_info,
       payment: dbProduct.payment_info,
       exclusiveOffers: dbProduct.exclusive_offers,
     },
+    video: enhancedVideo,
   }
 }
 
 // Get all products with optional filters
-export const getProducts = async (filters?: ProductFilters): Promise<any[]> => {
+export const getProducts = async (
+  filters?: ProductFilters,
+  options?: ProductQueryOptions
+): Promise<any[]> => {
   try {
     let query = supabase
       .from('products')
@@ -58,6 +83,14 @@ export const getProducts = async (filters?: ProductFilters): Promise<any[]> => {
           image_url,
           is_primary,
           display_order
+        ),
+        product_videos (
+          video_url,
+          video_storage_path,
+          thumbnail_url,
+          thumbnail_storage_path,
+          duration_seconds,
+          file_size_bytes
         )
       `)
       .order('created_at', { ascending: false })
@@ -111,6 +144,10 @@ export const getProducts = async (filters?: ProductFilters): Promise<any[]> => {
       }
     }
 
+    if (options?.sellerCategories?.length) {
+      query = query.in('seller_category', options.sellerCategories)
+    }
+
     const { data, error } = await query
 
     if (error) {
@@ -120,10 +157,130 @@ export const getProducts = async (filters?: ProductFilters): Promise<any[]> => {
 
     // Adapt products to frontend format
     return (data || []).map((product: any) =>
-      adaptProduct(product, (product as any).product_images || [])
+      adaptProduct(
+        product,
+        (product as any).product_images || [],
+        product.product_videos?.[0] || null
+      )
     )
   } catch (error) {
     console.error('Error in getProducts:', error)
+    return []
+  }
+}
+
+// Get only the authenticated seller's products (for seller dashboard)
+export const getSellerProducts = async (filters?: ProductFilters): Promise<any[]> => {
+  try {
+    // Get current user
+    const { data: { user } } = await supabase.auth.getUser()
+    
+    if (!user) {
+      console.error('No authenticated user found')
+      return []
+    }
+
+    // Query from seller_products_view which automatically filters by seller_id
+    let query = supabase
+      .from('seller_products_view')
+      .select('*')
+      .order('created_at', { ascending: false })
+
+    // Apply filters (same as getProducts)
+    if (filters?.category) {
+      query = query.eq('category', filters.category)
+    }
+
+    if (filters?.product_type) {
+      if (Array.isArray(filters.product_type)) {
+        query = query.in('product_type', filters.product_type)
+      } else {
+        query = query.eq('product_type', filters.product_type)
+      }
+    }
+
+    if (filters?.product_category) {
+      query = query.eq('product_category', filters.product_category)
+    }
+
+    if (filters?.need) {
+      if (Array.isArray(filters.need)) {
+        query = query.in('need', filters.need)
+      } else {
+        query = query.eq('need', filters.need)
+      }
+    }
+
+    if (filters?.in_stock !== undefined) {
+      query = query.eq('in_stock', filters.in_stock)
+    }
+
+    if (filters?.is_promo !== undefined) {
+      query = query.eq('is_promo', filters.is_promo)
+    }
+
+    if (filters?.min_price !== undefined) {
+      query = query.gte('price', filters.min_price)
+    }
+
+    if (filters?.max_price !== undefined) {
+      query = query.lte('price', filters.max_price)
+    }
+
+    if (filters?.brand) {
+      if (Array.isArray(filters.brand)) {
+        query = query.in('brand', filters.brand)
+      } else {
+        query = query.eq('brand', filters.brand)
+      }
+    }
+
+    const { data, error } = await query
+
+    if (error) {
+      console.error('Error fetching seller products:', error)
+      throw error
+    }
+
+    // Get product images/videos separately from dedicated views/tables
+    const productIds = (data || []).map((p: any) => p.id)
+    
+    const productImagesMap: Record<string, any[]> = {}
+    const productVideosMap: Record<string, any | null> = {}
+    
+    if (productIds.length > 0) {
+      const [{ data: images, error: imagesError }, { data: videos, error: videosError }] =
+        await Promise.all([
+          supabase
+            .from('seller_product_images_view')
+            .select('*')
+            .in('product_id', productIds)
+            .order('display_order', { ascending: true }),
+          supabase.from('product_videos').select('*').in('product_id', productIds),
+        ])
+
+      if (!imagesError && images) {
+        images.forEach((img: any) => {
+          if (!productImagesMap[img.product_id]) {
+            productImagesMap[img.product_id] = []
+          }
+          productImagesMap[img.product_id].push(img)
+        })
+      }
+
+      if (!videosError && videos) {
+        videos.forEach((video) => {
+          productVideosMap[video.product_id] = video
+        })
+      }
+    }
+    
+    // Adapt products to frontend format with their images & video
+    return (data || []).map((product: any) =>
+      adaptProduct(product, productImagesMap[product.id] || [], productVideosMap[product.id])
+    )
+  } catch (error) {
+    console.error('Error in getSellerProducts:', error)
     return []
   }
 }
@@ -162,6 +319,14 @@ export const getProductById = async (id: string): Promise<any | null> => {
           image_url,
           is_primary,
           display_order
+        ),
+        product_videos (
+          video_url,
+          video_storage_path,
+          thumbnail_url,
+          thumbnail_storage_path,
+          duration_seconds,
+          file_size_bytes
         )
       `)
       .eq('id', id)
@@ -177,7 +342,11 @@ export const getProductById = async (id: string): Promise<any | null> => {
     // Increment viewers count
     await incrementViewersCount(id)
 
-    return adaptProduct(data, (data as any).product_images || [])
+    return adaptProduct(
+      data,
+      (data as any).product_images || [],
+      data.product_videos?.[0] || null
+    )
   } catch (error) {
     console.error('Error in getProductById:', error)
     return null
@@ -198,6 +367,14 @@ export const getProductBySlug = async (slug: string): Promise<any | null> => {
           image_url,
           is_primary,
           display_order
+        ),
+        product_videos (
+          video_url,
+          video_storage_path,
+          thumbnail_url,
+          thumbnail_storage_path,
+          duration_seconds,
+          file_size_bytes
         )
       `)
       .eq('slug', slug)
@@ -213,7 +390,11 @@ export const getProductBySlug = async (slug: string): Promise<any | null> => {
     // Increment viewers count
     await incrementViewersCount(data.id)
 
-    return adaptProduct(data, (data as any).product_images || [])
+    return adaptProduct(
+      data,
+      (data as any).product_images || [],
+      data.product_videos?.[0] || null
+    )
   } catch (error) {
     console.error('Error in getProductBySlug:', error)
     return null
@@ -252,6 +433,14 @@ export const searchProducts = async (query: string, filters?: ProductFilters): P
           image_url,
           is_primary,
           display_order
+        ),
+        product_videos (
+          video_url,
+          video_storage_path,
+          thumbnail_url,
+          thumbnail_storage_path,
+          duration_seconds,
+          file_size_bytes
         )
       `)
 
@@ -279,7 +468,11 @@ export const searchProducts = async (query: string, filters?: ProductFilters): P
     }
 
     return (data || []).map((product: any) =>
-      adaptProduct(product, (product as any).product_images || [])
+      adaptProduct(
+        product,
+        (product as any).product_images || [],
+        product.product_videos?.[0] || null
+      )
     )
   } catch (error) {
     console.error('Error in searchProducts:', error)
@@ -406,6 +599,8 @@ export const updateProduct = async (updateData: UpdateProductRequest): Promise<b
 // Admin functions - Delete product
 export const deleteProduct = async (productId: string): Promise<boolean> => {
   try {
+    await deleteProductVideo(productId)
+
     const { error } = await supabase.from('products').delete().eq('id', productId)
 
     if (error) {

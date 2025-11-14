@@ -39,20 +39,15 @@ export const BudgetSlider = ({
   const formatPrice = (price: number): string => `${price.toLocaleString()} DA`
 
   return (
-    <div className="space-y-3">
-      <DualRangeSlider
-        min={min}
-        max={max}
-        step={step}
-        value={currentValue}
-        onValueChange={handleSliderChange}
-        labelPosition="top"
-        label={(val) => (val !== undefined ? formatPrice(val) : '')}
-      />
-      <div className="flex items-center justify-between text-sm font-medium text-kitchen-lux-dark-green-700">
-        <span>{formatPrice(currentValue[0])} - {formatPrice(currentValue[1])}</span>
-      </div>
-    </div>
+    <DualRangeSlider
+      min={min}
+      max={max}
+      step={step}
+      value={currentValue}
+      onValueChange={handleSliderChange}
+      labelPosition="top"
+      label={(val) => (val !== undefined ? formatPrice(val) : '')}
+    />
   )
 }
 

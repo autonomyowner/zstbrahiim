@@ -53,41 +53,45 @@ export default function SignInPage() {
   }
 
   return (
-    <div 
-      className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-50 via-white to-kitchen-lux-dark-green-50 px-4 py-12 relative"
-      style={{
-        backgroundImage: 'url(/logo.png)',
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        backgroundRepeat: 'no-repeat',
-        backgroundBlendMode: 'overlay'
-      }}
-    >
-      <div className="absolute inset-0 bg-gradient-to-br from-purple-50/80 via-white/80 to-kitchen-lux-dark-green-50/80"></div>
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-neutral-50 via-white to-brand-light px-4 py-12 relative overflow-hidden">
+      {/* Background decorative elements */}
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-brand-primary/10 via-transparent to-transparent"></div>
+      <div className="absolute top-0 right-0 w-96 h-96 bg-brand-primary/5 rounded-full blur-3xl"></div>
+      <div className="absolute bottom-0 left-0 w-96 h-96 bg-brand-dark/5 rounded-full blur-3xl"></div>
+      
       <div className="w-full max-w-md relative z-10">
-        <div className="bg-white rounded-2xl shadow-xl border border-gray-200 p-8">
+        <div className="bg-white/95 backdrop-blur-sm rounded-3xl shadow-card-lg border border-brand-border/50 p-8 md:p-10">
+          {/* Logo */}
+          <div className="flex justify-center mb-6">
+            <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-brand-dark text-brand-primary text-3xl font-black shadow-card-sm">
+              Z
+            </div>
+          </div>
+          
           {/* Title */}
-          <h1 className="text-3xl font-bold text-center text-kitchen-black-deep mb-2">
-            Welcome Back
-          </h1>
-          <p className="text-center text-kitchen-marble-gray mb-8">
-            Sign in to your account
-          </p>
+          <div className="text-center mb-8">
+            <h1 className="text-3xl md:text-4xl font-black text-text-primary mb-2 tracking-tight">
+              Welcome Back
+            </h1>
+            <p className="text-text-muted text-sm">
+              Sign in to continue to ZST ecom
+            </p>
+          </div>
 
           {/* Error Message */}
           {error && (
-            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6">
+            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl mb-6 shadow-sm">
               <p className="font-semibold text-sm">Sign In Failed</p>
               <p className="text-sm mt-1">{error}</p>
             </div>
           )}
 
           {/* Form */}
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-5">
             <div>
               <label
                 htmlFor="email"
-                className="block text-sm font-medium text-kitchen-black-deep mb-2"
+                className="block text-xs font-semibold text-text-muted uppercase tracking-[0.2em] mb-2"
               >
                 Email Address
               </label>
@@ -97,7 +101,7 @@ export default function SignInPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
+                className="w-full px-4 py-3.5 border border-brand-border rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-primary/40 focus:border-brand-primary transition-all bg-white text-text-primary placeholder:text-text-muted"
                 placeholder="you@example.com"
               />
             </div>
@@ -105,7 +109,7 @@ export default function SignInPage() {
             <div>
               <label
                 htmlFor="password"
-                className="block text-sm font-medium text-kitchen-black-deep mb-2"
+                className="block text-xs font-semibold text-text-muted uppercase tracking-[0.2em] mb-2"
               >
                 Password
               </label>
@@ -115,24 +119,24 @@ export default function SignInPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all"
+                className="w-full px-4 py-3.5 border border-brand-border rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-primary/40 focus:border-brand-primary transition-all bg-white text-text-primary placeholder:text-text-muted"
                 placeholder="Enter your password"
               />
             </div>
 
-            <div className="flex items-center justify-between">
-              <label className="flex items-center">
+            <div className="flex items-center justify-between text-sm">
+              <label className="flex items-center cursor-pointer group">
                 <input
                   type="checkbox"
-                  className="w-4 h-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500"
+                  className="w-4 h-4 text-brand-primary border-brand-border rounded focus:ring-brand-primary/40 cursor-pointer"
                 />
-                <span className="ml-2 text-sm text-kitchen-marble-gray">
+                <span className="ml-2 text-text-muted group-hover:text-text-primary transition-colors">
                   Remember me
                 </span>
               </label>
               <Link
                 href="#"
-                className="text-sm text-purple-600 hover:text-purple-800 transition-colors"
+                className="text-brand-dark hover:text-text-primary transition-colors font-medium"
               >
                 Forgot password?
               </Link>
@@ -141,7 +145,7 @@ export default function SignInPage() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full bg-gradient-to-r from-purple-600 to-purple-700 text-white py-3 rounded-lg font-semibold hover:from-purple-700 hover:to-purple-800 transition-all duration-200 shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full bg-brand-dark hover:bg-black text-brand-primary py-3.5 rounded-xl font-bold transition-all duration-200 shadow-card-sm hover:shadow-card-md disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-[1.02]"
             >
               {loading ? 'Signing In...' : 'Sign In'}
             </button>
@@ -150,10 +154,10 @@ export default function SignInPage() {
           {/* Divider */}
           <div className="relative my-8">
             <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-gray-300"></div>
+              <div className="w-full border-t border-brand-border"></div>
             </div>
-            <div className="relative flex justify-center text-sm">
-              <span className="px-4 bg-white text-kitchen-marble-gray">
+            <div className="relative flex justify-center text-xs">
+              <span className="px-4 bg-white text-text-muted uppercase tracking-[0.2em]">
                 Or continue with
               </span>
             </div>
@@ -163,24 +167,24 @@ export default function SignInPage() {
           <div className="grid grid-cols-2 gap-4">
             <button
               type="button"
-              className="flex items-center justify-center px-4 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+              className="flex items-center justify-center gap-2 px-4 py-3 border border-brand-border rounded-xl hover:bg-neutral-50 hover:border-brand-dark transition-all shadow-sm"
             >
-              <span className="text-sm font-medium">Google</span>
+              <span className="text-sm font-semibold text-text-primary">Google</span>
             </button>
             <button
               type="button"
-              className="flex items-center justify-center px-4 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+              className="flex items-center justify-center gap-2 px-4 py-3 border border-brand-border rounded-xl hover:bg-neutral-50 hover:border-brand-dark transition-all shadow-sm"
             >
-              <span className="text-sm font-medium">Facebook</span>
+              <span className="text-sm font-semibold text-text-primary">Facebook</span>
             </button>
           </div>
 
           {/* Sign Up Link */}
-          <p className="mt-8 text-center text-sm text-kitchen-marble-gray">
+          <p className="mt-8 text-center text-sm text-text-muted">
             Don&apos;t have an account?{' '}
             <Link
               href="/signup"
-              className="font-semibold text-purple-600 hover:text-purple-800 transition-colors"
+              className="font-bold text-brand-dark hover:text-text-primary transition-colors"
             >
               Sign up
             </Link>

@@ -19,70 +19,72 @@ export function OrdersTable({ orders, onUpdateStatus, onViewDetails }: OrdersTab
 
   if (orders.length === 0) {
     return (
-      <div className="text-center py-12 bg-white rounded-lg shadow">
-        <p className="text-kitchen-lux-dark-green-600">Aucune commande trouvée</p>
+      <div className="rounded-2xl border border-brand-border bg-white/90 py-12 text-center text-text-muted shadow-card-sm">
+        Aucune commande trouvée
       </div>
     )
   }
 
   return (
-    <div className="bg-white rounded-lg shadow-md overflow-hidden">
+    <div className="overflow-hidden rounded-3xl border border-brand-border bg-white/95 shadow-card-sm">
       <div className="overflow-x-auto">
-        <table className="min-w-full divide-y divide-kitchen-lux-dark-green-200">
-          <thead className="bg-kitchen-lux-dark-green-50">
+        <table className="min-w-full divide-y divide-brand-border/60">
+          <thead className="bg-brand-light/60">
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-kitchen-lux-dark-green-700 uppercase tracking-wider">
+              <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-[0.3em] text-text-muted">
                 Commande
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-kitchen-lux-dark-green-700 uppercase tracking-wider">
+              <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-[0.3em] text-text-muted">
                 Client
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-kitchen-lux-dark-green-700 uppercase tracking-wider">
+              <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-[0.3em] text-text-muted">
                 Date
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-kitchen-lux-dark-green-700 uppercase tracking-wider">
+              <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-[0.3em] text-text-muted">
                 Total
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-kitchen-lux-dark-green-700 uppercase tracking-wider">
+              <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-[0.3em] text-text-muted">
                 Statut
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-kitchen-lux-dark-green-700 uppercase tracking-wider">
+              <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-[0.3em] text-text-muted">
                 Paiement
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-kitchen-lux-dark-green-700 uppercase tracking-wider">
+              <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-[0.3em] text-text-muted">
                 Actions
               </th>
             </tr>
           </thead>
-          <tbody className="bg-white divide-y divide-kitchen-lux-dark-green-100">
+          <tbody className="divide-y divide-brand-border/60 bg-white">
             {orders.map((order) => (
               <>
-                <tr key={order.id} className="hover:bg-kitchen-lux-dark-green-50 transition-colors">
+                <tr key={order.id} className="transition hover:bg-brand-light/40">
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm font-medium text-kitchen-lux-dark-green-900">
+                    <div className="text-sm font-semibold text-text-primary">
                       {order.orderNumber}
                     </div>
                     {order.trackingNumber && (
-                      <div className="text-xs text-kitchen-lux-dark-green-500">
+                      <div className="text-xs text-text-muted">
                         {order.trackingNumber}
                       </div>
                     )}
                   </td>
                   <td className="px-6 py-4">
-                    <div className="text-sm text-kitchen-lux-dark-green-900">{order.customer.name}</div>
-                    <div className="text-xs text-kitchen-lux-dark-green-500">{order.customer.wilaya}</div>
+                    <div className="text-sm font-semibold text-text-primary">{order.customer.name}</div>
+                    <div className="text-xs text-text-muted">{order.customer.wilaya}</div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-kitchen-lux-dark-green-600">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-text-muted">
                     {new Date(order.createdAt).toLocaleDateString('fr-DZ')}
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-kitchen-lux-dark-green-900">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm font-semibold text-text-primary">
                     {formatPrice(order.total)}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <select
                       value={order.status}
                       onChange={(e) => onUpdateStatus(order.id, e.target.value as OrderStatus)}
-                      className={`text-xs px-3 py-1 rounded-full border ${getStatusColor(order.status)} focus:outline-none focus:ring-2 focus:ring-kitchen-lux-dark-green-500`}
+                      className={`text-xs rounded-full border px-3 py-1 ${getStatusColor(
+                        order.status,
+                      )} focus:outline-none focus:ring-2 focus:ring-brand-primary/40`}
                     >
                       <option value="pending">En attente</option>
                       <option value="processing">En traitement</option>
@@ -92,20 +94,24 @@ export function OrdersTable({ orders, onUpdateStatus, onViewDetails }: OrdersTab
                     </select>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`text-xs px-3 py-1 rounded-full border ${getPaymentStatusColor(order.paymentStatus)}`}>
+                    <span
+                      className={`inline-flex items-center gap-1 rounded-full border px-3 py-1 text-xs ${getPaymentStatusColor(
+                        order.paymentStatus,
+                      )}`}
+                    >
                       {getPaymentStatusLabel(order.paymentStatus)}
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm">
                     <button
                       onClick={() => toggleExpand(order.id)}
-                      className="text-kitchen-lux-dark-green-600 hover:text-kitchen-lux-dark-green-900 mr-3"
+                      className="mr-3 text-brand-dark underline-offset-4 hover:underline"
                     >
                       {expandedOrderId === order.id ? 'Masquer' : 'Détails'}
                     </button>
                     <button
                       onClick={() => onViewDetails(order)}
-                      className="text-kitchen-lux-dark-green-600 hover:text-kitchen-lux-dark-green-900"
+                      className="text-text-muted hover:text-text-primary"
                     >
                       Voir
                     </button>
@@ -113,10 +119,10 @@ export function OrdersTable({ orders, onUpdateStatus, onViewDetails }: OrdersTab
                 </tr>
                 {expandedOrderId === order.id && (
                   <tr>
-                    <td colSpan={7} className="px-6 py-4 bg-kitchen-lux-dark-green-25">
+                    <td colSpan={7} className="bg-brand-light/60 px-6 py-6">
                       <div className="space-y-3">
                         <div>
-                          <h4 className="font-semibold text-kitchen-lux-dark-green-900 mb-2">Articles:</h4>
+                          <h4 className="mb-2 font-semibold text-text-primary">Articles:</h4>
                           <div className="space-y-2">
                             {order.items.map((item, idx) => (
                               <div key={idx} className="flex items-center justify-between text-sm">
@@ -129,34 +135,34 @@ export function OrdersTable({ orders, onUpdateStatus, onViewDetails }: OrdersTab
                                     className="w-12 h-12 object-cover rounded"
                                   />
                                   <div>
-                                    <p className="text-kitchen-lux-dark-green-900">{item.productName}</p>
-                                    <p className="text-kitchen-lux-dark-green-600">Quantité: {item.quantity}</p>
+                                    <p className="text-text-primary">{item.productName}</p>
+                                    <p className="text-text-muted">Quantité: {item.quantity}</p>
                                   </div>
                                 </div>
-                                <p className="font-semibold text-kitchen-lux-dark-green-900">
+                                <p className="font-semibold text-text-primary">
                                   {formatPrice(item.subtotal)}
                                 </p>
                               </div>
                             ))}
                           </div>
                         </div>
-                        <div className="grid grid-cols-2 gap-4 pt-3 border-t border-kitchen-lux-dark-green-200">
+                        <div className="grid grid-cols-1 gap-4 border-t border-brand-border pt-3 text-sm text-text-muted md:grid-cols-2">
                           <div>
-                            <h4 className="font-semibold text-kitchen-lux-dark-green-900 mb-1">Adresse de livraison:</h4>
-                            <p className="text-sm text-kitchen-lux-dark-green-700">
+                            <h4 className="mb-1 font-semibold text-text-primary">Adresse de livraison:</h4>
+                            <p>
                               {order.customer.address}, {order.customer.wilaya}
                             </p>
                           </div>
                           <div>
-                            <h4 className="font-semibold text-kitchen-lux-dark-green-900 mb-1">Contact:</h4>
-                            <p className="text-sm text-kitchen-lux-dark-green-700">{order.customer.phone}</p>
-                            <p className="text-sm text-kitchen-lux-dark-green-700">{order.customer.email}</p>
+                            <h4 className="mb-1 font-semibold text-text-primary">Contact:</h4>
+                            <p>{order.customer.phone}</p>
+                            <p>{order.customer.email}</p>
                           </div>
                         </div>
                         {order.notes && (
-                          <div className="pt-3 border-t border-kitchen-lux-dark-green-200">
-                            <h4 className="font-semibold text-kitchen-lux-dark-green-900 mb-1">Notes:</h4>
-                            <p className="text-sm text-kitchen-lux-dark-green-700">{order.notes}</p>
+                          <div className="border-t border-brand-border pt-3">
+                            <h4 className="mb-1 font-semibold text-text-primary">Notes:</h4>
+                            <p className="text-sm text-text-muted">{order.notes}</p>
                           </div>
                         )}
                       </div>

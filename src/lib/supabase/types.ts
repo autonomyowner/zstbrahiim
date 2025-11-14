@@ -3,6 +3,7 @@
 
 export type UserRole = 'customer' | 'seller' | 'freelancer' | 'admin'
 export type SellerType = 'retailer' | 'importer' | 'wholesaler'
+export type SellerCategory = 'fournisseur' | 'importateur' | 'grossiste'
 export type ProductType = 'Parfum Femme' | 'Parfum Homme' | 'Eau de Parfum' | 'Eau de Toilette'
 export type ProductNeed = 'Journée' | 'Soirée' | 'Quotidien' | 'Spécial'
 export type ProductCategoryType = 'perfume' | 'clothing'
@@ -32,6 +33,7 @@ export type UserProfile = {
   provider_avatar: string | null
   bio: string | null
   seller_type: SellerType | null
+  seller_category: SellerCategory | null
   created_at: string
   updated_at: string
 }
@@ -64,6 +66,8 @@ export type Product = {
   exclusive_offers: string | null
   created_at: string
   updated_at: string
+  seller_id?: string | null
+  seller_category: SellerCategory | null
 }
 
 export type ProductImage = {
@@ -72,6 +76,18 @@ export type ProductImage = {
   image_url: string
   is_primary: boolean
   display_order: number
+  created_at: string
+}
+
+export type ProductVideo = {
+  id: string
+  product_id: string
+  video_url: string
+  video_storage_path: string
+  thumbnail_url: string
+  thumbnail_storage_path: string
+  duration_seconds: number
+  file_size_bytes: number
   created_at: string
 }
 
@@ -147,6 +163,7 @@ export type OrderItem = {
 // Joined/Extended Types for API responses
 export type ProductWithImages = Product & {
   images: ProductImage[]
+  video?: ProductVideo
 }
 
 export type FreelanceServiceWithDetails = FreelanceService & {
@@ -263,6 +280,19 @@ export type Database = {
         Update: Partial<Omit<ProductImage, 'id' | 'created_at'>>
         Relationships: []
       }
+      product_videos: {
+        Row: ProductVideo
+        Insert: Omit<ProductVideo, 'id' | 'created_at'>
+        Update: Partial<Omit<ProductVideo, 'id' | 'created_at'>>
+        Relationships: [
+          {
+            foreignKeyName: 'product_videos_product_id_fkey'
+            columns: ['product_id']
+            referencedRelation: 'products'
+            referencedColumns: ['id']
+          }
+        ]
+      }
       freelance_services: {
         Row: FreelanceService
         Insert: Omit<FreelanceService, 'id' | 'created_at' | 'updated_at' | 'rating' | 'reviews_count' | 'completed_projects'>
@@ -295,6 +325,14 @@ export type Database = {
       }
       product_stats_view: {
         Row: ProductStats
+        Relationships: []
+      }
+      seller_products_view: {
+        Row: Product
+        Relationships: []
+      }
+      seller_product_images_view: {
+        Row: ProductImage
         Relationships: []
       }
     }

@@ -7,77 +7,113 @@ module.exports = {
   ],
   theme: {
     extend: {
+      keyframes: {
+        'hero-scroll': {
+          '0%': { transform: 'translateY(0)' },
+          '100%': { transform: 'translateY(-50%)' },
+        },
+      },
+      animation: {
+        'hero-scroll': 'hero-scroll 18s linear infinite',
+      },
       colors: {
-        // Modern Kitchen Color Palette
+        // Updated brand system inspired by the new mockups
+        brand: {
+          primary: '#FACC15',
+          primaryDark: '#EAB308',
+          secondary: '#3B82F6',
+          dark: '#181711',
+          darkMuted: '#1F1C12',
+          light: '#F8F8F5',
+          card: '#FFFFFF',
+          cardMuted: '#F1EFE5',
+        },
+        'brand-border': '#E2E0D7',
+        text: {
+          primary: '#181711',
+          secondary: '#4A4739',
+          muted: '#6B6B5A',
+          inverted: '#F8F8F5',
+        },
+        accent: {
+          lime: '#84CC16',
+          blue: '#2563EB',
+          pink: '#EC4899',
+          red: '#EF4444',
+          amber: '#FBBF24',
+        },
+        // Keep existing kitchen palette for legacy components while the redesign rolls out
         kitchen: {
           white: {
             clean: '#FFFFFF',
             soft: '#F0F0F0',
           },
           black: {
-            deep: '#000000',
-            soft: '#1A1A1A',
+            deep: '#181711',
+            soft: '#1F1C12',
           },
           marble: {
-            gray: '#B0B0B0',
-            'gray-light': '#C8C8C8',
+            gray: '#C9C5B5',
+            'gray-light': '#E3E0D3',
           },
           warm: {
-            light: '#FFF7E6',
-            'light-soft': '#FFECD6',
+            light: '#FCF9F1',
+            'light-soft': '#F7F1DE',
           },
           footer: {
-            dark: '#1C4831',
+            dark: '#1B1A14',
           },
           lux: {
             'dark-green': {
-              50: '#f0f9f4',
-              100: '#dcf2e3',
-              200: '#bce5cc',
-              300: '#8dd1a8',
-              400: '#56b47d',
-              500: '#2d5a3d',
-              600: '#1e3d2a',
-              700: '#1a3324',
-              800: '#152a1e',
-              900: '#0f1f16',
-              950: '#0a1510',
-            }
-          }
+              50: '#f7f7f1',
+              100: '#ece9d7',
+              200: '#d6d0b2',
+              300: '#bcb088',
+              400: '#a08d5c',
+              500: '#7f6f42',
+              600: '#5f5332',
+              700: '#453b24',
+              800: '#2c2517',
+              900: '#19150d',
+              950: '#0f0c08',
+            },
+          },
         },
-        // Legacy colors for compatibility
-        primary: {
-          50: '#fef2f2',
-          100: '#fee2e2',
-          200: '#fecaca',
-          300: '#fca5a5',
-          400: '#f87171',
-          500: '#ef4444',
-          600: '#dc2626',
-          700: '#b91c1c',
-          800: '#991b1b',
-          900: '#7f1d1d',
+        neutral: {
+          50: '#F9FAFB',
+          100: '#F3F4F6',
+          200: '#E5E7EB',
+          300: '#D1D5DB',
+          400: '#9CA3AF',
+          500: '#6B7280',
+          600: '#4B5563',
+          700: '#374151',
+          800: '#1F2937',
+          900: '#111827',
         },
-        slate: {
-          50: '#f8fafc',
-          100: '#f1f5f9',
-          200: '#e2e8f0',
-          300: '#cbd5e1',
-          400: '#94a3b8',
-          500: '#64748b',
-          600: '#475569',
-          700: '#334155',
-          800: '#1e293b',
-          900: '#0f172a',
-        }
       },
       fontFamily: {
-        'elegant': ['Playfair Display', 'serif'],
-        'modern': ['Inter', 'sans-serif'],
-        'artistic': ['Great Vibes', 'cursive'],
+        elegant: ['Playfair Display', 'serif'],
+        modern: ['Inter', 'sans-serif'],
+        artistic: ['Great Vibes', 'cursive'],
+        display: ['Inter', 'sans-serif'],
+      },
+      borderRadius: {
+        DEFAULT: '0.75rem',
+        lg: '1.25rem',
+        xl: '2rem',
+        '2xl': '2.5rem',
+        full: '9999px',
+      },
+      boxShadow: {
+        'card-sm': '0 5px 20px rgba(24, 23, 17, 0.06)',
+        'card-md': '0 10px 30px rgba(24, 23, 17, 0.08)',
+        'card-lg': '0 20px 45px rgba(24, 23, 17, 0.1)',
       },
       backgroundImage: {
         'gradient-elegant': 'linear-gradient(to bottom right, var(--tw-gradient-stops))',
+        'gradient-brand':
+          'linear-gradient(135deg, rgba(250, 204, 21, 0.15), rgba(24, 23, 17, 0.6))',
       },
     },
   },

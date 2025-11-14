@@ -172,87 +172,119 @@ export default function FreelancerDashboardPage() {
 
   if (authChecking || loading) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-kitchen-lux-dark-green-50 to-kitchen-lux-dark-green-100 flex items-center justify-center">
+      <div className="flex min-h-screen items-center justify-center bg-brand-light">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-kitchen-lux-dark-green-900 mx-auto mb-4"></div>
-          <p className="text-kitchen-lux-dark-green-700">Chargement...</p>
+          <div className="mx-auto mb-4 h-12 w-12 animate-spin rounded-full border-b-2 border-brand-dark"></div>
+          <p className="text-text-muted">Chargement...</p>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-kitchen-lux-dark-green-50 to-kitchen-lux-dark-green-100 px-4 py-24 sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-7xl">
-        {/* Messages */}
+    <div className="min-h-screen bg-gradient-to-br from-neutral-50 via-white to-brand-light px-4 py-16 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-6xl space-y-8">
         {success && (
-          <div className="mb-6 bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg">
-            {success}
+          <div className="rounded-2xl border border-green-200 bg-green-50 px-5 py-4 text-green-800 shadow-card-md animate-fade-in">
+            <div className="flex items-center gap-2">
+              <span className="material-symbols-outlined text-green-600">check_circle</span>
+              <span className="font-semibold">{success}</span>
+            </div>
           </div>
         )}
         {error && (
-          <div className="mb-6 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
-            {error}
+          <div className="rounded-2xl border border-red-200 bg-red-50 px-5 py-4 text-red-700 shadow-card-md animate-fade-in">
+            <div className="flex items-center gap-2">
+              <span className="material-symbols-outlined text-red-600">error</span>
+              <span className="font-semibold">{error}</span>
+            </div>
           </div>
         )}
 
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-4xl font-elegant font-semibold text-kitchen-lux-dark-green-900 mb-2">
-            Tableau de Bord Freelancer
-          </h1>
-          <p className="text-kitchen-lux-dark-green-700">
-            Gérez vos services et votre portfolio
-          </p>
-        </div>
-
-        {/* Services Management */}
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <div className="flex justify-between items-center mb-6">
-            <h2 className="text-2xl font-semibold text-kitchen-lux-dark-green-900">
-              Mes Services ({services.length})
-            </h2>
+        <section className="rounded-2xl sm:rounded-3xl border border-brand-border bg-white/95 backdrop-blur-sm p-5 sm:p-8 shadow-card-md space-y-6">
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <div className="min-w-0 flex-1">
+              <p className="text-[10px] sm:text-xs font-bold uppercase tracking-[0.2em] sm:tracking-[0.3em] text-text-muted">
+                Freelance
+              </p>
+              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-text-primary mt-2 break-words">
+                Tableau de bord freelancer
+              </h1>
+              <p className="mt-3 text-xs sm:text-sm font-medium text-text-muted leading-relaxed">
+                Publiez vos services, ajustez vos tarifs et mettez à jour votre portfolio.
+              </p>
+            </div>
             <button
               onClick={handleAddService}
-              className="px-6 py-3 bg-kitchen-lux-dark-green-600 text-white rounded-lg font-semibold hover:bg-kitchen-lux-dark-green-700 transition-colors"
+              className="inline-flex items-center gap-2 rounded-xl bg-brand-dark px-4 sm:px-6 py-3 sm:py-3.5 text-xs sm:text-sm font-bold text-brand-primary transition-all hover:bg-black shadow-card-sm hover:shadow-card-md transform hover:scale-105 whitespace-nowrap"
             >
-              + Ajouter un Service
+              <span className="material-symbols-outlined text-base">add</span>
+              Nouveau service
             </button>
           </div>
 
+        </section>
+
+        <section className="rounded-2xl sm:rounded-3xl border border-brand-border bg-white/95 backdrop-blur-sm p-5 sm:p-8 shadow-card-md">
+          <div className="mb-8 flex flex-wrap items-center justify-between gap-4">
+            <div className="min-w-0">
+              <h2 className="text-2xl sm:text-3xl font-black text-text-primary break-words">
+                Mes services ({services.length})
+              </h2>
+              <p className="mt-2 text-xs sm:text-sm font-medium text-text-muted leading-relaxed">
+                Optimisez votre vitrine freelance sur ZST Marketplace.
+              </p>
+            </div>
+          </div>
+
           {services.length === 0 ? (
-            <div className="text-center py-12 text-kitchen-lux-dark-green-600">
-              <p className="mb-4">Vous n&apos;avez pas encore de services.</p>
+            <div className="py-16 text-center">
+              <div className="mx-auto w-fit p-6 rounded-2xl bg-neutral-50 mb-6">
+                <span className="material-symbols-outlined text-6xl text-text-muted">work</span>
+              </div>
+              <p className="text-text-muted font-medium mb-4">Vous n&apos;avez pas encore de services.</p>
               <button
                 onClick={handleAddService}
-                className="text-kitchen-lux-dark-green-800 font-medium hover:underline"
+                className="inline-flex items-center gap-2 text-brand-dark font-bold hover:text-text-primary transition-colors"
               >
-                Créer votre premier service →
+                Créer votre premier service
+                <span className="material-symbols-outlined text-base">arrow_forward</span>
               </button>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3">
               {services.map((service) => (
-                <div key={service.id} className="border border-kitchen-lux-dark-green-200 rounded-lg p-4 hover:shadow-md transition-shadow">
-                  <h3 className="font-semibold text-kitchen-lux-dark-green-900 mb-2">
-                    {service.serviceTitle}
-                  </h3>
-                  <p className="text-sm text-kitchen-lux-dark-green-600 mb-2">
-                    {service.category}
-                  </p>
-                  <p className="text-lg font-bold text-kitchen-lux-dark-green-800 mb-3">
-                    {service.price.toLocaleString()} DA
-                  </p>
-                  <div className="flex gap-2">
+                <div
+                  key={service.id}
+                  className="group flex flex-col gap-4 rounded-xl sm:rounded-2xl border border-brand-border bg-white p-4 sm:p-6 shadow-card-sm hover:shadow-card-md transition-all duration-300 hover:-translate-y-1 hover:border-brand-dark"
+                >
+                  <div className="min-w-0">
+                    <p className="text-[10px] sm:text-xs font-bold uppercase tracking-[0.2em] sm:tracking-[0.3em] text-text-muted break-words">
+                      {service.category}
+                    </p>
+                    <h3 className="mt-2 text-lg sm:text-xl font-bold text-text-primary group-hover:text-brand-dark transition-colors break-words line-clamp-2">
+                      {service.serviceTitle}
+                    </h3>
+                    <p className="mt-1 text-xs sm:text-sm font-medium text-text-muted break-words">
+                      {service.experienceLevel}
+                    </p>
+                  </div>
+                  <div className="pt-4 border-t border-brand-border">
+                    <p className="text-xl sm:text-2xl font-black text-text-primary break-words">
+                      {service.price.toLocaleString()} <span className="text-xs sm:text-sm font-normal">DA</span>
+                    </p>
+                    <p className="text-xs font-medium text-text-muted mt-1">/ {service.priceType}</p>
+                  </div>
+                  <div className="flex gap-2 pt-2">
                     <button
                       onClick={() => handleEditService(service)}
-                      className="flex-1 px-3 py-2 bg-blue-600 text-white rounded text-sm hover:bg-blue-700"
+                      className="flex-1 rounded-lg sm:rounded-xl border border-brand-border bg-white px-3 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm font-bold text-text-primary hover:border-brand-dark hover:bg-neutral-50 transition-all shadow-sm"
                     >
                       Modifier
                     </button>
                     <button
                       onClick={() => handleDeleteService(service.id)}
-                      className="flex-1 px-3 py-2 bg-red-600 text-white rounded text-sm hover:bg-red-700"
+                      className="flex-1 rounded-lg sm:rounded-xl border border-red-200 bg-white px-3 sm:px-4 py-2 sm:py-2.5 text-xs sm:text-sm font-bold text-red-600 hover:border-red-400 hover:bg-red-50 transition-all shadow-sm"
                     >
                       Supprimer
                     </button>
@@ -261,9 +293,8 @@ export default function FreelancerDashboardPage() {
               ))}
             </div>
           )}
-        </div>
+        </section>
 
-        {/* Modals */}
         <AddServiceModal
           isOpen={isAddServiceModalOpen}
           onClose={() => setIsAddServiceModalOpen(false)}

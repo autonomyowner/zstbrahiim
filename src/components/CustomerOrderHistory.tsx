@@ -39,17 +39,17 @@ export function CustomerOrderHistory({ orders }: CustomerOrderHistoryProps) {
   const getStatusColor = (status: string): string => {
     switch (status) {
       case 'pending':
-        return 'bg-yellow-100 text-yellow-800 border-yellow-300'
+        return 'bg-amber-100 text-amber-700 border-amber-200'
       case 'processing':
-        return 'bg-blue-100 text-blue-800 border-blue-300'
+        return 'bg-sky-100 text-sky-700 border-sky-200'
       case 'shipped':
-        return 'bg-purple-100 text-purple-800 border-purple-300'
+        return 'bg-purple-100 text-purple-700 border-purple-200'
       case 'delivered':
-        return 'bg-green-100 text-green-800 border-green-300'
+        return 'bg-green-100 text-green-700 border-green-200'
       case 'cancelled':
-        return 'bg-red-100 text-red-800 border-red-300'
+        return 'bg-red-100 text-red-700 border-red-200'
       default:
-        return 'bg-gray-100 text-gray-800 border-gray-300'
+        return 'bg-neutral-100 text-neutral-700 border-neutral-200'
     }
   }
 
@@ -77,37 +77,25 @@ export function CustomerOrderHistory({ orders }: CustomerOrderHistoryProps) {
     if (order.deliveryDate) {
       return new Date(order.deliveryDate).toLocaleDateString('fr-FR')
     }
-    
-    // Calculate estimated delivery (3-5 days from creation)
     const orderDate = new Date(order.createdAt)
     const estimatedDate = new Date(orderDate)
-    estimatedDate.setDate(estimatedDate.getDate() + 4) // 4 days average
+    estimatedDate.setDate(estimatedDate.getDate() + 4)
     return `Estimée: ${estimatedDate.toLocaleDateString('fr-FR')}`
   }
 
   if (orders.length === 0) {
     return (
-      <div className="bg-white rounded-lg shadow-md p-8 text-center">
-        <div className="text-kitchen-lux-dark-green-600 mb-4">
-          <svg
-            className="w-16 h-16 mx-auto mb-4 text-kitchen-lux-dark-green-300"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-          >
-            <path
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth={2}
-              d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"
-            />
-          </svg>
-          <p className="text-lg font-medium">Aucune commande</p>
-          <p className="text-sm mt-2">Vous n&apos;avez pas encore passé de commande.</p>
+      <div className="rounded-3xl border border-brand-border bg-white/95 p-8 text-center shadow-card-sm">
+        <div className="text-text-muted">
+          <span className="material-symbols-outlined mx-auto mb-4 block text-4xl text-brand-dark/60">
+            shopping_bag
+          </span>
+          <p className="text-lg font-semibold text-text-primary">Aucune commande</p>
+          <p className="mt-2 text-sm">Vous n&apos;avez pas encore passé de commande.</p>
         </div>
         <Link
           href="/"
-          className="inline-block mt-4 px-6 py-2 bg-kitchen-lux-dark-green-600 text-white rounded-lg hover:bg-kitchen-lux-dark-green-700 transition-colors"
+          className="mt-6 inline-flex items-center gap-2 rounded-full bg-brand-dark px-6 py-3 text-sm font-semibold text-text-inverted transition hover:bg-black"
         >
           Découvrir nos produits
         </Link>
@@ -116,136 +104,121 @@ export function CustomerOrderHistory({ orders }: CustomerOrderHistoryProps) {
   }
 
   return (
-    <div className="space-y-4">
-      {orders.map((order) => (
-        <div
-          key={order.id}
-          className="bg-white rounded-lg shadow-md overflow-hidden border border-kitchen-lux-dark-green-200"
-        >
-          {/* Order Header */}
-          <div className="bg-kitchen-lux-dark-green-50 px-6 py-4 border-b border-kitchen-lux-dark-green-200">
-            <div className="flex justify-between items-start">
-              <div>
-                <h3 className="text-lg font-semibold text-kitchen-lux-dark-green-900">
-                  Commande {order.orderNumber}
-                </h3>
-                <p className="text-sm text-kitchen-lux-dark-green-600 mt-1">
-                  Passée le {new Date(order.createdAt).toLocaleDateString('fr-FR', {
-                    day: 'numeric',
-                    month: 'long',
-                    year: 'numeric',
-                  })}
-                </p>
-              </div>
-              <span
-                className={`px-3 py-1 rounded-full text-xs font-semibold border ${getStatusColor(
-                  order.status
-                )}`}
-              >
-                {getStatusLabel(order.status)}
-              </span>
-            </div>
-          </div>
-
-          {/* Order Items */}
-          <div className="p-6">
-            {order.items.map((item, index) => (
-              <div
-                key={index}
-                className="flex gap-4 items-center py-3 border-b border-kitchen-lux-dark-green-100 last:border-0"
-              >
-                <div className="relative w-20 h-20 flex-shrink-0 bg-white rounded-lg border border-kitchen-lux-dark-green-200 overflow-hidden">
-                  {item.productImage && (
+    <div className="space-y-6">
+      {orders.map((order) => {
+        const primaryItem = order.items[0]
+        return (
+          <div key={order.id} className="rounded-3xl border border-brand-border bg-white/95 p-6 shadow-card-sm">
+            <div className="flex flex-col gap-6 md:flex-row">
+              <div className="flex flex-col gap-3 md:w-48">
+                <div className="relative h-40 overflow-hidden rounded-2xl bg-neutral-50">
+                  {primaryItem?.productImage ? (
                     <Image
-                      src={item.productImage}
-                      alt={item.productName}
+                      src={primaryItem.productImage}
+                      alt={primaryItem.productName}
                       fill
-                      className="object-contain p-2"
+                      className="object-cover"
                     />
+                  ) : (
+                    <div className="flex h-full items-center justify-center text-text-muted">
+                      <span className="material-symbols-outlined text-4xl">inventory_2</span>
+                    </div>
                   )}
                 </div>
-                <div className="flex-1">
-                  <p className="font-medium text-kitchen-lux-dark-green-900">
-                    {item.productName}
-                  </p>
-                  <p className="text-sm text-kitchen-lux-dark-green-600">
-                    Quantité: {item.quantity}
-                  </p>
-                  <p className="text-sm font-semibold text-kitchen-lux-dark-green-800">
-                    {item.subtotal.toLocaleString()} DA
-                  </p>
-                </div>
-              </div>
-            ))}
-
-            {/* Order Summary */}
-            <div className="mt-4 pt-4 border-t border-kitchen-lux-dark-green-200">
-              <div className="flex justify-between items-center mb-2">
-                <span className="text-sm text-kitchen-lux-dark-green-700">Total:</span>
-                <span className="text-xl font-bold text-kitchen-lux-dark-green-900">
-                  {order.total.toLocaleString()} DA
-                </span>
-              </div>
-              
-              {/* Delivery Estimate */}
-              <div className="flex justify-between items-center text-sm">
-                <span className="text-kitchen-lux-dark-green-700">Livraison estimée:</span>
-                <span className="font-medium text-kitchen-lux-dark-green-900">
-                  {getEstimatedDelivery(order)}
+                <span
+                  className={`inline-flex items-center justify-center rounded-full border px-3 py-1 text-xs font-semibold ${getStatusColor(
+                    order.status,
+                  )}`}
+                >
+                  {getStatusLabel(order.status)}
                 </span>
               </div>
 
-              {/* Tracking Number */}
-              {order.trackingNumber && (
-                <div className="mt-2 flex justify-between items-center text-sm">
-                  <span className="text-kitchen-lux-dark-green-700">Numéro de suivi:</span>
-                  <span className="font-mono font-medium text-kitchen-lux-dark-green-900">
-                    {order.trackingNumber}
-                  </span>
-                </div>
-              )}
-            </div>
-
-            {/* Details Toggle */}
-            <button
-              onClick={() =>
-                setExpandedOrderId(expandedOrderId === order.id ? null : order.id)
-              }
-              className="w-full mt-4 text-sm text-kitchen-lux-dark-green-600 hover:text-kitchen-lux-dark-green-800 font-medium transition-colors"
-            >
-              {expandedOrderId === order.id ? '▲ Masquer les détails' : '▼ Voir les détails'}
-            </button>
-
-            {/* Expanded Details */}
-            {expandedOrderId === order.id && (
-              <div className="mt-4 p-4 bg-kitchen-lux-dark-green-50 rounded-lg space-y-2 text-sm">
-                <div>
-                  <span className="font-medium text-kitchen-lux-dark-green-800">
-                    Adresse de livraison:
-                  </span>
-                  <p className="text-kitchen-lux-dark-green-700 mt-1">
-                    {order.customer.address}
-                    <br />
-                    {order.customer.wilaya}
-                  </p>
-                </div>
-                <div>
-                  <span className="font-medium text-kitchen-lux-dark-green-800">
-                    Téléphone:
-                  </span>
-                  <p className="text-kitchen-lux-dark-green-700">{order.customer.phone}</p>
-                </div>
-                {order.notes && (
+              <div className="flex-1 space-y-4">
+                <div className="flex flex-wrap items-start justify-between gap-2">
                   <div>
-                    <span className="font-medium text-kitchen-lux-dark-green-800">Notes:</span>
-                    <p className="text-kitchen-lux-dark-green-700">{order.notes}</p>
+                    <p className="text-xs uppercase tracking-[0.3em] text-text-muted">Commande</p>
+                    <h3 className="text-2xl font-semibold text-text-primary">{order.orderNumber}</h3>
+                  </div>
+                  <p className="text-sm text-text-muted">
+                    {new Date(order.createdAt).toLocaleDateString('fr-FR', {
+                      day: 'numeric',
+                      month: 'long',
+                      year: 'numeric',
+                    })}
+                  </p>
+                </div>
+
+                <div className="grid gap-4 border-t border-brand-border pt-4 text-sm text-text-muted sm:grid-cols-3">
+                  <div>
+                    <p className="text-xs uppercase tracking-[0.3em]">Montant</p>
+                    <p className="text-lg font-semibold text-text-primary">
+                      {order.total.toLocaleString()} DA
+                    </p>
+                  </div>
+                  <div>
+                    <p className="text-xs uppercase tracking-[0.3em]">Livraison</p>
+                    <p className="font-medium text-text-primary">{getEstimatedDelivery(order)}</p>
+                  </div>
+                  <div>
+                    <p className="text-xs uppercase tracking-[0.3em]">Client</p>
+                    <p className="font-medium text-text-primary">{order.customer.name}</p>
+                  </div>
+                </div>
+
+                <div className="space-y-3 rounded-2xl border border-brand-border bg-brand-light/60 p-4 text-sm text-text-muted">
+                  {order.items.map((item, index) => (
+                    <div key={index} className="flex items-center justify-between">
+                      <div>
+                        <p className="font-semibold text-text-primary">{item.productName}</p>
+                        <p>Quantité: {item.quantity}</p>
+                      </div>
+                      <p className="font-semibold text-text-primary">{item.subtotal.toLocaleString()} DA</p>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  {order.trackingNumber && (
+                    <div className="text-xs font-mono uppercase tracking-[0.3em] text-text-muted">
+                      {order.trackingNumber}
+                    </div>
+                  )}
+                  <button
+                    onClick={() =>
+                      setExpandedOrderId(expandedOrderId === order.id ? null : order.id)
+                    }
+                    className="text-sm font-semibold text-brand-dark underline-offset-4 hover:underline"
+                  >
+                    {expandedOrderId === order.id ? 'Masquer les détails' : 'Voir les détails'}
+                  </button>
+                </div>
+
+                {expandedOrderId === order.id && (
+                  <div className="space-y-3 rounded-2xl border border-brand-border bg-white/80 p-4 text-sm text-text-muted">
+                    <div>
+                      <p className="text-xs uppercase tracking-[0.3em]">Adresse de livraison</p>
+                      <p className="font-semibold text-text-primary">
+                        {order.customer.address}, {order.customer.wilaya}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-xs uppercase tracking-[0.3em]">Contact</p>
+                      <p>{order.customer.phone}</p>
+                    </div>
+                    {order.notes && (
+                      <div>
+                        <p className="text-xs uppercase tracking-[0.3em]">Notes</p>
+                        <p>{order.notes}</p>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
-            )}
+            </div>
           </div>
-        </div>
-      ))}
+        )
+      })}
     </div>
   )
 }

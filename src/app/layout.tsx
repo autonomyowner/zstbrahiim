@@ -1,7 +1,6 @@
 import type { Metadata } from 'next'
 import { Inter, Playfair_Display, Great_Vibes } from 'next/font/google'
 import './globals.css'
-import { PromotionalBanner } from '@/components/PromotionalBanner'
 import { Navbar } from '@/components/Navbar'
 import { Footer } from '@/components/Footer'
 
@@ -94,12 +93,12 @@ export default function RootLayout({
 }) {
   return (
     <html lang="fr" className={`${inter.variable} ${playfair.variable} ${greatVibes.variable}`}>
-      <body
-        className={`${inter.className} bg-gradient-elegant min-h-screen text-slate-900`}
-      >
-        <Navbar />
-        <main className="pt-28 md:pt-32 pb-20 bg-gradient-to-br from-kitchen-lux-dark-green-50 to-kitchen-lux-dark-green-100">{children}</main>
-        <Footer />
+      <body className={`${inter.className} bg-brand-light text-text-primary antialiased`}>
+        <div className="flex min-h-screen flex-col bg-brand-light">
+          <Navbar />
+          <main className="flex-1 bg-brand-light pt-10 pb-16">{children}</main>
+          <Footer />
+        </div>
       </body>
     </html>
   )

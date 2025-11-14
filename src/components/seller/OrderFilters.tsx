@@ -20,56 +20,64 @@ export function OrderFilters({
   onSearchQueryChange,
 }: OrderFiltersProps): JSX.Element {
   return (
-    <div className="bg-white rounded-lg shadow-md p-6 mb-6">
-      <h3 className="text-lg font-semibold text-kitchen-lux-dark-green-900 mb-4">Filtres</h3>
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+    <div className="mb-6 rounded-2xl border border-brand-border bg-white/90 p-6 shadow-card-sm">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
         <div>
-          <label htmlFor="search" className="block text-sm font-medium text-kitchen-lux-dark-green-700 mb-2">
+          <label htmlFor="order-search" className="text-xs font-semibold uppercase tracking-[0.3em] text-text-muted">
             Rechercher
           </label>
-          <input
-            type="text"
-            id="search"
-            value={searchQuery}
-            onChange={(e) => onSearchQueryChange(e.target.value)}
-            placeholder="N° commande, client..."
-            className="w-full px-4 py-2 border border-kitchen-lux-dark-green-300 rounded-lg focus:ring-2 focus:ring-kitchen-lux-dark-green-500 focus:border-transparent"
-          />
+          <div className="mt-2 relative">
+            <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-text-muted">
+              search
+            </span>
+            <input
+              type="text"
+              id="order-search"
+              value={searchQuery}
+              onChange={(event) => onSearchQueryChange(event.target.value)}
+              placeholder="N° commande, client..."
+              className="w-full rounded-full border border-brand-border bg-white py-3 pl-12 pr-4 text-sm text-text-primary focus:border-brand-dark focus:outline-none focus:ring-2 focus:ring-brand-primary/40"
+            />
+          </div>
         </div>
+
         <div>
-          <label htmlFor="status" className="block text-sm font-medium text-kitchen-lux-dark-green-700 mb-2">
-            Statut Commande
+          <label className="text-xs font-semibold uppercase tracking-[0.3em] text-text-muted">
+            Statut commande
           </label>
-          <select
-            id="status"
-            value={statusFilter}
-            onChange={(e) => onStatusFilterChange(e.target.value as OrderStatus | 'all')}
-            className="w-full px-4 py-2 border border-kitchen-lux-dark-green-300 rounded-lg focus:ring-2 focus:ring-kitchen-lux-dark-green-500 focus:border-transparent"
-          >
-            <option value="all">Toutes</option>
-            <option value="pending">En attente</option>
-            <option value="processing">En traitement</option>
-            <option value="shipped">Expédiée</option>
-            <option value="delivered">Livrée</option>
-            <option value="cancelled">Annulée</option>
-          </select>
+          <div className="mt-2">
+            <select
+              value={statusFilter}
+              onChange={(event) => onStatusFilterChange(event.target.value as OrderStatus | 'all')}
+              className="w-full rounded-2xl border border-brand-border bg-white py-3 px-4 text-sm font-semibold text-text-primary focus:border-brand-dark focus:outline-none focus:ring-2 focus:ring-brand-primary/30"
+            >
+              <option value="all">Toutes</option>
+              <option value="pending">En attente</option>
+              <option value="processing">En traitement</option>
+              <option value="shipped">Expédiée</option>
+              <option value="delivered">Livrée</option>
+              <option value="cancelled">Annulée</option>
+            </select>
+          </div>
         </div>
+
         <div>
-          <label htmlFor="payment" className="block text-sm font-medium text-kitchen-lux-dark-green-700 mb-2">
-            Statut Paiement
+          <label className="text-xs font-semibold uppercase tracking-[0.3em] text-text-muted">
+            Statut paiement
           </label>
-          <select
-            id="payment"
-            value={paymentFilter}
-            onChange={(e) => onPaymentFilterChange(e.target.value as PaymentStatus | 'all')}
-            className="w-full px-4 py-2 border border-kitchen-lux-dark-green-300 rounded-lg focus:ring-2 focus:ring-kitchen-lux-dark-green-500 focus:border-transparent"
-          >
-            <option value="all">Tous</option>
-            <option value="pending">En attente</option>
-            <option value="paid">Payée</option>
-            <option value="failed">Échouée</option>
-            <option value="refunded">Remboursée</option>
-          </select>
+          <div className="mt-2">
+            <select
+              value={paymentFilter}
+              onChange={(event) => onPaymentFilterChange(event.target.value as PaymentStatus | 'all')}
+              className="w-full rounded-2xl border border-brand-border bg-white py-3 px-4 text-sm font-semibold text-text-primary focus:border-brand-dark focus:outline-none focus:ring-2 focus:ring-brand-primary/30"
+            >
+              <option value="all">Tous</option>
+              <option value="pending">En attente</option>
+              <option value="paid">Payée</option>
+              <option value="failed">Échouée</option>
+              <option value="refunded">Remboursée</option>
+            </select>
+          </div>
         </div>
       </div>
     </div>

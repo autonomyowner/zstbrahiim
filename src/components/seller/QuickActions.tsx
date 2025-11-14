@@ -1,26 +1,23 @@
 'use client'
 
-type QuickActionProps = {
+type QuickAction = {
   title: string
   description: string
+  icon: string
+  accent: string
   onClick: () => void
-  variant?: 'primary' | 'secondary'
 }
 
-function QuickActionButton({ title, description, onClick, variant = 'secondary' }: QuickActionProps): JSX.Element {
-  const bgColor = variant === 'primary'
-    ? 'bg-kitchen-lux-dark-green-600 hover:bg-kitchen-lux-dark-green-700 text-white'
-    : 'bg-white hover:bg-kitchen-lux-dark-green-50 text-kitchen-lux-dark-green-900 border border-kitchen-lux-dark-green-200'
-
+function QuickActionButton({ title, description, icon, accent, onClick }: QuickAction): JSX.Element {
   return (
     <button
       onClick={onClick}
-      className={`${bgColor} rounded-lg p-6 text-left transition-all shadow-md hover:shadow-lg w-full`}
+      className="group flex flex-col gap-3 rounded-xl sm:rounded-2xl border border-brand-border bg-white p-5 sm:p-6 text-left shadow-card-sm hover:shadow-card-md hover:border-brand-dark transition-all duration-300 hover:-translate-y-1"
     >
-      <h3 className="text-lg font-semibold mb-2">{title}</h3>
-      <p className={`text-sm ${variant === 'primary' ? 'text-white/90' : 'text-kitchen-lux-dark-green-600'}`}>
-        {description}
-      </p>
+      <div>
+        <h3 className="text-base sm:text-lg font-bold text-text-primary group-hover:text-brand-dark transition-colors">{title}</h3>
+        <p className="mt-2 text-xs sm:text-sm text-text-muted leading-relaxed">{description}</p>
+      </div>
     </button>
   )
 }
@@ -36,35 +33,53 @@ export function QuickActions({
   onViewOrders,
   onAddProduct,
   onManageInventory,
-  onViewAnalytics
+  onViewAnalytics,
 }: QuickActionsProps): JSX.Element {
+  const actions: QuickAction[] = [
+    {
+      title: 'Voir Commandes',
+      description: 'Suivez les statuts et imprimez les factures.',
+      icon: 'receipt_long',
+      accent: 'bg-brand-dark text-brand-primary',
+      onClick: onViewOrders,
+    },
+    {
+      title: 'Ajouter Produit',
+      description: 'Publiez rapidement une nouvelle référence.',
+      icon: 'add_box',
+      accent: 'bg-green-100 text-green-600',
+      onClick: onAddProduct,
+    },
+    {
+      title: 'Gérer Inventaire',
+      description: 'Ajustez les stocks et promotions.',
+      icon: 'inventory',
+      accent: 'bg-purple-100 text-purple-600',
+      onClick: onManageInventory,
+    },
+    {
+      title: 'Voir Analytiques',
+      description: 'Consultez vos performances de vente.',
+      icon: 'insights',
+      accent: 'bg-blue-100 text-blue-600',
+      onClick: onViewAnalytics,
+    },
+  ]
+
   return (
-    <div className="mb-8">
-      <h2 className="text-2xl font-elegant font-semibold text-kitchen-lux-dark-green-900 mb-6">
-        Actions Rapides
-      </h2>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <QuickActionButton
-          title="Voir Commandes"
-          description="Gérer toutes les commandes"
-          onClick={onViewOrders}
-          variant="primary"
-        />
-        <QuickActionButton
-          title="Ajouter Produit"
-          description="Ajouter nouveau produit"
-          onClick={onAddProduct}
-        />
-        <QuickActionButton
-          title="Gérer Inventaire"
-          description="Mettre à jour le stock"
-          onClick={onManageInventory}
-        />
-        <QuickActionButton
-          title="Voir Analytiques"
-          description="Rapports et statistiques"
-          onClick={onViewAnalytics}
-        />
+    <div className="mb-10 space-y-4 sm:space-y-6">
+      <div>
+        <p className="text-[10px] sm:text-xs uppercase tracking-[0.2em] sm:tracking-[0.3em] text-text-muted">
+          Actions rapides
+        </p>
+        <h2 className="text-xl sm:text-2xl font-black text-text-primary mt-1">
+          Pilotez votre boutique
+        </h2>
+      </div>
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        {actions.map((action) => (
+          <QuickActionButton key={action.title} {...action} />
+        ))}
       </div>
     </div>
   )

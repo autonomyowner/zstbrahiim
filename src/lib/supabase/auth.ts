@@ -1,6 +1,6 @@
 // Authentication helpers for Supabase
 import { supabase } from './client'
-import type { UserRole, UserProfile, Database, SellerType } from './types'
+import type { UserRole, UserProfile, Database, SellerType, SellerCategory } from './types'
 
 type UserProfileUpdatePayload = {
   email?: string
@@ -10,6 +10,7 @@ type UserProfileUpdatePayload = {
   provider_avatar?: string | null
   bio?: string | null
   seller_type?: SellerType | null
+  seller_category?: SellerCategory | null
 }
 
 // Sign up with email and password
@@ -18,26 +19,44 @@ export const signUp = async (
   password: string,
   fullName: string,
   phone?: string,
-  role: UserRole = 'customer'
+  role: UserRole = 'customer',
+  sellerCategory?: SellerCategory
 ): Promise<{ user: any; error: any }> => {
   try {
+    const metadata: Record<string, any> = {
+      full_name: fullName,
+      phone: phone || '',
+      role: role,
+    }
+
+    if (role === 'seller') {
+      metadata.seller_category = sellerCategory || 'fournisseur'
+    }
+
     // Create auth user with metadata
     // The database trigger will automatically create the user profile
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
-        data: {
-          full_name: fullName,
-          phone: phone || '',
-          role: role,
-        },
+        data: metadata,
       },
     })
 
     if (error) {
       console.error('Error signing up:', error)
       return { user: null, error }
+    }
+
+    if (data.user && role === 'seller') {
+      try {
+        await supabase
+          .from('user_profiles')
+          .update({ seller_category: sellerCategory || 'fournisseur' })
+          .eq('id', data.user.id)
+      } catch (profileError) {
+        console.error('Error assigning seller category:', profileError)
+      }
     }
 
     // Profile is automatically created by the database trigger (handle_new_user)

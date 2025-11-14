@@ -39,6 +39,7 @@ export type Database = {
           rating: number | null
           returns_info: string
           seller_id: string | null
+          seller_category: Database["public"]["Enums"]["seller_category"] | null
           shipping_info: string
           slug: string
           updated_at: string | null
@@ -69,6 +70,7 @@ export type Database = {
           rating?: number | null
           returns_info: string
           seller_id?: string | null
+          seller_category?: Database["public"]["Enums"]["seller_category"] | null
           shipping_info: string
           slug: string
           updated_at?: string | null
@@ -99,6 +101,7 @@ export type Database = {
           rating?: number | null
           returns_info?: string
           seller_id?: string | null
+          seller_category?: Database["public"]["Enums"]["seller_category"] | null
           shipping_info?: string
           slug?: string
           updated_at?: string | null
@@ -191,6 +194,7 @@ export type Database = {
         | "Parfum Homme"
         | "Eau de Parfum"
         | "Eau de Toilette"
+      seller_category: "fournisseur" | "importateur" | "grossiste"
       seller_type: "retailer" | "importer" | "wholesaler"
       service_category:
         | "Développement Web"

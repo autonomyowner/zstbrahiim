@@ -2,9 +2,12 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import Image from 'next/image'
 import { usePathname, useRouter } from 'next/navigation'
-import { getCurrentUserProfile, signOut as authSignOut, onAuthStateChange } from '@/lib/supabase/auth'
+import {
+  getCurrentUserProfile,
+  signOut as authSignOut,
+  onAuthStateChange,
+} from '@/lib/supabase/auth'
 import type { UserProfile } from '@/lib/supabase/types'
 
 type NavItem = {
@@ -12,18 +15,22 @@ type NavItem = {
   href: string
 }
 
-const navItems: NavItem[] = [
+const primaryNav: NavItem[] = [
   { label: 'Marketplace', href: '/' },
-  { label: 'Dashboard', href: '/services' },
+  { label: 'Winter', href: '/winter' },
+  { label: 'Services', href: '/services' },
+  { label: 'Freelance', href: '/freelance' },
 ]
 
-// Split menu items: first on left, rest on right
-const leftNavItem = navItems[0]
-const rightNavItems = navItems.slice(1)
+const topNav: NavItem[] = [
+  { label: 'Shopping', href: '/' },
+  { label: 'Business', href: '/services' },
+  { label: 'Freelance', href: '/freelance' },
+]
 
 export const Navbar = (): JSX.Element => {
   const [isScrolled, setIsScrolled] = useState<boolean>(false)
-  const [isBrandVisible, setIsBrandVisible] = useState<boolean>(true)
+  const [mobileOpen, setMobileOpen] = useState<boolean>(false)
   const [user, setUser] = useState<UserProfile | null>(null)
   const [loading, setLoading] = useState<boolean>(true)
   const pathname = usePathname()
@@ -31,24 +38,20 @@ export const Navbar = (): JSX.Element => {
 
   useEffect(() => {
     const handleScroll = (): void => {
-      setIsScrolled(window.scrollY > 12)
+      setIsScrolled(window.scrollY > 10)
     }
 
     window.addEventListener('scroll', handleScroll)
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
+  // Close mobile nav on route change
   useEffect(() => {
-    const interval = setInterval(() => {
-      setIsBrandVisible((prev) => !prev)
-    }, 2000) // Fade in/out every 2 seconds
-
-    return () => clearInterval(interval)
-  }, [])
+    setMobileOpen(false)
+  }, [pathname])
 
   // Authentication state management
   useEffect(() => {
-    // Initial user fetch
     const fetchUser = async () => {
       try {
         const profile = await getCurrentUserProfile()
@@ -63,8 +66,9 @@ export const Navbar = (): JSX.Element => {
 
     fetchUser()
 
-    // Listen for auth state changes
-    const { data: { subscription } } = onAuthStateChange(async (authUser) => {
+    const {
+      data: { subscription },
+    } = onAuthStateChange(async (authUser) => {
       if (authUser) {
         const profile = await getCurrentUserProfile()
         setUser(profile)
@@ -93,284 +97,190 @@ export const Navbar = (): JSX.Element => {
     }
   }
 
+  const renderAuthSection = (variant: 'desktop' | 'mobile') => {
+    if (loading) {
+      return (
+        <div className="flex h-10 w-10 items-center justify-center rounded-full bg-neutral-200 animate-pulse" />
+      )
+    }
+
+    if (user) {
+      return (
+        <div
+          className={`flex items-center gap-3 ${
+            variant === 'mobile' ? 'flex-col items-stretch w-full' : ''
+          }`}
+        >
+          <Link
+            href="/account"
+            className="flex items-center gap-3 rounded-xl border border-white/20 bg-white/10 px-4 py-2.5 text-sm font-semibold text-white shadow-sm hover:border-brand-primary hover:bg-white/20 hover:shadow-card-sm transition-all group"
+          >
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-primary text-brand-dark font-black shadow-sm group-hover:scale-105 transition-transform">
+              {user.full_name?.charAt(0)?.toUpperCase() || 'Z'}
+            </div>
+            <div className="text-left">
+              <p className="text-xs uppercase tracking-[0.25em] text-white/70 font-bold">
+                Account
+              </p>
+              <p className="text-sm font-bold text-white">
+                {user.full_name || 'My profile'}
+              </p>
+            </div>
+          </Link>
+          <button
+            onClick={handleSignOut}
+            className="inline-flex items-center justify-center gap-2 rounded-xl border border-red-400/50 bg-red-500/10 px-4 py-2.5 text-xs font-bold uppercase tracking-[0.2em] text-red-400 transition-all hover:border-red-400 hover:bg-red-500/20 hover:text-red-300 shadow-sm"
+          >
+            <span className="material-symbols-outlined text-base">logout</span>
+            Logout
+          </button>
+        </div>
+      )
+    }
+
+    return (
+      <div className={`flex items-center gap-3 ${variant === 'mobile' ? 'flex-col items-stretch w-full' : ''}`}>
+        <Link
+          href="/signin"
+          className="inline-flex items-center justify-center rounded-xl border border-white/20 bg-white/10 px-5 py-2.5 text-sm font-bold text-white hover:border-brand-primary hover:bg-white/20 transition-all shadow-sm hover:shadow-card-sm"
+        >
+          Sign in
+        </Link>
+        <Link
+          href="/signup"
+          className="inline-flex items-center justify-center rounded-xl bg-brand-primary px-5 py-2.5 text-sm font-bold text-brand-dark hover:bg-brand-primary-dark transition-all shadow-card-sm hover:shadow-card-md transform hover:scale-105"
+        >
+          Join ZST
+        </Link>
+      </div>
+    )
+  }
+
+  const renderNavLinks = (orientation: 'row' | 'column') => (
+    <nav
+      className={`${
+        orientation === 'row'
+          ? 'hidden items-center gap-8 md:flex'
+          : 'flex flex-col gap-3 text-base font-semibold'
+      }`}
+    >
+      {primaryNav.map((item) => {
+        const isActive = pathname === item.href
+        return (
+          <Link
+            key={item.href}
+            href={item.href}
+            className={`relative text-sm font-bold transition-all group ${
+              isActive 
+                ? 'text-brand-primary' 
+                : 'text-white/70 hover:text-white'
+            } ${orientation === 'column' ? 'py-2' : ''}`}
+          >
+            {item.label}
+            {isActive && orientation === 'row' && (
+              <span className="absolute -bottom-2 left-0 right-0 h-1 rounded-full bg-brand-primary shadow-sm" />
+            )}
+            {!isActive && orientation === 'row' && (
+              <span className="absolute -bottom-2 left-0 right-0 h-1 rounded-full bg-brand-primary scale-x-0 group-hover:scale-x-100 transition-transform origin-left" />
+            )}
+            {isActive && orientation === 'column' && (
+              <span className="absolute left-0 top-0 bottom-0 w-1 rounded-full bg-brand-primary" />
+            )}
+          </Link>
+        )
+      })}
+    </nav>
+  )
+
   return (
-    <>
-      {/* Top Bar */}
-      <div className="fixed inset-x-0 top-0 z-50 bg-kitchen-white-clean border-b border-kitchen-marble-gray-light">
-        <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-          <div className="flex h-10 items-center justify-between">
-            {/* Services - Left */}
-            <Link
-              href="/services"
-              className="text-xs font-medium uppercase tracking-[0.2em] text-kitchen-marble-gray transition-colors duration-200 hover:text-kitchen-black-deep"
-            >
-              Services
-            </Link>
-
-            {/* Freelance - Center */}
-            <Link
-              href="/freelance"
-              className="text-xs font-medium uppercase tracking-[0.2em] text-kitchen-marble-gray transition-colors duration-200 hover:text-kitchen-black-deep"
-            >
-              Freelance
-            </Link>
-
-            {/* Sellers - Right */}
-            <Link
-              href="/sellers"
-              className="text-xs font-medium uppercase tracking-[0.2em] text-kitchen-marble-gray transition-colors duration-200 hover:text-kitchen-black-deep"
-            >
-              Sellers
-            </Link>
+    <header className="sticky top-0 z-40">
+      <div className="hidden sm:block bg-gradient-to-r from-brand-primary via-brand-primary to-brand-primaryDark text-brand-dark">
+        <div className="mx-auto flex max-w-6xl items-center justify-between px-4 sm:px-6 lg:px-8 py-2.5 text-xs font-bold uppercase tracking-[0.2em] sm:tracking-[0.25em]">
+          <div className="flex items-center gap-4 sm:gap-6 text-brand-dark">
+            {topNav.map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                className="transition-all hover:text-brand-dark/70 hover:scale-105 whitespace-nowrap"
+              >
+                {item.label}
+              </Link>
+            ))}
           </div>
+          <p className="hidden lg:block text-brand-dark/90 font-semibold text-[10px] tracking-[0.15em] whitespace-nowrap">
+            ✨ Trusted suppliers & deliveries
+          </p>
         </div>
       </div>
 
-      {/* Main Navbar */}
-      <nav
-        className={`fixed inset-x-0 top-10 z-50 transition-colors duration-300 ${
-          isScrolled
-            ? 'bg-kitchen-white-clean/92 backdrop-blur border-b border-kitchen-marble-gray-light shadow-sm'
-            : 'bg-transparent'
+      <div
+        className={`border-b border-black/10 bg-black backdrop-blur-xl transition-all duration-300 ${
+          isScrolled ? 'shadow-card-md' : 'shadow-sm'
         }`}
       >
-        <div className="mx-auto flex max-w-6xl flex-col px-4 sm:px-6 lg:px-8">
-        <div className="relative flex h-16 items-center md:h-20">
-          {/* Left menu item - Desktop only */}
-          <div className="hidden items-start gap-2 md:flex flex-col flex-1">
-            {/* Auth buttons - Left side */}
-            {loading ? (
-              <div className="inline-flex items-center gap-2 rounded-full border border-gray-300 bg-gray-100 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-gray-500">
-                <span>Loading...</span>
-              </div>
-            ) : user ? (
-              // Logged in: Show Account button
-              <Link
-                href="/account"
-                className="inline-flex items-center gap-2 rounded-full border border-kitchen-lux-dark-green-300 bg-gradient-to-r from-kitchen-lux-dark-green-50 to-kitchen-lux-dark-green-100 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-kitchen-lux-dark-green-800 transition-all duration-200 hover:border-kitchen-lux-dark-green-500 hover:bg-gradient-to-r hover:from-kitchen-lux-dark-green-100 hover:to-kitchen-lux-dark-green-200 hover:text-kitchen-lux-dark-green-900 hover:shadow-md hover:shadow-kitchen-lux-dark-green-200/30"
-              >
-                <Image
-                  src="/logo.png"
-                  alt="ZST Logo"
-                  width={20}
-                  height={20}
-                  className="rounded-full object-cover"
-                />
-                <span>{user.full_name || 'Account'}</span>
-              </Link>
-            ) : (
-              // Logged out: Show Sign In button
-              <Link
-                href="/signin"
-                className="inline-flex items-center gap-2 rounded-full border border-kitchen-lux-dark-green-300 bg-gradient-to-r from-kitchen-lux-dark-green-50 to-kitchen-lux-dark-green-100 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-kitchen-lux-dark-green-800 transition-all duration-200 hover:border-kitchen-lux-dark-green-500 hover:bg-gradient-to-r hover:from-kitchen-lux-dark-green-100 hover:to-kitchen-lux-dark-green-200 hover:text-kitchen-lux-dark-green-900 hover:shadow-md hover:shadow-kitchen-lux-dark-green-200/30"
-              >
-                <Image
-                  src="/logo.png"
-                  alt="ZST Logo"
-                  width={20}
-                  height={20}
-                  className="rounded-full object-cover"
-                />
-                <span>Sign In</span>
-              </Link>
-            )}
-            {(() => {
-              const isActive = pathname === leftNavItem.href
-              return (
-                <Link
-                  href={leftNavItem.href}
-                  className={`text-sm font-medium uppercase tracking-[0.18em] transition-colors duration-200 ${
-                    isActive
-                      ? 'text-kitchen-black-deep'
-                      : 'text-kitchen-marble-gray hover:text-kitchen-black-deep'
-                  }`}
-                >
-                  {leftNavItem.label}
-                </Link>
-              )
-            })()}
-          </div>
-
-          {/* Center brand name - Absolutely centered on mobile */}
-          <div className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 md:relative md:left-0 md:top-0 md:translate-x-0 md:translate-y-0 md:flex-1 md:flex md:justify-center">
-            <Link
-              href="/"
-              className="transition-opacity duration-200 hover:opacity-80 text-center"
-            >
-              <span
-                className={`text-4xl md:text-5xl lg:text-7xl font-elegant tracking-wide normal-case transition-opacity duration-1000 ${
-                  isBrandVisible ? 'opacity-100' : 'opacity-50'
-                }`}
-              >
-                <span className="text-kitchen-black-deep">ZST</span>
+        <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+          <div className="flex h-16 md:h-20 items-center justify-between gap-4">
+            <Link href="/" className="flex items-center group">
+              <span className="text-2xl sm:text-3xl font-black tracking-tight text-brand-primary group-hover:text-brand-primary/90 transition-colors">
+                ZST
               </span>
             </Link>
-          </div>
 
-          {/* Right menu items - Desktop only */}
-          <div className="hidden items-end gap-2 md:flex flex-col flex-1 justify-end">
-            {/* Auth buttons - Right side */}
-            {!loading && (
-              user ? (
-                // Logged in: Show Logout button
-                <button
-                  onClick={handleSignOut}
-                  className="inline-flex items-center gap-2 rounded-full border border-red-300 bg-gradient-to-r from-red-100 to-red-200 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-red-800 transition-all duration-200 hover:border-red-500 hover:bg-gradient-to-r hover:from-red-200 hover:to-red-300 hover:text-red-900 hover:shadow-md hover:shadow-red-200/30"
-                >
-                  <Image
-                    src="/logo.png"
-                    alt="ZST Logo"
-                    width={20}
-                    height={20}
-                    className="rounded-full object-cover"
-                  />
-                  <span>Logout</span>
-                </button>
-              ) : (
-                // Logged out: Show Sign Up button
-                <Link
-                  href="/signup"
-                  className="inline-flex items-center gap-2 rounded-full border border-purple-300 bg-gradient-to-r from-purple-100 to-purple-200 px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-purple-800 transition-all duration-200 hover:border-purple-500 hover:bg-gradient-to-r hover:from-purple-200 hover:to-purple-300 hover:text-purple-900 hover:shadow-md hover:shadow-purple-200/30"
-                >
-                  <Image
-                    src="/logo.png"
-                    alt="ZST Logo"
-                    width={20}
-                    height={20}
-                    className="rounded-full object-cover"
-                  />
-                  <span>Sign Up</span>
-                </Link>
-              )
-            )}
-            {rightNavItems.map((item) => {
-              const isActive = pathname === item.href
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className={`text-sm font-medium uppercase tracking-[0.18em] transition-colors duration-200 ${
-                    isActive
-                      ? 'text-kitchen-black-deep'
-                      : 'text-kitchen-marble-gray hover:text-kitchen-black-deep'
-                  }`}
-                >
-                  {item.label}
-                </Link>
-              )
-            })}
-          </div>
+            {renderNavLinks('row')}
 
-          {/* Mobile menu items */}
-          {/* Boutique - Left side */}
-          <div className="absolute left-0 top-1/2 -translate-y-1/2 flex flex-col items-start gap-1 md:hidden">
-            {/* Auth buttons - Mobile Left */}
-            {!loading && (
-              user ? (
-                // Logged in: Show Account button
-                <Link
-                  href="/account"
-                  className="inline-flex items-center gap-1 rounded-full border border-kitchen-lux-dark-green-300 bg-gradient-to-r from-kitchen-lux-dark-green-50 to-kitchen-lux-dark-green-100 px-2 py-1 text-[8px] font-semibold uppercase tracking-[0.2em] text-kitchen-lux-dark-green-800 transition-all duration-200 hover:border-kitchen-lux-dark-green-500 hover:bg-gradient-to-r hover:from-kitchen-lux-dark-green-100 hover:to-kitchen-lux-dark-green-200 hover:text-kitchen-lux-dark-green-900 hover:shadow-md hover:shadow-kitchen-lux-dark-green-200/30"
-                >
-                  <Image
-                    src="/logo.png"
-                    alt="ZST Logo"
-                    width={14}
-                    height={14}
-                    className="rounded-full object-cover"
-                  />
-                  <span>{user.full_name?.split(' ')[0] || 'Account'}</span>
-                </Link>
-              ) : (
-                // Logged out: Show Sign Up button
-                <Link
-                  href="/signup"
-                  className="inline-flex items-center gap-1 rounded-full border border-purple-300 bg-gradient-to-r from-purple-100 to-purple-200 px-2 py-1 text-[8px] font-semibold uppercase tracking-[0.2em] text-purple-800 transition-all duration-200 hover:border-purple-500 hover:bg-gradient-to-r hover:from-purple-200 hover:to-purple-300 hover:text-purple-900 hover:shadow-md hover:shadow-purple-200/30"
-                >
-                  <Image
-                    src="/logo.png"
-                    alt="ZST Logo"
-                    width={14}
-                    height={14}
-                    className="rounded-full object-cover"
-                  />
-                  <span>Sign Up</span>
-                </Link>
-              )
-            )}
-            {(() => {
-              const isActive = pathname === leftNavItem.href
-              return (
-                <Link
-                  href={leftNavItem.href}
-                  className={`inline-flex items-center justify-center rounded-full border border-purple-300 bg-gradient-to-r from-purple-100 to-purple-200 px-2 py-1 text-[8px] font-semibold uppercase tracking-[0.3em] text-purple-800 transition-all duration-200 hover:border-purple-500 hover:bg-gradient-to-r hover:from-purple-200 hover:to-purple-300 hover:text-purple-900 hover:shadow-md hover:shadow-purple-200/30 ${
-                    isActive
-                      ? 'border-purple-500 bg-gradient-to-r from-purple-200 to-purple-300 text-purple-900 shadow-md shadow-purple-200/30'
-                      : ''
-                  }`}
-                >
-                  {leftNavItem.label}
-                </Link>
-              )
-            })()}
-          </div>
+            <div className="hidden md:flex items-center gap-3 text-sm font-medium">
+              <Link
+                href="/freelance"
+                className="text-white/70 transition-all hover:text-white font-semibold"
+              >
+                Help Center
+              </Link>
+              <Link
+                href="/services"
+                className="inline-flex items-center gap-2 rounded-full border border-white/20 px-4 py-2.5 text-sm font-bold text-white hover:border-brand-primary hover:bg-white/10 transition-all shadow-sm hover:shadow-card-sm"
+              >
+                <span className="material-symbols-outlined text-base">sell</span>
+                Sell your product
+              </Link>
+              {renderAuthSection('desktop')}
+            </div>
 
-          {/* Boutique - Far right */}
-          <div className="absolute right-0 top-1/2 -translate-y-1/2 flex flex-col items-end gap-1 md:hidden">
-            {/* Auth buttons - Mobile Right */}
-            {!loading && (
-              user ? (
-                // Logged in: Show Logout button
-                <button
-                  onClick={handleSignOut}
-                  className="inline-flex items-center gap-1 rounded-full border border-red-300 bg-gradient-to-r from-red-100 to-red-200 px-2 py-1 text-[8px] font-semibold uppercase tracking-[0.2em] text-red-800 transition-all duration-200 hover:border-red-500 hover:bg-gradient-to-r hover:from-red-200 hover:to-red-300 hover:text-red-900 hover:shadow-md hover:shadow-red-200/30"
-                >
-                  <Image
-                    src="/logo.png"
-                    alt="ZST Logo"
-                    width={14}
-                    height={14}
-                    className="rounded-full object-cover"
-                  />
-                  <span>Logout</span>
-                </button>
-              ) : (
-                // Logged out: Show Sign In button
-                <Link
-                  href="/signin"
-                  className="inline-flex items-center gap-1 rounded-full border border-kitchen-lux-dark-green-300 bg-gradient-to-r from-kitchen-lux-dark-green-50 to-kitchen-lux-dark-green-100 px-2 py-1 text-[8px] font-semibold uppercase tracking-[0.2em] text-kitchen-lux-dark-green-800 transition-all duration-200 hover:border-kitchen-lux-dark-green-500 hover:bg-gradient-to-r hover:from-kitchen-lux-dark-green-100 hover:to-kitchen-lux-dark-green-200 hover:text-kitchen-lux-dark-green-900 hover:shadow-md hover:shadow-kitchen-lux-dark-green-200/30"
-                >
-                  <Image
-                    src="/logo.png"
-                    alt="ZST Logo"
-                    width={14}
-                    height={14}
-                    className="rounded-full object-cover"
-                  />
-                  <span>Sign In</span>
-                </Link>
-              )
-            )}
-            {rightNavItems.map((item) => {
-              const isActive = pathname === item.href
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  className={`inline-flex items-center justify-center rounded-full border border-kitchen-lux-dark-green-300 bg-gradient-to-r from-kitchen-lux-dark-green-50 to-kitchen-lux-dark-green-100 px-2 py-1 text-[8px] font-semibold uppercase tracking-[0.3em] text-kitchen-lux-dark-green-800 transition-all duration-200 hover:border-kitchen-lux-dark-green-500 hover:bg-gradient-to-r hover:from-kitchen-lux-dark-green-100 hover:to-kitchen-lux-dark-green-200 hover:text-kitchen-lux-dark-green-900 hover:shadow-md hover:shadow-kitchen-lux-dark-green-200/30 ${
-                    isActive
-                      ? 'border-kitchen-lux-dark-green-500 bg-gradient-to-r from-kitchen-lux-dark-green-100 to-kitchen-lux-dark-green-200 text-kitchen-lux-dark-green-900 shadow-md shadow-kitchen-lux-dark-green-200/30'
-                      : ''
-                  }`}
-                >
-                  {item.label}
-                </Link>
-              )
-            })}
+            <button
+              className="inline-flex h-12 w-12 items-center justify-center rounded-2xl border border-white/20 bg-white/10 text-white transition-all hover:border-brand-primary hover:bg-white/20 md:hidden"
+              onClick={() => setMobileOpen((prev) => !prev)}
+              aria-label="Toggle navigation menu"
+            >
+              <span className="material-symbols-outlined">
+                {mobileOpen ? 'close' : 'menu'}
+              </span>
+            </button>
           </div>
         </div>
       </div>
-    </nav>
-    </>
+
+      {mobileOpen && (
+        <div className="md:hidden border-b border-brand-border bg-white/95 backdrop-blur-xl text-text-primary shadow-card-md animate-fade-in">
+          <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8 flex flex-col gap-6">
+            {renderNavLinks('column')}
+            <div className="flex flex-col gap-3 text-sm">
+              <Link 
+                href="/freelance" 
+                className="text-text-muted hover:text-text-primary font-semibold transition-colors py-2"
+              >
+                Help Center
+              </Link>
+              <Link
+                href="/services"
+                className="inline-flex items-center gap-2 rounded-xl border border-brand-border px-4 py-3 font-bold hover:border-brand-dark hover:bg-neutral-50 transition-all shadow-sm"
+              >
+                <span className="material-symbols-outlined text-base">sell</span>
+                Sell your product
+              </Link>
+            </div>
+            {renderAuthSection('mobile')}
+          </div>
+        </div>
+      )}
+    </header>
   )
 }

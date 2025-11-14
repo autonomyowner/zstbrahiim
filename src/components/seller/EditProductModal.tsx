@@ -2,14 +2,24 @@
 
 import { useState, useEffect } from 'react'
 import { type Product, type ProductType, type ProductNeed } from '@/data/products'
-import { type ProductFormData } from './AddProductModal'
+import { type ProductFormData, type ProductVideoFormValue } from './AddProductModal'
 import { ImageUpload } from '@/components/ImageUpload'
+import { extractVideoMetadata } from '@/utils/video'
+import {
+  MAX_PRODUCT_VIDEO_DURATION_SECONDS,
+  MAX_PRODUCT_VIDEO_SIZE_BYTES,
+} from '@/constants/media'
 
 type EditProductModalProps = {
   isOpen: boolean
   product: Product | null
   onClose: () => void
-  onSubmit: (productId: string, productData: ProductFormData) => void
+  onSubmit: (
+    productId: string,
+    productData: ProductFormData,
+    video?: ProductVideoFormValue | null,
+    removeVideo?: boolean
+  ) => void
 }
 
 export function EditProductModal({ isOpen, product, onClose, onSubmit }: EditProductModalProps): JSX.Element | null {
@@ -31,6 +41,10 @@ export function EditProductModal({ isOpen, product, onClose, onSubmit }: EditPro
   })
 
   const [errors, setErrors] = useState<Record<string, string>>({})
+  const [videoSelection, setVideoSelection] = useState<ProductVideoFormValue | null>(null)
+  const [videoError, setVideoError] = useState<string | null>(null)
+  const [isProcessingVideo, setIsProcessingVideo] = useState(false)
+  const [removeExistingVideo, setRemoveExistingVideo] = useState(false)
 
   useEffect(() => {
     if (product) {
@@ -52,6 +66,9 @@ export function EditProductModal({ isOpen, product, onClose, onSubmit }: EditPro
         deliveryEstimate: product.deliveryEstimate,
         image: product.image,
       })
+      setVideoSelection(null)
+      setVideoError(null)
+      setRemoveExistingVideo(false)
     }
   }, [product])
 
@@ -73,12 +90,16 @@ export function EditProductModal({ isOpen, product, onClose, onSubmit }: EditPro
       return
     }
 
-    onSubmit(product.id, formData)
+    onSubmit(product.id, formData, videoSelection, removeExistingVideo)
     handleClose()
   }
 
   const handleClose = () => {
     setErrors({})
+    setVideoSelection(null)
+    setVideoError(null)
+    setIsProcessingVideo(false)
+    setRemoveExistingVideo(false)
     onClose()
   }
 
@@ -90,6 +111,41 @@ export function EditProductModal({ isOpen, product, onClose, onSubmit }: EditPro
         delete newErrors[field]
         return newErrors
       })
+    }
+  }
+
+  const handleVideoChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0]
+
+    if (!file) {
+      setVideoSelection(null)
+      setVideoError(null)
+      return
+    }
+
+    if (file.size > MAX_PRODUCT_VIDEO_SIZE_BYTES) {
+      setVideoSelection(null)
+      setVideoError('La vidéo doit faire moins de 10 MB.')
+      return
+    }
+
+    setIsProcessingVideo(true)
+    setVideoError(null)
+
+    try {
+      const metadata = await extractVideoMetadata(file)
+      setVideoSelection({
+        file,
+        durationSeconds: metadata.durationSeconds,
+        thumbnailBlob: metadata.thumbnailBlob,
+        thumbnailDataUrl: metadata.thumbnailDataUrl,
+      })
+      setRemoveExistingVideo(false)
+    } catch (error: any) {
+      setVideoSelection(null)
+      setVideoError(error?.message || 'Impossible de traiter cette vidéo.')
+    } finally {
+      setIsProcessingVideo(false)
     }
   }
 
@@ -296,6 +352,86 @@ export function EditProductModal({ isOpen, product, onClose, onSubmit }: EditPro
                     label="Image du produit"
                     required={false}
                   />
+                </div>
+
+                {/* Video Upload */}
+                <div className="md:col-span-2 space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <label className="block text-sm font-medium text-kitchen-lux-dark-green-700 mb-1">
+                        Vidéo de démonstration
+                      </label>
+                      <p className="text-xs text-kitchen-lux-dark-green-500">
+                        MP4/WebM • {MAX_PRODUCT_VIDEO_DURATION_SECONDS}s max • 10 MB max
+                      </p>
+                    </div>
+                    {(product.video || videoSelection) && (
+                      <label className="flex items-center text-xs text-kitchen-lux-dark-green-700 gap-2">
+                        <input
+                          type="checkbox"
+                          checked={removeExistingVideo}
+                          onChange={(e) => {
+                            setRemoveExistingVideo(e.target.checked)
+                            if (e.target.checked) {
+                              setVideoSelection(null)
+                            }
+                          }}
+                        />
+                        Supprimer la vidéo actuelle
+                      </label>
+                    )}
+                  </div>
+
+                  <input
+                    type="file"
+                    accept="video/mp4,video/webm"
+                    onChange={handleVideoChange}
+                    className="w-full text-sm text-kitchen-lux-dark-green-700 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-kitchen-lux-dark-green-50 file:text-kitchen-lux-dark-green-700 hover:file:bg-kitchen-lux-dark-green-100"
+                  />
+                  {videoError && <p className="text-xs text-red-600">{videoError}</p>}
+                  {isProcessingVideo && (
+                    <p className="text-xs text-kitchen-lux-dark-green-600">Analyse de la vidéo...</p>
+                  )}
+
+                  {(videoSelection || product.video) && !removeExistingVideo && (
+                    <div className="flex items-center gap-4 rounded-xl border border-kitchen-lux-dark-green-200 bg-kitchen-lux-dark-green-50 p-3">
+                      <div className="relative w-24 h-24 rounded-lg overflow-hidden border border-kitchen-lux-dark-green-200">
+                        <img
+                          src={
+                            videoSelection?.thumbnailDataUrl ||
+                            product.video?.thumbnailUrl ||
+                            '/perfums/placeholder.jpg'
+                          }
+                          alt="Miniature vidéo"
+                          className="object-cover w-full h-full"
+                        />
+                        <span className="absolute bottom-1 right-1 bg-black/70 text-white text-xs px-2 py-0.5 rounded-full">
+                          {videoSelection?.durationSeconds || product.video?.durationSeconds || 0}s
+                        </span>
+                        <span className="absolute inset-0 flex items-center justify-center">
+                          <svg
+                            className="w-6 h-6 text-white drop-shadow"
+                            fill="currentColor"
+                            viewBox="0 0 20 20"
+                          >
+                            <path d="M6.5 5.5v9l7-4.5-7-4.5z" />
+                          </svg>
+                        </span>
+                      </div>
+                      <div className="text-sm text-kitchen-lux-dark-green-700">
+                        <p className="font-semibold">
+                          {videoSelection ? 'Nouvelle vidéo' : 'Vidéo actuelle'}
+                        </p>
+                        <p className="text-xs text-kitchen-lux-dark-green-500">
+                          {videoSelection
+                            ? `${Math.round(videoSelection.file.size / 1024)} Ko`
+                            : product.video
+                            ? `${Math.round(product.video.fileSizeBytes / 1024)} Ko`
+                            : ''}
+                        </p>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
                 {/* Description */}

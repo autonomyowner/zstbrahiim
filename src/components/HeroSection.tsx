@@ -1,153 +1,88 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import Link from 'next/link'
+import Image from 'next/image'
 
-export const HeroSection = (): JSX.Element => {
-  const [isVisible, setIsVisible] = useState<boolean>(false)
-  const [elementsVisible, setElementsVisible] = useState<{
-    subtitle: boolean
-    title: boolean
-    buttons: boolean
-    footer: boolean
-  }>({
-    subtitle: false,
-    title: false,
-    buttons: false,
-    footer: false
-  })
+type HeroSectionProps = {
+  stats: { label: string; value: string }[]
+}
 
-  useEffect(() => {
-    const timeout = window.setTimeout(() => setIsVisible(true), 100)
-    return () => window.clearTimeout(timeout)
-  }, [])
+const heroImages = [
+  '/perfums/6800.jpg',
+  '/perfums/7500.jpg',
+  '/winter/addidaswhite.png',
+  '/winter/grey.png',
+]
 
-  useEffect(() => {
-    if (isVisible) {
-      const delays = {
-        subtitle: 200,
-        title: 400,
-        buttons: 600,
-        footer: 800
-      }
+const heroColumns = [
+  heroImages.filter((_, index) => index % 2 === 0),
+  heroImages.filter((_, index) => index % 2 !== 0),
+]
 
-      Object.entries(delays).forEach(([key, delay]) => {
-        setTimeout(() => {
-          setElementsVisible(prev => ({ ...prev, [key]: true }))
-        }, delay)
-      })
-    }
-  }, [isVisible])
+const createLoopingImages = (images: string[]) => [...images, ...images]
 
-  const handleContactClick = (): void => {
-    const phoneNumber = '+213673734578'
-    const message =
-      'Bonjour! Je suis interesse(e) par vos complements alimentaires ZST.'
-    const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(
-      message,
-    )}`
-    window.open(whatsappUrl, '_blank')
-  }
-
+export const HeroSection = ({ stats }: HeroSectionProps): JSX.Element => {
   return (
-    <section className="relative isolate overflow-hidden">
-      <div className="absolute inset-0 -z-10">
-        <video
-          autoPlay
-          loop
-          muted
-          playsInline
-          preload="auto"
-          className="absolute inset-0 w-full h-full object-cover min-w-full min-h-full"
-          style={{
-            objectFit: 'cover',
-            width: '100%',
-            height: '100%',
-          }}
-        >
-          <source
-            src="/sectionhgero.mp4"
-            type="video/mp4"
-          />
-          Your browser does not support the video tag.
-        </video>
-        {/* Dark overlay for better text readability */}
-        <div className="absolute inset-0 bg-black/30" />
-      </div>
-
-      <div className="mx-auto flex min-h-[80vh] max-w-6xl flex-col justify-center px-4 py-28 sm:px-6 lg:px-8 lg:py-36">
-        <div className="max-w-3xl space-y-8">
-          <p 
-            className={`text-xs uppercase tracking-[0.4em] text-white/80 transition-all duration-700 ease-out ${
-              elementsVisible.subtitle
-                ? 'translate-y-0 opacity-100'
-                : 'translate-y-8 opacity-0'
-            }`}
-          >
-            Des Compléments Alimentaires haut de gamme, formulés en France, pour optimiser votre bien-être jour après jour.
-          </p>
-
-          <h1 
-            className={`text-4xl font-elegant font-semibold text-white sm:text-5xl lg:text-6xl transition-all duration-800 ease-out ${
-              elementsVisible.title
-                ? 'translate-y-0 opacity-100'
-                : 'translate-y-12 opacity-0'
-            }`}
-          >
-            ZST : L&apos;Équilibre Naturel au Cœur de Votre Vitalité.
-          </h1>
-
-          <p 
-            className={`text-base text-white/90 transition-all duration-700 ease-out ${
-              elementsVisible.title
-                ? 'translate-y-0 opacity-100'
-                : 'translate-y-8 opacity-0'
-            }`}
-            style={{ transitionDelay: '200ms' }}
-          >
-            Découvrez nos solutions basées sur la science, conçues pour vous.
-          </p>
-
-
-          <div 
-            className={`flex flex-col gap-3 sm:flex-row sm:items-center sm:gap-4 transition-all duration-700 ease-out ${
-              elementsVisible.buttons
-                ? 'translate-y-0 opacity-100'
-                : 'translate-y-8 opacity-0'
-            }`}
-          >
-            <button
-              onClick={handleContactClick}
-              className="inline-flex items-center justify-center rounded-full border border-kitchen-lux-dark-green-300 bg-gradient-to-r from-kitchen-lux-dark-green-50 to-kitchen-lux-dark-green-100 px-8 py-3 text-sm font-semibold uppercase tracking-[0.3em] text-kitchen-lux-dark-green-800 transition-all duration-200 hover:border-kitchen-lux-dark-green-500 hover:bg-gradient-to-r hover:from-kitchen-lux-dark-green-100 hover:to-kitchen-lux-dark-green-200 hover:text-kitchen-lux-dark-green-900 hover:shadow-md hover:shadow-kitchen-lux-dark-green-200/30"
-              type="button"
-            >
-              DÉCOUVRIR NOS COMPLÉMENTS
-            </button>
-
-            <Link
-              href="/services"
-              className="inline-flex items-center justify-center rounded-full border border-white/50 px-8 py-3 text-sm font-semibold uppercase tracking-[0.3em] text-white transition-all duration-200 hover:border-white hover:bg-white/10"
-            >
-              En savoir plus
-            </Link>
+    <section className="mx-auto max-w-6xl px-4 pt-6 sm:px-6 lg:px-8">
+      <div className="grid gap-8 overflow-hidden rounded-3xl bg-black text-text-inverted shadow-card-lg lg:grid-cols-2">
+        <div className="flex flex-col gap-6 p-6 sm:p-10 lg:p-12">
+          <div className="flex flex-col gap-4">
+            <span className="inline-flex w-fit items-center gap-2 rounded-full bg-white/10 px-3 py-1.5 text-[10px] sm:text-[11px] font-semibold uppercase tracking-[0.3em] sm:tracking-[0.4em]">
+              Verified
+              <span className="material-symbols-outlined text-xs sm:text-sm">verified</span>
+            </span>
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black leading-tight tracking-tight break-words">
+              Quality products, trusted Algerian suppliers.
+            </h1>
           </div>
 
-          <div 
-            className={`flex flex-col gap-4 border-t border-white/20 pt-6 sm:flex-row sm:items-center sm:justify-between transition-all duration-700 ease-out ${
-              elementsVisible.footer
-                ? 'translate-y-0 opacity-100'
-                : 'translate-y-8 opacity-0'
-            }`}
-          >
-            <div className="text-sm uppercase tracking-[0.3em] text-white/70">
-              Formulé en France
-            </div>
-            <div className="flex flex-wrap gap-x-6 gap-y-2 text-sm text-white/80">
-              <span className="whitespace-nowrap">Ingrédients actifs purs</span>
-              <span className="whitespace-nowrap">Sans OGM ni gluten</span>
-              <span className="whitespace-nowrap">Facile à assimiler</span>
-            </div>
+          <div className="grid gap-3 sm:gap-4 text-sm text-white/80 grid-cols-3">
+            {stats.map((stat) => (
+              <div
+                key={stat.label}
+                className="rounded-xl sm:rounded-2xl border border-white/10 bg-white/5 px-2 sm:px-4 py-2 sm:py-3"
+              >
+                <p className="text-lg sm:text-2xl font-bold text-white">{stat.value}</p>
+                <p className="text-[8px] sm:text-xs uppercase tracking-[0.2em] sm:tracking-[0.3em] break-words leading-tight">{stat.label}</p>
+              </div>
+            ))}
           </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-4 bg-black p-6 sm:p-10">
+          {heroColumns.map((columnImages, columnIndex) => {
+            const loopingImages = createLoopingImages(columnImages)
+
+            return (
+              <div
+                key={`hero-column-${columnIndex}`}
+                className="relative h-[22rem] sm:h-[28rem] lg:h-[32rem] overflow-hidden rounded-[2rem] border border-white/5 bg-white/[0.03]"
+              >
+                <div
+                  className="flex flex-col gap-4 animate-hero-scroll will-change-transform"
+                  style={{ animationDelay: `${columnIndex * 4}s` }}
+                >
+                  {loopingImages.map((src, index) => (
+                    <div
+                      key={`${src}-${index}`}
+                      className="relative aspect-square w-full shrink-0 overflow-hidden rounded-[1.75rem] border border-white/5 bg-brand-light/10"
+                    >
+                      <Image
+                        src={src}
+                        alt="Trending product"
+                        fill
+                        sizes="(max-width: 768px) 50vw, 25vw"
+                        className="object-cover"
+                        priority={columnIndex === 0 && index === 0}
+                      />
+                    </div>
+                  ))}
+                </div>
+
+                <div className="pointer-events-none absolute inset-x-0 top-0 h-16 bg-gradient-to-b from-black via-black/50 to-transparent" />
+                <div className="pointer-events-none absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-black via-black/50 to-transparent" />
+              </div>
+            )
+          })}
         </div>
       </div>
     </section>

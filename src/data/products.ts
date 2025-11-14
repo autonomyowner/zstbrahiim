@@ -1,3 +1,5 @@
+import type { SellerCategory } from '@/lib/supabase/types'
+
 export type ProductType = 'Parfum Femme' | 'Parfum Homme' | 'Eau de Parfum' | 'Eau de Toilette'
 export type ProductNeed = 'Journée' | 'Soirée' | 'Quotidien' | 'Spécial'
 
@@ -7,6 +9,28 @@ export type AdditionalInfo = {
   payment: string
   exclusiveOffers?: string
 }
+
+export type ProductVideoAsset = {
+  url: string
+  thumbnailUrl: string
+  durationSeconds: number
+  fileSizeBytes: number
+}
+
+export const productCategoryOptions = [
+  'Téléphones & Accessoires',
+  'Informatique',
+  'Électroménager & Électronique',
+  'Automobiles & Véhicules',
+  'Pièces détachées',
+  'Meubles & Maison',
+  'Matériaux & Équipement',
+  'Vêtements & Mode',
+  'Santé & Beauté',
+  'Loisirs & Divertissements',
+  'Parfums',
+  'Accessoires',
+]
 
 export type Product = {
   id: string
@@ -32,6 +56,8 @@ export type Product = {
   viewersCount: number
   countdownEndDate?: string
   additionalInfo: AdditionalInfo
+  video?: ProductVideoAsset
+  sellerCategory?: SellerCategory | null
 }
 
 export function getProductById(id: string): Product | undefined {

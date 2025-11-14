@@ -31,7 +31,7 @@ export default async function ProductPage({ params }: ProductPageProps): Promise
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
           {/* Left Column - Product Gallery */}
           <div>
-            <ProductGallery images={product.images} productName={product.name} />
+            <ProductGallery images={product.images} productName={product.name} video={product.video} />
           </div>
 
           {/* Right Column - Product Details */}

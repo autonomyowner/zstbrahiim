@@ -48,72 +48,86 @@ export function ProductManagement({
       <div className="flex justify-end">
         <button
           onClick={onAddProduct}
-          className="px-6 py-3 bg-kitchen-lux-dark-green-600 text-white rounded-lg hover:bg-kitchen-lux-dark-green-700 transition-colors font-medium"
+          className="inline-flex items-center gap-2 rounded-full bg-brand-dark px-6 py-3 text-sm font-semibold text-text-inverted transition hover:bg-black"
         >
-          + Ajouter Produit
+          <span className="material-symbols-outlined text-base">add</span>
+          Ajouter un produit
         </button>
       </div>
 
-      <div className="bg-white rounded-lg shadow-md p-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+      <div className="rounded-3xl border border-brand-border bg-white/95 p-6 shadow-card-sm">
+        <div className="mb-6 grid grid-cols-1 gap-4 md:grid-cols-2">
           <div>
-            <label htmlFor="product-search" className="block text-sm font-medium text-kitchen-lux-dark-green-700 mb-2">
+            <label
+              htmlFor="product-search"
+              className="text-xs font-semibold uppercase tracking-[0.3em] text-text-muted"
+            >
               Rechercher un produit
             </label>
-            <input
-              type="text"
-              id="product-search"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Nom, marque, ID..."
-              className="w-full px-4 py-2 border border-kitchen-lux-dark-green-300 rounded-lg focus:ring-2 focus:ring-kitchen-lux-dark-green-500 focus:border-transparent"
-            />
+            <div className="relative mt-2">
+              <span className="material-symbols-outlined pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-text-muted">
+                search
+              </span>
+              <input
+                type="text"
+                id="product-search"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Nom, marque, ID..."
+                className="w-full rounded-full border border-brand-border bg-white py-3 pl-12 pr-4 text-sm text-text-primary focus:border-brand-dark focus:outline-none focus:ring-2 focus:ring-brand-primary/30"
+              />
+            </div>
           </div>
           <div>
-            <label htmlFor="stock-filter" className="block text-sm font-medium text-kitchen-lux-dark-green-700 mb-2">
+            <label
+              htmlFor="stock-filter"
+              className="text-xs font-semibold uppercase tracking-[0.3em] text-text-muted"
+            >
               Filtrer par stock
             </label>
-            <select
-              id="stock-filter"
-              value={stockFilter}
-              onChange={(e) => setStockFilter(e.target.value as any)}
-              className="w-full px-4 py-2 border border-kitchen-lux-dark-green-300 rounded-lg focus:ring-2 focus:ring-kitchen-lux-dark-green-500 focus:border-transparent"
-            >
-              <option value="all">Tous les produits</option>
-              <option value="in-stock">En stock</option>
-              <option value="out-of-stock">Rupture de stock</option>
-              <option value="low-stock">Stock faible</option>
-            </select>
+            <div className="mt-2">
+              <select
+                id="stock-filter"
+                value={stockFilter}
+                onChange={(e) => setStockFilter(e.target.value as any)}
+                className="w-full rounded-full border border-brand-border bg-white py-3 px-4 text-sm font-semibold text-text-primary focus:border-brand-dark focus:outline-none focus:ring-2 focus:ring-brand-primary/30"
+              >
+                <option value="all">Tous les produits</option>
+                <option value="in-stock">En stock</option>
+                <option value="out-of-stock">Rupture de stock</option>
+                <option value="low-stock">Stock faible</option>
+              </select>
+            </div>
           </div>
         </div>
 
         <div className="overflow-x-auto">
-          <table className="min-w-full divide-y divide-kitchen-lux-dark-green-200">
-            <thead className="bg-kitchen-lux-dark-green-50">
+          <table className="min-w-full divide-y divide-brand-border/60">
+            <thead className="bg-brand-light/60">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-kitchen-lux-dark-green-700 uppercase tracking-wider">
+                <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-[0.3em] text-text-muted">
                   Produit
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-kitchen-lux-dark-green-700 uppercase tracking-wider">
+                <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-[0.3em] text-text-muted">
                   Marque
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-kitchen-lux-dark-green-700 uppercase tracking-wider">
+                <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-[0.3em] text-text-muted">
                   Prix
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-kitchen-lux-dark-green-700 uppercase tracking-wider">
+                <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-[0.3em] text-text-muted">
                   Statut
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-kitchen-lux-dark-green-700 uppercase tracking-wider">
+                <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-[0.3em] text-text-muted">
                   Type
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-kitchen-lux-dark-green-700 uppercase tracking-wider">
+                <th className="px-6 py-4 text-left text-xs font-semibold uppercase tracking-[0.3em] text-text-muted">
                   Actions
                 </th>
               </tr>
             </thead>
-            <tbody className="bg-white divide-y divide-kitchen-lux-dark-green-100">
+            <tbody className="divide-y divide-brand-border/60 bg-white">
               {filteredProducts.map((product) => (
-                <tr key={product.id} className="hover:bg-kitchen-lux-dark-green-50 transition-colors">
+                <tr key={product.id} className="transition hover:bg-brand-light/40">
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex items-center">
                       <Image
@@ -124,24 +138,37 @@ export function ProductManagement({
                         className="w-12 h-12 rounded-lg object-cover mr-3"
                       />
                       <div>
-                        <div className="text-sm font-medium text-kitchen-lux-dark-green-900">
+                        <div className="text-sm font-semibold text-text-primary">
                           {product.name}
                         </div>
-                        <div className="text-xs text-kitchen-lux-dark-green-500">
+                        <div className="text-xs text-text-muted">
                           ID: {product.id}
                         </div>
+                    {product.video && (
+                      <span className="mt-1 inline-flex items-center gap-1 rounded-full bg-brand-light px-2 py-0.5 text-[11px] font-semibold text-brand-dark">
+                        <svg
+                          className="w-3 h-3"
+                          fill="currentColor"
+                          viewBox="0 0 20 20"
+                          aria-hidden="true"
+                        >
+                          <path d="M6.5 5.5v9l7-4.5-7-4.5z" />
+                        </svg>
+                        Vidéo
+                      </span>
+                    )}
                       </div>
                     </div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-kitchen-lux-dark-green-700">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-text-muted">
                     {product.brand}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <div className="text-sm font-semibold text-kitchen-lux-dark-green-900">
+                    <div className="text-sm font-semibold text-text-primary">
                       {formatPrice(product.price)}
                     </div>
                     {product.originalPrice && (
-                      <div className="text-xs text-kitchen-lux-dark-green-500 line-through">
+                      <div className="text-xs text-text-muted line-through">
                         {formatPrice(product.originalPrice)}
                       </div>
                     )}
@@ -149,7 +176,7 @@ export function ProductManagement({
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="flex flex-col gap-1">
                       <span
-                        className={`text-xs px-3 py-1 rounded-full border inline-block ${
+                        className={`inline-block rounded-full border px-3 py-1 text-xs ${
                           product.inStock
                             ? 'bg-green-100 text-green-800 border-green-300'
                             : 'bg-red-100 text-red-800 border-red-300'
@@ -158,24 +185,24 @@ export function ProductManagement({
                         {product.inStock ? 'En stock' : 'Rupture'}
                       </span>
                       {product.isPromo && (
-                        <span className="text-xs px-3 py-1 rounded-full border bg-orange-100 text-orange-800 border-orange-300 inline-block">
+                        <span className="inline-block rounded-full border border-amber-200 bg-amber-50 px-3 py-1 text-xs text-amber-700">
                           Promo
                         </span>
                       )}
                       {product.isNew && (
-                        <span className="text-xs px-3 py-1 rounded-full border bg-blue-100 text-blue-800 border-blue-300 inline-block">
+                        <span className="inline-block rounded-full border border-blue-200 bg-blue-50 px-3 py-1 text-xs text-blue-700">
                           Nouveau
                         </span>
                       )}
                     </div>
                   </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-kitchen-lux-dark-green-700">
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-text-muted">
                     {product.productType}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-sm">
                     <button
                       onClick={() => onEditProduct(product)}
-                      className="text-kitchen-lux-dark-green-600 hover:text-kitchen-lux-dark-green-900 mr-4"
+                      className="mr-4 text-brand-dark underline-offset-4 hover:underline"
                     >
                       Modifier
                     </button>
@@ -185,7 +212,7 @@ export function ProductManagement({
                           onDeleteProduct(product.id)
                         }
                       }}
-                      className="text-red-600 hover:text-red-900"
+                      className="text-red-600 underline-offset-4 hover:underline"
                     >
                       Supprimer
                     </button>
@@ -197,8 +224,8 @@ export function ProductManagement({
         </div>
 
         {filteredProducts.length === 0 && (
-          <div className="text-center py-12">
-            <p className="text-kitchen-lux-dark-green-600">Aucun produit trouvé</p>
+          <div className="py-12 text-center text-text-muted">
+            Aucun produit trouvé
           </div>
         )}
       </div>
