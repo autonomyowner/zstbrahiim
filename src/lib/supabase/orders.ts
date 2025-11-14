@@ -10,6 +10,104 @@ import type {
   SellerStats,
 } from './types'
 
+export type SellerDashboardStatsParams = {
+  sellerId: string
+  startDate: string
+  endDate: string
+}
+
+export type SellerDashboardStatsTrend = {
+  totalOrders: number | null
+  totalRevenue: number | null
+  monthlyRevenue: number | null
+  completionRate: number | null
+}
+
+export type SellerDashboardStats = {
+  totalOrders: number
+  pendingOrders: number
+  processingOrders: number
+  completedOrders: number
+  totalRevenue: number
+  monthlyRevenue: number
+  totalProducts: number
+  lowStockProducts: number
+  averageOrderValue: number
+  completionRate: number
+  range: {
+    start: string
+    end: string
+    label: string
+    description: string
+  }
+  previousRange: {
+    start: string
+    end: string
+  }
+  trend: SellerDashboardStatsTrend
+}
+
+const dateFormatterShort = new Intl.DateTimeFormat('fr-DZ', {
+  day: '2-digit',
+  month: 'short',
+})
+
+const dateFormatterLong = new Intl.DateTimeFormat('fr-DZ', {
+  day: '2-digit',
+  month: 'long',
+  year: 'numeric',
+})
+
+const calcTrend = (current: number, previous: number): number | null => {
+  if (previous === 0) {
+    if (current === 0) {
+      return 0
+    }
+    return null
+  }
+  return ((current - previous) / previous) * 100
+}
+
+const summarizeOrders = (
+  orders: Array<{ status: OrderStatus; total: number }>
+): {
+  totalOrders: number
+  pendingOrders: number
+  processingOrders: number
+  completedOrders: number
+  totalRevenue: number
+} => {
+  return orders.reduce(
+    (summary, order) => {
+      summary.totalOrders += 1
+      summary.totalRevenue += Number(order.total) || 0
+
+      switch (order.status) {
+        case 'pending':
+          summary.pendingOrders += 1
+          break
+        case 'processing':
+          summary.processingOrders += 1
+          break
+        case 'delivered':
+          summary.completedOrders += 1
+          break
+        default:
+          break
+      }
+
+      return summary
+    },
+    {
+      totalOrders: 0,
+      pendingOrders: 0,
+      processingOrders: 0,
+      completedOrders: 0,
+      totalRevenue: 0,
+    }
+  )
+}
+
 // Adapter to convert database format to frontend format
 const adaptOrder = (dbOrder: any): any => {
   return {
@@ -527,6 +625,148 @@ export const getSellerStats = async (): Promise<any> => {
       totalProducts: 0,
       lowStockProducts: 0,
     }
+  }
+}
+
+export const getSellerDashboardStats = async ({
+  sellerId,
+  startDate,
+  endDate,
+}: SellerDashboardStatsParams): Promise<SellerDashboardStats> => {
+  const start = new Date(startDate)
+  const end = new Date(endDate)
+
+  if (Number.isNaN(start.getTime()) || Number.isNaN(end.getTime())) {
+    throw new Error('Invalid date range supplied to getSellerDashboardStats')
+  }
+
+  // Ensure start is not after end
+  if (start > end) {
+    ;[startDate, endDate] = [end.toISOString(), start.toISOString()]
+  }
+
+  const adjustedStart = new Date(startDate)
+  const adjustedEnd = new Date(endDate)
+  const rangeDuration = Math.max(adjustedEnd.getTime() - adjustedStart.getTime(), 0)
+  const previousRangeEnd = new Date(adjustedStart.getTime() - 1)
+  const previousRangeStart = new Date(previousRangeEnd.getTime() - rangeDuration)
+
+  const rangeLabel = `${dateFormatterShort.format(adjustedStart)} – ${dateFormatterShort.format(
+    adjustedEnd
+  )}`
+  const rangeDescription = `Du ${dateFormatterLong.format(
+    adjustedStart
+  )} au ${dateFormatterLong.format(adjustedEnd)}`
+
+  const currentMonthStart = new Date(
+    Date.UTC(adjustedEnd.getUTCFullYear(), adjustedEnd.getUTCMonth(), 1)
+  )
+  const previousMonthStart = new Date(
+    Date.UTC(adjustedEnd.getUTCFullYear(), adjustedEnd.getUTCMonth() - 1, 1)
+  )
+  const previousMonthEnd = new Date(currentMonthStart.getTime() - 1)
+
+  const [
+    { data: currentOrdersData, error: currentOrdersError },
+    { data: previousOrdersData, error: previousOrdersError },
+    { data: monthOrdersData, error: monthOrdersError },
+    { data: previousMonthOrdersData, error: previousMonthOrdersError },
+    { data: productsData, error: productsError },
+  ] = await Promise.all([
+    supabase
+      .from('orders')
+      .select('status,total,created_at')
+      .eq('seller_id', sellerId)
+      .gte('created_at', adjustedStart.toISOString())
+      .lte('created_at', adjustedEnd.toISOString()),
+    supabase
+      .from('orders')
+      .select('status,total,created_at')
+      .eq('seller_id', sellerId)
+      .gte('created_at', previousRangeStart.toISOString())
+      .lte('created_at', previousRangeEnd.toISOString()),
+    supabase
+      .from('orders')
+      .select('status,total,created_at')
+      .eq('seller_id', sellerId)
+      .gte(currentMonthStart.toISOString())
+      .lte(adjustedEnd.toISOString()),
+    supabase
+      .from('orders')
+      .select('status,total,created_at')
+      .eq('seller_id', sellerId)
+      .gte(previousMonthStart.toISOString())
+      .lte(previousMonthEnd.toISOString()),
+    supabase.from('products').select('in_stock').eq('seller_id', sellerId),
+  ])
+
+  if (
+    currentOrdersError ||
+    previousOrdersError ||
+    monthOrdersError ||
+    previousMonthOrdersError ||
+    productsError
+  ) {
+    console.error('Error fetching seller dashboard stats:', {
+      currentOrdersError,
+      previousOrdersError,
+      monthOrdersError,
+      previousMonthOrdersError,
+      productsError,
+    })
+  }
+
+  const currentSummary = summarizeOrders((currentOrdersData as any[]) || [])
+  const previousSummary = summarizeOrders((previousOrdersData as any[]) || [])
+
+  const monthSummary = summarizeOrders((monthOrdersData as any[]) || [])
+  const previousMonthSummary = summarizeOrders((previousMonthOrdersData as any[]) || [])
+  const totalProducts = (productsData || []).length
+  const lowStockProducts = (productsData || []).filter((product) => product.in_stock === false)
+    .length
+
+  const averageOrderValue =
+    currentSummary.totalOrders > 0
+      ? currentSummary.totalRevenue / currentSummary.totalOrders
+      : 0
+
+  const completionRate =
+    currentSummary.totalOrders > 0
+      ? (currentSummary.completedOrders / currentSummary.totalOrders) * 100
+      : 0
+
+  return {
+    totalOrders: currentSummary.totalOrders,
+    pendingOrders: currentSummary.pendingOrders,
+    processingOrders: currentSummary.processingOrders,
+    completedOrders: currentSummary.completedOrders,
+    totalRevenue: currentSummary.totalRevenue,
+    monthlyRevenue: monthSummary.totalRevenue,
+    totalProducts,
+    lowStockProducts,
+    averageOrderValue,
+    completionRate,
+    range: {
+      start: adjustedStart.toISOString(),
+      end: adjustedEnd.toISOString(),
+      label: rangeLabel,
+      description: rangeDescription,
+    },
+    previousRange: {
+      start: previousRangeStart.toISOString(),
+      end: previousRangeEnd.toISOString(),
+    },
+    trend: {
+      totalOrders: calcTrend(currentSummary.totalOrders, previousSummary.totalOrders),
+      totalRevenue: calcTrend(currentSummary.totalRevenue, previousSummary.totalRevenue),
+      monthlyRevenue: calcTrend(monthSummary.totalRevenue, previousMonthSummary.totalRevenue),
+      completionRate: calcTrend(
+        completionRate,
+        previousSummary.totalOrders > 0
+          ? (previousSummary.completedOrders / previousSummary.totalOrders) * 100
+          : 0
+      ),
+    },
   }
 }
 

@@ -32,17 +32,6 @@ export type Order = {
   notes?: string
 }
 
-export type SellerStats = {
-  totalOrders: number
-  pendingOrders: number
-  processingOrders: number
-  completedOrders: number
-  totalRevenue: number
-  monthlyRevenue: number
-  totalProducts: number
-  lowStockProducts: number
-}
-
 // Mock orders data
 export const mockOrders: Order[] = [
   {
@@ -190,18 +179,6 @@ export const mockOrders: Order[] = [
     notes: 'Client requested cancellation',
   },
 ]
-
-// Mock seller stats
-export const mockSellerStats: SellerStats = {
-  totalOrders: 147,
-  pendingOrders: 12,
-  processingOrders: 8,
-  completedOrders: 120,
-  totalRevenue: 2840000,
-  monthlyRevenue: 450000,
-  totalProducts: 48,
-  lowStockProducts: 5,
-}
 
 // Helper functions
 export function getOrdersByStatus(status: OrderStatus): Order[] {

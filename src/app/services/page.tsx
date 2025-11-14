@@ -8,6 +8,7 @@ import { OrdersTable } from '@/components/seller/OrdersTable'
 import { OrderFilters } from '@/components/seller/OrderFilters'
 import { ProductManagement } from '@/components/seller/ProductManagement'
 import { AnalyticsSection } from '@/components/seller/AnalyticsSection'
+import { StatsRangePicker, type StatsRangePreset } from '@/components/seller/StatsRangePicker'
 import {
   AddProductModal,
   type ProductFormData,
@@ -16,17 +17,39 @@ import {
 import { EditProductModal } from '@/components/seller/EditProductModal'
 import { OrderDetailsModal } from '@/components/seller/OrderDetailsModal'
 import { ExportButton } from '@/components/seller/ExportButton'
-import { mockOrders, mockSellerStats, type Order, type OrderStatus, type PaymentStatus } from '@/data/orders'
+import { mockOrders, type Order, type OrderStatus, type PaymentStatus } from '@/data/orders'
 import { type Product } from '@/data/products'
 import { printInvoice } from '@/utils/printInvoice'
 import { getSellerProducts, createProduct, updateProduct, deleteProduct } from '@/lib/supabase/products'
 import { getCurrentUserProfile, isSeller } from '@/lib/supabase/auth'
 import { supabase } from '@/lib/supabase/client'
-import { getOrdersForSeller, updateOrderStatus as updateOrderStatusInDb } from '@/lib/supabase/orders'
+import {
+  getOrdersForSeller,
+  updateOrderStatus as updateOrderStatusInDb,
+  getSellerDashboardStats,
+  type SellerDashboardStats,
+} from '@/lib/supabase/orders'
 import { upsertProductVideo, deleteProductVideo } from '@/lib/supabase/productVideos'
 import type { UserProfile } from '@/lib/supabase/types'
 
 type TabType = 'dashboard' | 'orders' | 'products' | 'analytics'
+
+const rangePresetDays: Record<StatsRangePreset, number> = {
+  '7d': 7,
+  '30d': 30,
+  '90d': 90,
+}
+
+const computeRange = (preset: StatsRangePreset) => {
+  const end = new Date()
+  end.setHours(23, 59, 59, 999)
+
+  const start = new Date(end)
+  start.setDate(end.getDate() - (rangePresetDays[preset] - 1))
+  start.setHours(0, 0, 0, 0)
+
+  return { start, end }
+}
 
 export default function SellerPortalPage(): JSX.Element {
   const router = useRouter()
@@ -38,6 +61,11 @@ export default function SellerPortalPage(): JSX.Element {
   const [productError, setProductError] = useState<string | null>(null)
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
   const [sellerProfile, setSellerProfile] = useState<UserProfile | null>(null)
+  const [statsPreset, setStatsPreset] = useState<StatsRangePreset>('30d')
+  const statsRange = useMemo(() => computeRange(statsPreset), [statsPreset])
+  const [dashboardStats, setDashboardStats] = useState<SellerDashboardStats | null>(null)
+  const [statsLoading, setStatsLoading] = useState(true)
+  const [statsError, setStatsError] = useState<string | null>(null)
 
   // Modal states
   const [isAddProductModalOpen, setIsAddProductModalOpen] = useState(false)
@@ -121,6 +149,40 @@ export default function SellerPortalPage(): JSX.Element {
     }
     fetchOrders()
   }, [authChecking])
+
+  // Fetch dashboard stats
+  useEffect(() => {
+    if (authChecking) return
+
+    const fetchStats = async () => {
+      try {
+        setStatsLoading(true)
+        setStatsError(null)
+        const {
+          data: { user },
+        } = await supabase.auth.getUser()
+        if (!user) {
+          setDashboardStats(null)
+          return
+        }
+
+        const stats = await getSellerDashboardStats({
+          sellerId: user.id,
+          startDate: statsRange.start.toISOString(),
+          endDate: statsRange.end.toISOString(),
+        })
+
+        setDashboardStats(stats)
+      } catch (error) {
+        console.error('Error fetching seller dashboard stats:', error)
+        setStatsError('Impossible de charger les statistiques')
+      } finally {
+        setStatsLoading(false)
+      }
+    }
+
+    fetchStats()
+  }, [authChecking, statsRange.start.getTime(), statsRange.end.getTime()])
 
   // Filter orders
   const filteredOrders = useMemo(() => {
@@ -479,7 +541,27 @@ export default function SellerPortalPage(): JSX.Element {
             <div className="space-y-10">
               {activeTab === 'dashboard' && (
                 <div>
-                  <DashboardStats stats={mockSellerStats} />
+                  <div className="space-y-4">
+                    <StatsRangePicker
+                      value={statsPreset}
+                      onChange={setStatsPreset}
+                      startDate={statsRange.start}
+                      endDate={statsRange.end}
+                    />
+                    {statsError && (
+                      <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                        {statsError}
+                      </div>
+                    )}
+                    {statsLoading && (
+                      <div className="rounded-2xl border border-brand-border bg-white px-4 py-3 text-sm text-text-muted shadow-card-sm">
+                        Chargement des statistiques...
+                      </div>
+                    )}
+                    {!statsLoading && dashboardStats && (
+                      <DashboardStats stats={dashboardStats} />
+                    )}
+                  </div>
                   <QuickActions
                     onViewOrders={() => setActiveTab('orders')}
                     onAddProduct={handleAddProduct}
@@ -504,6 +586,11 @@ export default function SellerPortalPage(): JSX.Element {
                       />
                     </div>
                   </div>
+                  {!statsLoading && dashboardStats && (
+                    <div className="mt-10">
+                      <AnalyticsSection stats={dashboardStats} />
+                    </div>
+                  )}
                 </div>
               )}
 
@@ -559,7 +646,23 @@ export default function SellerPortalPage(): JSX.Element {
                     </div>
                     <ExportButton orders={orders} products={productsList} type="all" />
                   </div>
-                  <AnalyticsSection stats={mockSellerStats} />
+                  <StatsRangePicker
+                    value={statsPreset}
+                    onChange={setStatsPreset}
+                    startDate={statsRange.start}
+                    endDate={statsRange.end}
+                  />
+                  {statsError && (
+                    <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+                      {statsError}
+                    </div>
+                  )}
+                  {statsLoading && (
+                    <div className="rounded-2xl border border-brand-border bg-white px-4 py-3 text-sm text-text-muted shadow-card-sm">
+                      Chargement des statistiques...
+                    </div>
+                  )}
+                  {!statsLoading && dashboardStats && <AnalyticsSection stats={dashboardStats} />}
                 </div>
               )}
             </div>

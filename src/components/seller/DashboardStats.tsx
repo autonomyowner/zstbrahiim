@@ -1,112 +1,115 @@
 'use client'
 
-import { type SellerStats } from '@/data/orders'
+import type { SellerDashboardStats } from '@/lib/supabase/orders'
 
 type StatCardProps = {
   title: string
   value: string | number
-  trend?: string
+  trendLabel?: string
   trendUp?: boolean
-  icon: string
-  accent: string
+  subtitle?: string
 }
 
-function StatCard({ title, value, trend, trendUp, icon, accent }: StatCardProps): JSX.Element {
+function StatCard({ title, value, trendLabel, trendUp, subtitle }: StatCardProps): JSX.Element {
   return (
-    <div className="group rounded-xl sm:rounded-2xl border border-brand-border bg-white p-4 sm:p-5 shadow-card-sm hover:shadow-card-md hover:border-brand-dark transition-all duration-300 hover:-translate-y-1">
-      <div className="flex items-start justify-between gap-3 mb-4">
-        {trend && (
-          <div className={`flex items-center gap-1 rounded-full px-2.5 py-1 ${
-            trendUp ? 'bg-green-50 text-green-600' : 'bg-red-50 text-red-600'
-          }`}>
+    <div className="group rounded-xl sm:rounded-2xl border border-brand-border bg-white p-4 sm:p-5 shadow-card-sm transition-all duration-300 hover:-translate-y-1 hover:border-brand-dark hover:shadow-card-md">
+      <div className="mb-4 flex items-start justify-between gap-3">
+        {trendLabel && (
+          <div
+            className={`flex items-center gap-1 rounded-full px-2.5 py-1 ${
+              trendUp ? 'bg-green-50 text-green-600' : 'bg-red-50 text-red-600'
+            }`}
+          >
             <span className="text-xs font-bold">{trendUp ? '▲' : '▼'}</span>
-            <span className="text-[10px] sm:text-xs font-bold whitespace-nowrap">{trend}</span>
+            <span className="text-[10px] sm:text-xs font-bold whitespace-nowrap">{trendLabel}</span>
           </div>
         )}
       </div>
       <div>
-        <p className="text-[10px] sm:text-xs font-bold uppercase tracking-[0.15em] text-text-muted mb-2 leading-tight">
+        <p className="mb-1 text-[10px] sm:text-xs font-bold uppercase tracking-[0.15em] text-text-muted leading-tight">
           {title}
         </p>
-        <p className="text-2xl sm:text-3xl font-black text-text-primary group-hover:text-brand-dark transition-colors break-words leading-tight">
+        <p className="text-2xl sm:text-3xl font-black leading-tight text-text-primary transition-colors group-hover:text-brand-dark break-words">
           {value}
         </p>
+        {subtitle && (
+          <p className="mt-1 text-[11px] font-semibold text-text-muted">{subtitle}</p>
+        )}
       </div>
     </div>
   )
 }
 
 type DashboardStatsProps = {
-  stats: SellerStats
+  stats: SellerDashboardStats
+}
+
+const formatCurrency = (amount: number): string => {
+  return new Intl.NumberFormat('fr-DZ', {
+    style: 'currency',
+    currency: 'DZD',
+    minimumFractionDigits: 0,
+  }).format(amount)
+}
+
+const getTrendProps = (
+  value: number | null
+): {
+  trendLabel?: string
+  trendUp?: boolean
+} => {
+  if (value === null || Number.isNaN(value)) {
+    return {}
+  }
+
+  const rounded = Math.round(value * 10) / 10
+  return {
+    trendLabel: `${rounded > 0 ? '+' : ''}${rounded}%`,
+    trendUp: rounded >= 0,
+  }
 }
 
 export function DashboardStats({ stats }: DashboardStatsProps): JSX.Element {
-  const formatCurrency = (amount: number): string => {
-    return new Intl.NumberFormat('fr-DZ', {
-      style: 'currency',
-      currency: 'DZD',
-      minimumFractionDigits: 0,
-    }).format(amount)
-  }
-
   const cards: StatCardProps[] = [
     {
       title: 'Commandes totales',
       value: stats.totalOrders,
-      trend: '+12%',
-      trendUp: true,
-      icon: 'shopping_bag',
-      accent: 'bg-brand-dark text-brand-primary',
+      ...getTrendProps(stats.trend.totalOrders),
+      subtitle: stats.range.label,
     },
     {
       title: 'En attente',
       value: stats.pendingOrders,
-      trend: 'Requise',
-      trendUp: false,
-      icon: 'hourglass_top',
-      accent: 'bg-amber-100 text-amber-600',
     },
     {
       title: 'Revenu total',
       value: formatCurrency(stats.totalRevenue),
-      trend: '+8.5%',
-      trendUp: true,
-      icon: 'trending_up',
-      accent: 'bg-green-100 text-green-600',
+      ...getTrendProps(stats.trend.totalRevenue),
+      subtitle: stats.range.label,
     },
     {
       title: 'Revenu mensuel',
       value: formatCurrency(stats.monthlyRevenue),
-      trend: '+15%',
-      trendUp: true,
-      icon: 'paid',
-      accent: 'bg-blue-100 text-blue-600',
+      ...getTrendProps(stats.trend.monthlyRevenue),
+      subtitle: 'Ce mois',
     },
     {
       title: 'Produits actifs',
       value: stats.totalProducts,
-      icon: 'inventory_2',
-      accent: 'bg-purple-100 text-purple-600',
     },
     {
       title: 'Stock faible',
       value: stats.lowStockProducts,
-      icon: 'warning',
-      accent: 'bg-orange-100 text-orange-600',
     },
     {
       title: 'En traitement',
       value: stats.processingOrders,
-      icon: 'local_shipping',
-      accent: 'bg-sky-100 text-sky-600',
     },
     {
       title: 'Complétées',
       value: stats.completedOrders,
-      trend: `${Math.round((stats.completedOrders / stats.totalOrders) * 100)}%`,
-      trendUp: true,
-      icon: 'verified',
-      accent: 'bg-emerald-100 text-emerald-600',
+      ...getTrendProps(stats.trend.completionRate),
+      subtitle: `${Math.round(stats.completionRate)}% de réussite`,
     },
   ]
 

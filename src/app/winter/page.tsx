@@ -109,10 +109,9 @@ export default function WinterPage(): JSX.Element {
 
         if (canSeeImporterSpace) {
           promises.push(
-            getProducts(
-              { product_category: 'clothing' },
-              { sellerCategories: ['importateur'] }
-            ).then((products) => setImporterOffers(products as Product[]))
+            getProducts(undefined, { sellerCategories: ['importateur'] }).then((products) =>
+              setImporterOffers(products as Product[])
+            )
           )
         } else {
           setImporterOffers([])
@@ -120,10 +119,9 @@ export default function WinterPage(): JSX.Element {
 
         if (canSeeGrossisteSpace) {
           promises.push(
-            getProducts(
-              { product_category: 'clothing' },
-              { sellerCategories: ['grossiste'] }
-            ).then((products) => setGrossisteOffers(products as Product[]))
+            getProducts(undefined, { sellerCategories: ['grossiste'] }).then((products) =>
+              setGrossisteOffers(products as Product[])
+            )
           )
         } else {
           setGrossisteOffers([])

@@ -1,28 +1,36 @@
 'use client'
 
-import { type SellerStats } from '@/data/orders'
+import type { SellerDashboardStats } from '@/lib/supabase/orders'
 
 type AnalyticsSectionProps = {
-  stats: SellerStats
+  stats: SellerDashboardStats
+}
+
+const formatCurrency = (amount: number): string => {
+  return new Intl.NumberFormat('fr-DZ', {
+    style: 'currency',
+    currency: 'DZD',
+    minimumFractionDigits: 0,
+  }).format(amount)
+}
+
+const safePercentage = (value: number, total: number): number => {
+  if (total === 0) {
+    return 0
+  }
+  return Math.round((value / total) * 100)
 }
 
 export function AnalyticsSection({ stats }: AnalyticsSectionProps): JSX.Element {
-  const formatCurrency = (amount: number): string => {
-    return new Intl.NumberFormat('fr-DZ', {
-      style: 'currency',
-      currency: 'DZD',
-      minimumFractionDigits: 0,
-    }).format(amount)
-  }
-
-  const orderCompletionRate = Math.round((stats.completedOrders / stats.totalOrders) * 100)
-  const averageOrderValue = Math.round(stats.totalRevenue / stats.totalOrders)
+  const orderCompletionRate = Math.round(stats.completionRate)
+  const averageOrderValue = Math.round(stats.averageOrderValue || 0)
 
   return (
     <div className="space-y-6">
       <div>
         <p className="text-xs uppercase tracking-[0.3em] text-text-muted">Analytiques</p>
         <h2 className="text-2xl font-semibold text-text-primary">Rapports intelligents</h2>
+        <p className="text-sm text-text-muted">{stats.range.description}</p>
       </div>
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
@@ -63,7 +71,17 @@ export function AnalyticsSection({ stats }: AnalyticsSectionProps): JSX.Element 
             </div>
             <div className="flex items-center justify-between">
               <span>Croissance mensuelle</span>
-              <span className="text-lg font-bold text-green-600">+15%</span>
+              <span
+                className={`text-lg font-bold ${
+                  (stats.trend.monthlyRevenue ?? 0) >= 0 ? 'text-green-600' : 'text-red-600'
+                }`}
+              >
+                {stats.trend.monthlyRevenue !== null
+                  ? `${stats.trend.monthlyRevenue > 0 ? '+' : ''}${Math.round(
+                      (stats.trend.monthlyRevenue ?? 0) * 10
+                    ) / 10}%`
+                  : '—'}
+              </span>
             </div>
           </div>
         </div>
@@ -84,7 +102,7 @@ export function AnalyticsSection({ stats }: AnalyticsSectionProps): JSX.Element 
                 <div className="h-2 w-full rounded-full bg-neutral-100">
                   <div
                     className={`h-2 rounded-full ${item.color}`}
-                    style={{ width: `${(item.value / stats.totalOrders) * 100}%` }}
+                    style={{ width: `${safePercentage(item.value, stats.totalOrders)}%` }}
                   />
                 </div>
               </div>
@@ -106,7 +124,7 @@ export function AnalyticsSection({ stats }: AnalyticsSectionProps): JSX.Element 
             <div className="flex items-center justify-between">
               <span>Taux de disponibilité</span>
               <span className="text-lg font-bold text-green-600">
-                {Math.round(((stats.totalProducts - stats.lowStockProducts) / stats.totalProducts) * 100)}%
+                {safePercentage(stats.totalProducts - stats.lowStockProducts, stats.totalProducts)}%
               </span>
             </div>
           </div>
@@ -117,7 +135,9 @@ export function AnalyticsSection({ stats }: AnalyticsSectionProps): JSX.Element 
         <h3 className="text-lg font-semibold text-text-primary">Résumé d&apos;activité</h3>
         <div className="mt-4 grid grid-cols-1 gap-4 text-center md:grid-cols-3">
           <div className="rounded-2xl bg-brand-light/60 p-4">
-            <p className="text-3xl font-bold text-text-primary">{stats.pendingOrders + stats.processingOrders}</p>
+            <p className="text-3xl font-bold text-text-primary">
+              {stats.pendingOrders + stats.processingOrders}
+            </p>
             <p className="text-sm text-text-muted">Commandes actives</p>
           </div>
           <div className="rounded-2xl bg-brand-light/60 p-4">
