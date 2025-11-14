@@ -80,17 +80,21 @@ export async function upsertProductVideo({
   const { data, error } = await supabase
     .from('product_videos')
     .upsert(
-      {
-        product_id: productId,
-        video_url: videoUrl,
-        video_storage_path: videoPath,
-        thumbnail_url: thumbnailUrl,
-        thumbnail_storage_path: thumbnailPath,
-        duration_seconds: durationSeconds,
-        file_size_bytes: file.size,
-      },
-      { onConflict: 'product_id', returning: 'representation' }
+      [
+        {
+          product_id: productId,
+          video_url: videoUrl,
+          video_storage_path: videoPath,
+          thumbnail_url: thumbnailUrl,
+          thumbnail_storage_path: thumbnailPath,
+          duration_seconds: durationSeconds,
+          file_size_bytes: file.size,
+        },
+      ],
+      { onConflict: 'product_id' }
     )
+    .select()
+    .maybeSingle()
 
   if (error) {
     console.error('Error saving product video metadata:', error.message)
@@ -103,7 +107,7 @@ export async function upsertProductVideo({
     await deleteProductVideoAssets(existingVideo)
   }
 
-  return data?.[0] ?? null
+  return data ?? null
 }
 
 export async function deleteProductVideo(productId: string): Promise<void> {

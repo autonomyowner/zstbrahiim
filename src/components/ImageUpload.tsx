@@ -118,7 +118,7 @@ export function ImageUpload({
       {shouldShowPreviewImage ? (
         <div className="relative w-full h-64 rounded-lg border-2 border-kitchen-lux-dark-green-300 bg-white overflow-hidden">
           <Image
-            src={previewUrl}
+            src={previewUrl ?? '/perfums/placeholder.jpg'}
             alt="Preview"
             fill
             className="object-contain p-4"

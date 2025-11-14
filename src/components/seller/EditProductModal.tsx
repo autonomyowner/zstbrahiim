@@ -1,5 +1,6 @@
 'use client'
 
+import Image from 'next/image'
 import { useState, useEffect } from 'react'
 import { type Product, type ProductType, type ProductNeed } from '@/data/products'
 import { type ProductFormData, type ProductVideoFormValue } from './AddProductModal'
@@ -396,14 +397,17 @@ export function EditProductModal({ isOpen, product, onClose, onSubmit }: EditPro
                   {(videoSelection || product.video) && !removeExistingVideo && (
                     <div className="flex items-center gap-4 rounded-xl border border-kitchen-lux-dark-green-200 bg-kitchen-lux-dark-green-50 p-3">
                       <div className="relative w-24 h-24 rounded-lg overflow-hidden border border-kitchen-lux-dark-green-200">
-                        <img
+                        <Image
                           src={
                             videoSelection?.thumbnailDataUrl ||
                             product.video?.thumbnailUrl ||
                             '/perfums/placeholder.jpg'
                           }
                           alt="Miniature vidéo"
-                          className="object-cover w-full h-full"
+                          fill
+                          sizes="96px"
+                          className="object-cover"
+                          unoptimized={Boolean(videoSelection?.thumbnailDataUrl)}
                         />
                         <span className="absolute bottom-1 right-1 bg-black/70 text-white text-xs px-2 py-0.5 rounded-full">
                           {videoSelection?.durationSeconds || product.video?.durationSeconds || 0}s

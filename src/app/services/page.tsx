@@ -216,6 +216,7 @@ export default function SellerPortalPage(): JSX.Element {
         exclusive_offers: null,
         images: [productData.image],
         seller_id: user.id, // Add seller ID to track product ownership
+        seller_category: sellerProfile?.seller_category ?? null,
       }
 
       const productId = await createProduct(productPayload)

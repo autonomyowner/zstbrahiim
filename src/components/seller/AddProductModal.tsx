@@ -1,5 +1,6 @@
-'use client'
+"use client"
 
+import Image from 'next/image'
 import { useState } from 'react'
 import { type ProductType, type ProductNeed, productCategoryOptions } from '@/data/products'
 import { ImageUpload } from '@/components/ImageUpload'
@@ -357,10 +358,13 @@ export function AddProductModal({ isOpen, onClose, onSubmit }: AddProductModalPr
                   {videoSelection && (
                     <div className="flex items-center gap-4 rounded-xl border border-kitchen-lux-dark-green-200 bg-kitchen-lux-dark-green-50 p-3">
                       <div className="relative w-24 h-24 rounded-lg overflow-hidden border border-kitchen-lux-dark-green-200">
-                        <img
+                        <Image
                           src={videoSelection.thumbnailDataUrl}
                           alt="Miniature vidéo"
-                          className="object-cover w-full h-full"
+                          fill
+                          sizes="96px"
+                          className="object-cover"
+                          unoptimized
                         />
                         <span className="absolute bottom-1 right-1 bg-black/70 text-white text-xs px-2 py-0.5 rounded-full">
                           {videoSelection.durationSeconds}s

@@ -2,6 +2,7 @@
 
 import { useState, useMemo, useEffect, type MouseEvent } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { HeroSection } from '@/components/HeroSection'
 import { ProductGrid } from '@/components/ProductGrid'
 import { ShopFilters } from '@/components/ShopFilters'
@@ -258,10 +259,13 @@ export default function HomePage(): JSX.Element {
                           }}
                         />
                       ) : (
-                        <img
-                          src={product.image}
+                        <Image
+                          src={product.image || '/perfums/6800.jpg'}
                           alt={product.name}
-                          className="absolute inset-0 h-full w-full object-cover"
+                          fill
+                          sizes="(max-width: 640px) 40vw, 20vw"
+                          className="absolute inset-0 object-cover"
+                          priority={false}
                         />
                       )}
                       <div className="pointer-events-none absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/85 via-black/50 to-transparent" />

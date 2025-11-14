@@ -20,7 +20,7 @@ export const ProductGallery = ({
   video,
 }: ProductGalleryProps): JSX.Element => {
   const mediaItems: GalleryMediaItem[] = [
-    ...images.map((image) => ({ type: 'image', src: image })),
+    ...images.map((image) => ({ type: 'image' as const, src: image })),
     ...(video
       ? [
           {
