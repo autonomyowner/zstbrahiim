@@ -265,7 +265,7 @@ export default function B2BMarketplacePage() {
                   onClick={() => router.push('/')}
                   className="px-8 py-3 bg-white hover:bg-gray-50 text-gray-900 font-semibold rounded-lg border-2 border-gray-300 transition-colors duration-200"
                 >
-                  Retour à l'accueil
+                  Retour à l&apos;accueil
                 </button>
               </div>
             </div>
