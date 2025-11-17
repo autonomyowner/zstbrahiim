@@ -129,12 +129,13 @@ export const signUp = async (
     }
 
     if (data.user && role === 'seller') {
+      const userId = data.user.id
       try {
         await retryWithBackoff(async () => {
           return await supabase
             .from('user_profiles')
             .update({ seller_category: sellerCategory || 'fournisseur' })
-            .eq('id', data.user.id)
+            .eq('id', userId)
         })
       } catch (profileError) {
         console.error('Error assigning seller category:', profileError)
