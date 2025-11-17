@@ -24,11 +24,11 @@ const greatVibes = Great_Vibes({
 })
 
 export const metadata: Metadata = {
-  title: 'ZST - Parfums de luxe et fragrances authentiques a Bouzareah',
+  title: 'ZST - Marketplace B2B et B2C Multi-vendeurs à Bouzareah | Parfums, Mode, Services',
   description:
-    'Decouvrez notre collection exclusive de parfums de luxe et fragrances authentiques a Bouzareah. Parfums originaux, eaux de parfum haut de gamme et fragrances rares.',
+    'ZST : Plateforme marketplace B2B et B2C à Bouzareah. Parfums de luxe, vêtements d\'hiver, services freelance. Espace professionnel pour fournisseurs, importateurs et grossistes.',
   keywords:
-    'parfum, parfums de luxe, fragrances authentiques, eau de parfum, parfum original, Bouzareah, parfumerie, fragrances rares, parfums importes',
+    'marketplace B2B, marketplace B2C, multi-vendeurs, Bouzareah, parfums de luxe, vêtements hiver, services freelance, importateur, grossiste, fournisseur, e-commerce Algérie',
   authors: [{ name: 'ZST' }],
   creator: 'ZST',
   publisher: 'ZST',
@@ -47,9 +47,9 @@ export const metadata: Metadata = {
     canonical: '/',
   },
   openGraph: {
-    title: 'ZST - Parfums de luxe et fragrances authentiques a Bouzareah',
+    title: 'ZST - Marketplace B2B et B2C Multi-vendeurs à Bouzareah',
     description:
-      'Decouvrez notre collection exclusive de parfums de luxe et fragrances authentiques a Bouzareah. Parfums originaux, eaux de parfum haut de gamme et fragrances rares.',
+      'Plateforme marketplace professionnelle à Bouzareah. Parfums de luxe, mode, services freelance. Espace B2B pour importateurs, grossistes et fournisseurs.',
     url: 'https://brahim-perfum.com',
     siteName: 'ZST',
     images: [
@@ -57,7 +57,7 @@ export const metadata: Metadata = {
         url: '/og-image.jpg',
         width: 1200,
         height: 630,
-        alt: 'ZST - Parfums de luxe et fragrances authentiques a Bouzareah',
+        alt: 'ZST - Marketplace B2B et B2C Multi-vendeurs',
       },
     ],
     locale: 'fr_DZ',
@@ -65,9 +65,9 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'ZST - Parfums de luxe et fragrances authentiques a Bouzareah',
+    title: 'ZST - Marketplace B2B et B2C Multi-vendeurs à Bouzareah',
     description:
-      'Decouvrez notre collection exclusive de parfums de luxe et fragrances authentiques a Bouzareah. Parfums originaux, eaux de parfum haut de gamme et fragrances rares.',
+      'Plateforme marketplace professionnelle à Bouzareah. Parfums de luxe, mode, services freelance. Espace B2B pour importateurs, grossistes et fournisseurs.',
     images: ['/og-image.jpg'],
   },
   robots: {
