@@ -54,7 +54,8 @@ export default function B2BMarketplacePage() {
     try {
       const currentUser = await getCurrentUser()
       if (!currentUser) {
-        router.push('/auth/login?redirect=/b2b')
+        // Show access denied page for non-authenticated users
+        setAccessDenied(true)
         return
       }
 
@@ -62,18 +63,23 @@ export default function B2BMarketplacePage() {
 
       // Get user profile with seller_category
       const { supabase } = await import('@/lib/supabase/client')
-      const { data: profile } = await supabase
+      const { data: profile, error: profileError } = await supabase
         .from('user_profiles')
         .select('*')
         .eq('id', currentUser.id)
         .single()
+
+      if (profileError) {
+        console.error('Error fetching profile:', profileError)
+        setAccessDenied(true)
+        return
+      }
 
       setUserProfile(profile)
 
       // Check if user is a seller
       if (profile?.role !== 'seller') {
         setAccessDenied(true)
-        setLoading(false)
         return
       }
 
@@ -81,6 +87,7 @@ export default function B2BMarketplacePage() {
       await loadOffers()
     } catch (error) {
       console.error('Error loading user and offers:', error)
+      setAccessDenied(true)
     } finally {
       setLoading(false)
     }
@@ -255,6 +262,14 @@ export default function B2BMarketplacePage() {
               </div>
 
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                {!user && (
+                  <button
+                    onClick={() => router.push('/auth/login?redirect=/b2b')}
+                    className="px-8 py-3 bg-brand-primary hover:bg-brand-primary/90 text-gray-900 font-semibold rounded-lg transition-colors duration-200"
+                  >
+                    Se connecter
+                  </button>
+                )}
                 <button
                   onClick={() => router.push('/auth/signup')}
                   className="px-8 py-3 bg-brand-primary hover:bg-brand-primary/90 text-gray-900 font-semibold rounded-lg transition-colors duration-200"
