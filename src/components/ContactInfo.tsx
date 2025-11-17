@@ -16,7 +16,7 @@ export const ContactInfo = (): JSX.Element => {
   }
 
   const handleEmailClick = (): void => {
-    window.open('mailto:contact@brahim-perfum.com', '_self')
+    window.open('mailto:contact@zst.com', '_self')
   }
 
   return (
@@ -77,7 +77,7 @@ export const ContactInfo = (): JSX.Element => {
             Email
           </h3>
           <p className="mt-2 text-lg font-semibold text-kitchen-lux-dark-green-800">
-            contact@brahim-perfum.com
+            contact@zst.com
           </p>
         <p className="mt-2 text-sm text-kitchen-lux-dark-green-700">
           Pour des questions sur nos produits et commandes.

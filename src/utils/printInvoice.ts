@@ -214,10 +214,10 @@ export function printInvoice(order: Order): void {
     <!-- Header -->
     <div class="header">
       <div class="company-info">
-        <h1>ZST Parfumerie</h1>
+        <h1>ZST</h1>
         <p>Bouzareah, Algérie</p>
         <p>Tél: +213 79 733 94 51</p>
-        <p>Email: contact@brahim-perfum.com</p>
+        <p>Email: contact@zst.com</p>
       </div>
       <div class="invoice-info">
         <h2>FACTURE</h2>
@@ -299,7 +299,7 @@ export function printInvoice(order: Order): void {
       <p><strong>Merci pour votre commande!</strong></p>
       <p>Livraison gratuite pour toute commande supérieure à 20 000 DA</p>
       <p>Délai de livraison: 2-3 jours ouvrables</p>
-      <p style="margin-top: 20px;">www.brahim-perfum.com</p>
+      <p style="margin-top: 20px;">www.zst.xyz</p>
     </div>
   </div>
 

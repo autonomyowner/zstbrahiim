@@ -317,7 +317,7 @@ ${getOrdersByWilaya(orders)
 
 ================================================================
 Généré le ${new Date().toLocaleString('fr-DZ')}
-ZST Parfumerie - Bouzareah, Algérie
+ZST - Bouzareah, Algérie
   `
 
   downloadFile(reportContent, `rapport_${new Date().toISOString().split('T')[0]}.txt`, 'text/plain')

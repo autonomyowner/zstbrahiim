@@ -42,7 +42,7 @@ export const metadata: Metadata = {
     address: false,
     telephone: false,
   },
-  metadataBase: new URL('https://brahim-perfum.com'),
+  metadataBase: new URL('https://www.zst.xyz'),
   alternates: {
     canonical: '/',
   },
@@ -50,7 +50,7 @@ export const metadata: Metadata = {
     title: 'ZST - Marketplace B2B et B2C Multi-vendeurs à Bouzareah',
     description:
       'Plateforme marketplace professionnelle à Bouzareah. Parfums de luxe, mode, services freelance. Espace B2B pour importateurs, grossistes et fournisseurs.',
-    url: 'https://brahim-perfum.com',
+    url: 'https://www.zst.xyz',
     siteName: 'ZST',
     images: [
       {
