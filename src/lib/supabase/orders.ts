@@ -689,14 +689,14 @@ export const getSellerDashboardStats = async ({
       .from('orders')
       .select('status,total,created_at')
       .eq('seller_id', sellerId)
-      .gte(currentMonthStart.toISOString())
-      .lte(adjustedEnd.toISOString()),
+      .gte('created_at', currentMonthStart.toISOString())
+      .lte('created_at', adjustedEnd.toISOString()),
     supabase
       .from('orders')
       .select('status,total,created_at')
       .eq('seller_id', sellerId)
-      .gte(previousMonthStart.toISOString())
-      .lte(previousMonthEnd.toISOString()),
+      .gte('created_at', previousMonthStart.toISOString())
+      .lte('created_at', previousMonthEnd.toISOString()),
     supabase.from('products').select('in_stock').eq('seller_id', sellerId),
   ])
 

@@ -4,223 +4,238 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-ZST is a luxury perfume e-commerce website with an integrated freelance marketplace, built for a boutique in Bouzareah, Algeria. The site features:
-1. **E-commerce**: Women's perfumes (home page), men's perfumes (services page), and winter clothes collection
-2. **Freelance Marketplace**: Fiverr/Upwork-style platform for freelancers to offer services (web development, design, video editing, marketing, etc.)
-3. **Seller Dashboard**: Order management, product management, analytics, and data export tools
+**ZST** is a luxury multi-vendor marketplace platform based in Bouzareah, Algeria. The platform supports:
+- Perfumes and fragrances (luxury marketplace)
+- Winter clothing/fashion (B2B section)
+- General marketplace products
+- Freelance services platform
 
-**Tech Stack:**
-- Next.js 15 with App Router
-- TypeScript
-- Tailwind CSS
-- React 18
-- Radix UI (for components like sliders)
+### Multi-Role System
+- **Customers**: Browse and order products
+- **Sellers**: Manage products and view orders (segmented by category)
+  - Fournisseur (retailer): Visible on main marketplace
+  - Importateur: B2B section only
+  - Grossiste: B2B section only
+- **Freelancers**: Post services and manage portfolios
+- **Admins**: Full platform access
+
+## Technology Stack
+
+- **Frontend**: Next.js 15 (App Router), React 18.3.1, TypeScript 5.7.2
+- **Styling**: Tailwind CSS 3.4.17 with custom design system
+- **Backend**: Supabase (PostgreSQL, Auth, Storage)
+  - Project ID: enbrhhuubjvapadqyvds
+  - Region: eu-west-3
+- **UI Components**: Radix UI, custom components (no icon library per user preference)
 
 ## Development Commands
 
 ```bash
-# Start development server (default: http://localhost:3000)
-npm run dev
+# Development
+npm run dev              # Start Next.js dev server on localhost:3000
 
-# Build for production
-npm run build
+# Build & Production
+npm run build            # Build for production
+npm start               # Start production server
+npm run lint            # Run ESLint checks
 
-# Start production server
-npm start
-
-# Run linter
-npm run lint
+# Database Scripts
+npm run migrate         # Migrate static data to Supabase
+npm run create-admin    # Create admin user account
 ```
 
-## Architecture & Key Concepts
+## Architecture Patterns
 
-### Product Data Structure
+### 1. Hybrid Data Strategy
+The codebase uses a hybrid approach combining static and dynamic data:
+- Static product data in `/src/data/*.ts` files (perfumes, winter clothes, freelance services)
+- Dynamic database products from Supabase
+- Combined rendering in UI components to show both static and database products
 
-Products are centrally managed across multiple data files:
+When working with products, always consider both data sources.
 
-**Perfumes** (`src/data/products.ts`):
-- **womenPerfumes**: Array of women's perfumes (displayed on home page)
-- **menPerfumes**: Array of men's perfumes (displayed on services page)
-- **products**: Combined array of both for backward compatibility
-- **getProductById()**: Helper function that searches both perfumes and winter clothes
+### 2. Seller Segmentation
+Products are filtered by seller category:
+- Homepage (`/`): Shows only products from "fournisseur" sellers
+- B2B page (`/winter`): Shows products from "importateur" and "grossiste" sellers
+- Filter logic is implemented in components using `seller_category` field
 
-**Winter Clothes** (`src/data/winter-clothes.ts`):
-- **winterClothes**: Array of winter clothing products (displayed on /winter page)
-- Uses same Product type structure as perfumes
+### 3. Authentication Flow
+- Supabase Auth with PKCE flow
+- Email/password signup with role selection (customer/seller/freelancer)
+- Protected routes check auth in `useEffect` hooks
+- Database trigger automatically creates user profile on signup
 
-Each product has:
-- Basic info: id, slug, name, brand, price, images
-- Classification: productType (Parfum Femme/Homme/Eau de Parfum/Toilette), need (Journée/Soirée/Quotidien/Spécial)
-- E-commerce fields: inStock, isPromo, isNew, rating, viewersCount, countdownEndDate
-- Content: description, benefits, ingredients, usageInstructions
-- Business: deliveryEstimate, additionalInfo (shipping, returns, payment, exclusiveOffers)
+### 4. Image/Video Management
+- Supabase Storage buckets: `product-images`, `product-videos`
+- Device-based file uploads via `ImageUpload` component in `src/components/ImageUpload.tsx`
+- Public URL generation for serving media
+- Next.js Image component for optimization
 
-### Layout & Styling
+### 5. Component Patterns
+- Client components (`'use client'`) for interactive features
+- Server components for static content
+- Modal-based forms for CRUD operations (AddProductModal, EditProductModal, etc.)
+- Reusable filter/sorting controls in ShopFilters component
 
-**Global Layout** (`src/app/layout.tsx`):
-- Uses three Google Fonts: Inter (body), Playfair Display (headings), Great Vibes (artistic elements)
-- Global gradient background: `bg-gradient-elegant` (slate-900 → red-900 → slate-900)
-- Fixed structure: Navbar (fixed top) → main content (with padding) → footer → WhatsApp button
+## Key File Locations
 
-**Design Theme**:
-- Premium/luxury aesthetic with gradient backgrounds
-- Custom Tailwind color palette includes kitchen colors and luxury dark green tones
-- **Important**: User has specified NEVER to use icons in design
-- Font classes: `font-elegant` (Playfair), `font-modern` (Inter), `font-artistic` (Great Vibes)
+### Supabase Integration
+- `src/lib/supabase/client.ts` - Supabase client configuration
+- `src/lib/supabase/server.ts` - Server-side Supabase client
+- `src/lib/supabase/auth.ts` - Authentication helpers
+- `src/lib/supabase/products.ts` - Product CRUD operations
+- `src/lib/supabase/orders.ts` - Order management functions
+- `src/lib/supabase/services.ts` - Freelance services operations
+- `src/lib/supabase/types.ts` - TypeScript type definitions
+- `src/lib/supabase/database.types.ts` - Generated Supabase types
 
-### Page Structure
+### Core Components
+- `src/components/Navbar.tsx` - Main navigation with auth state
+- `src/components/seller/` - Seller dashboard components
+- `src/components/freelancer/` - Freelancer management components
+- `src/components/ImageUpload.tsx` - File upload to Supabase Storage
 
-**E-commerce Pages:**
-- `/` (page.tsx): Home page showing women's perfumes
-- `/services` (services/page.tsx): Services page showing men's perfumes
-- `/winter` (winter/page.tsx): Winter clothes collection with sorting and display modes
-- `/products/[id]` (products/[id]/page.tsx): Dynamic product detail pages (works for both perfumes and winter clothes)
-- `/signin`, `/signup`: Authentication pages with logo.png as background
-- Custom 404 (not-found.tsx) and 500 (pages/500.tsx) error pages
+### Data Files
+- `src/data/products.ts` - Static perfume catalog
+- `src/data/winter-clothes.ts` - Static winter clothing data
+- `src/data/freelance-services.ts` - Static freelance services
+- `src/data/orders.ts` - Order templates
 
-**Freelance Marketplace Pages:**
-- `/freelance` (freelance/page.tsx): Main marketplace with search, filters, and service listings
-- `/freelance/[slug]` (freelance/[slug]/page.tsx): Individual service detail pages with provider info and portfolio
+### Database Migrations
+- `supabase/migrations/` - SQL migration files (11 migrations)
+- Migrations include schema, RLS policies, storage setup, and triggers
 
-**Seller Dashboard Pages:**
-- `/sellers`: Seller dashboard with order management, product management, analytics, and export tools
+## Database Schema
 
-### Component Organization
+### Key Tables
+- `user_profiles` - User accounts with role and seller_category
+- `products` - Product catalog with seller_id and category
+- `product_images` - Multiple images per product
+- `product_videos` - Product video assets
+- `orders` - Customer orders with order_number (auto-generated via sequence)
+- `order_items` - Order line items
+- `freelance_services` - Freelancer service listings
+- `service_portfolio` - Portfolio items for services
+- `service_reviews` - Service reviews and ratings
 
-Components in `src/components/`:
-- **Navigation**: Navbar.tsx (two-tier navigation: top bar with Services/Freelance/Sellers, main nav with auth and branding), WhatsAppButton.tsx (floating button)
-- **Product Display**: ProductGrid.tsx, ProductDetails.tsx, ProductGallery.tsx, ProductControls.tsx, ProductFocus.tsx
-- **Freelance Marketplace**: ServiceCard.tsx (freelance service card), MarketplaceFilters.tsx (category/experience/availability filters)
-- **Seller Dashboard** (in `seller/` subdirectory): DashboardStats.tsx, OrdersTable.tsx, ProductManagement.tsx, AnalyticsSection.tsx, ExportButton.tsx, AddProductModal.tsx, EditProductModal.tsx, OrderDetailsModal.tsx, OrderFilters.tsx, QuickActions.tsx
-- **UI Elements**: BudgetSlider.tsx, DualRangeSlider.tsx, ShopFilters.tsx, QuantitySelector.tsx
-- **Sections**: HeroSection.tsx, ServicesPreview.tsx, ServicesList.tsx, TestimonialsSection.tsx, etc.
-- **Interactive**: CheckoutModal.tsx, CountdownTimer.tsx, ImageCarousel.tsx, Accordion.tsx
+### Important Enums
+- `user_role`: customer, seller, freelancer, admin
+- `seller_category`: fournisseur, importateur, grossiste
+- `product_category_type`: perfume, clothing
+- `order_status`: pending, processing, shipped, delivered, cancelled
+- `payment_status`: pending, paid, failed, refunded
 
-### SEO & Metadata
+### Row Level Security (RLS)
+All tables have RLS policies applied. Key patterns:
+- Products: Public read, authenticated insert, owner-only update/delete
+- Orders: Guest create allowed, seller/customer can view own orders
+- Services: Public read, freelancer manages own services
+- Storage: Public read, authenticated upload
 
-The site targets: "Parfums de luxe et fragrances authentiques à Bouzareah"
-- Full OpenGraph and Twitter card metadata in layout.tsx
-- Keywords: parfum, parfums de luxe, fragrances authentiques, Bouzareah, parfumerie
-- Domain: https://brahim-perfum.com
-- Locale: fr_DZ (French - Algeria)
+## Development Workflow
 
-### Contact & Business Info
+### Database Changes
+1. Create new migration file in `supabase/migrations/`
+2. Apply via Supabase dashboard or CLI
+3. Regenerate types: `npx supabase gen types typescript`
+4. Update `src/lib/supabase/database.types.ts`
 
-- WhatsApp: +213 79 733 94 51
-- Email: contact@brahim-perfum.com
-- Location: Bouzareah, Algérie
-- Delivery: All 58 wilayas of Algeria
-- Free shipping threshold: 20,000 DA
-- Shipping time: 24-48h, delivery 2-3 days
+### Adding Features
+When adding new features:
+1. Check if static data exists in `/src/data/` that needs to be considered
+2. Ensure RLS policies are properly configured for new tables
+3. Use TypeScript types from `src/lib/supabase/types.ts`
+4. Follow existing patterns for client/server components
+5. Never include icons in design (per user preference in global CLAUDE.md)
 
-## Code Patterns
+### Working with Orders
+- Order numbers are auto-generated via Supabase sequence (not client-side)
+- Guest checkout is supported (no auth required for creating orders)
+- Seller dashboard filters orders by seller_id automatically
+- Order status workflow: pending → processing → shipped → delivered
 
-**TypeScript**: All components use TypeScript with proper type definitions
-**Component Style**: Functional components with const declarations (use `const ComponentName = () =>` instead of `function ComponentName()`)
-**Naming**: Event handlers prefixed with "handle" (e.g., handleAddToCart, handleClick, handleKeyDown, handleSubmit)
-**Styling**: Tailwind CSS utility classes exclusively, custom gradients via bg-gradient-elegant. NEVER use CSS or inline styles
-**Images**: Use Next.js Image component for optimization (configured for via.placeholder.com domain)
-**Code Structure**: Use early returns whenever possible to improve readability
-**Accessibility**: Implement proper ARIA attributes, keyboard navigation support (tabindex, onKeyDown, aria-label on interactive elements)
+### Image Uploads
+- Use `ImageUpload` component for consistent upload handling
+- Images are stored in Supabase Storage, not local filesystem
+- Always generate public URLs for displaying uploaded images
+- Multiple images per product are supported via `product_images` table
 
-## Data Management
+## Styling Conventions
 
-### Freelance Marketplace Data Structure
+### Design System
+- Brand colors: golden yellow (#FACC15), dark (#181711)
+- Fonts: Playfair Display (elegant), Inter (modern), Great Vibes (artistic)
+- Custom tokens: `brand-primary`, `text-primary`, `shadow-card-md`
+- Responsive design: mobile-first approach
 
-Freelance services are managed in `src/data/freelance-services.ts`:
-- **freelanceServices**: Array of all service offerings
-- **ServiceCategory**: 8 categories (Développement Web, Design Graphique, Montage Vidéo, Marketing Digital, Rédaction, Photographie, Traduction, Consultation)
-- **ExperienceLevel**: Débutant | Intermédiaire | Expert
+### Tailwind Usage
+- Utility-first approach
+- Component-scoped classes
+- No icon library (per user preference)
+- Material Symbols used sparingly for UI controls only
 
-Each service has:
-- Provider info: providerName, providerAvatar, experienceLevel, verified, topRated
-- Service details: serviceTitle, shortDescription, description, category, skills[]
-- Pricing: price, priceType (starting-at | hourly | fixed)
-- Portfolio: array of portfolio items with title, image, description
-- Business: deliveryTime, revisions, languages[], availability, responseTime
-- Stats: rating, reviewsCount, completedProjects
-- Featured flag for highlighting on marketplace homepage
+## Environment Variables
 
-**Key Features:**
-- Search functionality across title, provider, category, and skills
-- Multi-filter system (category, experience level, availability)
-- WhatsApp integration for direct contact with providers
-- Responsive card layout with hover effects
+Required in `.env.local`:
+```env
+NEXT_PUBLIC_SUPABASE_URL=https://enbrhhuubjvapadqyvds.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=[key]
+SUPABASE_SERVICE_ROLE_KEY=[key]
+NEXT_PUBLIC_SITE_URL=http://localhost:3000
+```
 
-### Adding New Products (Perfumes)
+## Important Patterns
 
-1. Open `src/data/products.ts`
-2. Add to `womenPerfumes` or `menPerfumes` array following the Product type structure
-3. Ensure all required fields are filled (id, slug, name, brand, price, image, images[], category, productType, inStock, isPromo, description, benefits[], ingredients, usageInstructions, deliveryEstimate, viewersCount, additionalInfo)
-4. Images should be in `/perfums/` directory
-5. Use consistent pricing (DA - Algerian Dinar)
+### Type Safety
+- Explicit type annotations required
+- Generated database types from Supabase
+- Type-safe Supabase client with `Database` generic
+- No implicit any types
 
-### Adding New Freelance Services
+### Data Fetching
+- Client-side fetching with `useEffect` for dynamic data
+- Static data imported directly from `/src/data`
+- Error handling with try/catch and console logging
+- No server actions currently in use
 
-1. Open `src/data/freelance-services.ts`
-2. Add to `freelanceServices` array following the FreelanceService type structure
-3. Ensure all required fields are populated, especially:
-   - Unique id and slug (slug is used in URL: `/freelance/[slug]`)
-   - Category must match one of the 8 defined ServiceCategory types
-   - Skills array for filtering/search
-   - Portfolio items (at least 2-3 for credibility)
-4. Set `featured: true` to display on marketplace homepage featured section
-5. Provider avatars should be in `/avatars/` directory
-6. Portfolio images should be in `/portfolio/` directory
+### Route Structure
+- Dynamic routes: `/products/[id]`, `/freelance/[slug]`
+- Protected routes check auth in `useEffect`
+- No-cache headers on auth-dependent pages
 
-### Orders & Seller Data
+## Testing Multi-Role Workflows
 
-Orders and seller statistics are managed in `src/data/orders.ts`:
-- **Order**: Full order details including customer info, items, status, payment
-- **OrderStatus**: pending | processing | shipped | delivered | cancelled
-- **PaymentStatus**: pending | paid | failed | refunded
-- **SellerStats**: Dashboard statistics (total orders, revenue, pending orders, etc.)
-- **SellerType**: retailer | importer | wholesaler
+When testing features:
+1. Test as guest user (no auth)
+2. Test as customer (browse, order)
+3. Test as seller (product management, orders)
+4. Test as freelancer (service management)
+5. Verify seller category filtering (fournisseur vs importateur/grossiste)
+6. Check RLS policies are working correctly
 
-Seller utilities (`src/utils/`):
-- **exportData.ts**: Export orders and products to TXT format ("Rapport Complet")
-- **printInvoice.ts**: Generate printable invoices for orders
+## Common Issues
 
-## Design Guidelines
+### RLS Policy Violations
+If you encounter RLS policy errors:
+1. Check the relevant policy in `supabase/migrations/`
+2. Verify user_id is correctly set in authenticated context
+3. For guest operations, ensure policy allows anon access
+4. Check seller_id matches authenticated user for seller operations
 
-- **No icons** - User preference to avoid icons in the design
-- Maintain luxury/premium aesthetic with gradients and elegant fonts
-- Responsive design - mobile-first approach
-- **Color Schemes**:
-  - **E-commerce**: dark green (#2E8B57), lime green (#9AFE2E), slate tones
-  - **Marketplace**: kitchen-lux-dark-green palette (50-950 shades) for consistency
-- Footer uses green gradient: `linear-gradient(to right, #2E8B57 0%, #9AFE2E 50%, #2E8B57 100%)`
-- Footer credit: "Made by www.sitedz.store"
+### TypeScript Errors
+- Always regenerate types after schema changes
+- Use generated types from `database.types.ts`
+- Check for null/undefined handling on optional fields
 
-## Navigation Structure
+### Image Upload Issues
+- Verify storage bucket permissions in Supabase dashboard
+- Check file size limits (Supabase has default limits)
+- Ensure public bucket settings for product images
 
-The Navbar has a two-tier system:
-- **Top bar** (40px height): Three key links
-  - Services (left) → `/services`
-  - Freelance (center) → `/freelance`
-  - Sellers (right) → `/sellers`
-- **Main nav**: Authentication and branding
-  - Sign In/Up buttons (with logo.png background image)
-  - Boutique navigation links (Marketplace, Dashboard)
-  - ZST brand text at center with fade in/out animation (2s interval)
+## Deployment
 
-All three sections (e-commerce, freelance marketplace, seller dashboard) are integrated under one cohesive navigation system.
-
-## Important Development Notes
-
-1. **Function declarations**: Always use const arrow functions with TypeScript types
-   ```typescript
-   // Good
-   const handleClick = (): void => { ... }
-
-   // Avoid
-   function handleClick() { ... }
-   ```
-
-2. **No placeholder code**: Implement all functionality completely. No TODOs, placeholders, or missing pieces.
-
-3. **DRY principle**: Follow Don't Repeat Yourself - create reusable components and utilities.
-
-4. **Agent mode**: Make direct code changes to the codebase using tool calls. Don't just provide code snippets.
-
-5. **No emojis**: User preference to avoid emojis in code and communication (except in user-facing content if explicitly requested).
+- **Platform**: Vercel (recommended)
+- **Environment**: Set all environment variables in Vercel dashboard
+- **Build**: Automatic builds on push to main branch
+- **Database**: Supabase project in eu-west-3 region

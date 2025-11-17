@@ -23,7 +23,7 @@ export const WhatsAppButton = (): JSX.Element => {
 
   return (
     <div
-      className={`fixed bottom-6 right-6 z-40 transition-all duration-500 ease-in-out ${
+      className={`fixed bottom-6 right-6 z-50 transition-all duration-500 ease-in-out ${
         isVisible ? 'translate-y-0 opacity-100' : 'translate-y-16 opacity-0'
       }`}
     >

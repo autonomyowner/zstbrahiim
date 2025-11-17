@@ -131,7 +131,6 @@ export const Navbar = (): JSX.Element => {
             onClick={handleSignOut}
             className="inline-flex items-center justify-center gap-2 rounded-xl border border-red-400/50 bg-red-500/10 px-4 py-2.5 text-xs font-bold uppercase tracking-[0.2em] text-red-400 transition-all hover:border-red-400 hover:bg-red-500/20 hover:text-red-300 shadow-sm"
           >
-            <span className="material-symbols-outlined text-base">logout</span>
             Logout
           </button>
         </div>
@@ -194,21 +193,21 @@ export const Navbar = (): JSX.Element => {
 
   return (
     <header className="sticky top-0 z-40">
-      <div className="hidden sm:block bg-gradient-to-r from-brand-primary via-brand-primary to-brand-primaryDark text-brand-dark">
+      <div className="bg-gradient-to-r from-brand-primary via-brand-primary to-brand-primaryDark text-brand-dark">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-4 sm:px-6 lg:px-8 py-2.5 text-xs font-bold uppercase tracking-[0.2em] sm:tracking-[0.25em]">
           <div className="flex items-center gap-4 sm:gap-6 text-brand-dark">
             {topNav.map((item) => (
               <Link
                 key={item.href}
                 href={item.href}
-                className="transition-all hover:text-brand-dark/70 hover:scale-105 whitespace-nowrap"
+                className="transition-all hover:text-brand-dark/70 hover:scale-105 whitespace-nowrap text-[10px] sm:text-xs"
               >
                 {item.label}
               </Link>
             ))}
           </div>
-          <p className="hidden lg:block text-brand-dark/90 font-semibold text-[10px] tracking-[0.15em] whitespace-nowrap">
-            ✨ Trusted suppliers & deliveries
+          <p className="hidden sm:block text-brand-dark/90 font-semibold text-[10px] tracking-[0.15em] whitespace-nowrap">
+            Trusted suppliers
           </p>
         </div>
       </div>
@@ -239,41 +238,37 @@ export const Navbar = (): JSX.Element => {
                 href="/services"
                 className="inline-flex items-center gap-2 rounded-full border border-white/20 px-4 py-2.5 text-sm font-bold text-white hover:border-brand-primary hover:bg-white/10 transition-all shadow-sm hover:shadow-card-sm"
               >
-                <span className="material-symbols-outlined text-base">sell</span>
                 Sell your product
               </Link>
               {renderAuthSection('desktop')}
             </div>
 
             <button
-              className="inline-flex h-12 w-12 items-center justify-center rounded-2xl border border-white/20 bg-white/10 text-white transition-all hover:border-brand-primary hover:bg-white/20 md:hidden"
+              className="inline-flex h-12 w-12 items-center justify-center rounded-2xl border border-white/20 bg-white/10 text-white text-2xl font-bold transition-all hover:border-brand-primary hover:bg-white/20 md:hidden"
               onClick={() => setMobileOpen((prev) => !prev)}
               aria-label="Toggle navigation menu"
             >
-              <span className="material-symbols-outlined">
-                {mobileOpen ? 'close' : 'menu'}
-              </span>
+              {mobileOpen ? '×' : '☰'}
             </button>
           </div>
         </div>
       </div>
 
       {mobileOpen && (
-        <div className="md:hidden border-b border-brand-border bg-white/95 backdrop-blur-xl text-text-primary shadow-card-md animate-fade-in">
+        <div className="md:hidden border-b border-white/10 bg-black/95 backdrop-blur-xl shadow-card-md animate-fade-in">
           <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8 flex flex-col gap-6">
             {renderNavLinks('column')}
             <div className="flex flex-col gap-3 text-sm">
-              <Link 
-                href="/freelance" 
-                className="text-text-muted hover:text-text-primary font-semibold transition-colors py-2"
+              <Link
+                href="/freelance"
+                className="text-white/70 hover:text-white font-semibold transition-colors py-2"
               >
                 Help Center
               </Link>
               <Link
                 href="/services"
-                className="inline-flex items-center gap-2 rounded-xl border border-brand-border px-4 py-3 font-bold hover:border-brand-dark hover:bg-neutral-50 transition-all shadow-sm"
+                className="inline-flex items-center gap-2 rounded-xl border border-white/20 bg-white/10 px-4 py-3 font-bold text-white hover:border-brand-primary hover:bg-white/20 transition-all shadow-sm"
               >
-                <span className="material-symbols-outlined text-base">sell</span>
                 Sell your product
               </Link>
             </div>
