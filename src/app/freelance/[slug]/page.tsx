@@ -3,6 +3,7 @@
 import { useParams } from 'next/navigation'
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { freelanceServices } from '@/data/freelance-services'
 import { getServiceBySlug } from '@/lib/supabase/services'
 
@@ -202,8 +203,27 @@ export default function ServiceDetailPage() {
               </div>
             </div>
 
+            {/* Video Presentation */}
+            {service.videoUrl && (
+              <div className="bg-white rounded-lg shadow-md p-6">
+                <h2 className="font-elegant text-xl font-semibold text-kitchen-lux-dark-green-800 mb-4">
+                  Vidéo de Présentation
+                </h2>
+                <div className="aspect-video bg-black rounded-lg overflow-hidden">
+                  <video
+                    src={service.videoUrl}
+                    controls
+                    className="w-full h-full"
+                    preload="metadata"
+                  >
+                    Votre navigateur ne supporte pas la lecture de vidéos.
+                  </video>
+                </div>
+              </div>
+            )}
+
             {/* Portfolio */}
-            {service.portfolio.length > 0 && (
+            {service.portfolio && service.portfolio.length > 0 && (
               <div className="bg-white rounded-lg shadow-md p-6">
                 <h2 className="font-elegant text-xl font-semibold text-kitchen-lux-dark-green-800 mb-4">
                   Portfolio
@@ -211,9 +231,21 @@ export default function ServiceDetailPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {service.portfolio.map((item: any, index: number) => (
                     <div key={index} className="border border-kitchen-lux-dark-green-100 rounded-lg overflow-hidden hover:shadow-lg transition-shadow">
-                      <div className="aspect-video bg-gradient-to-br from-kitchen-lux-dark-green-50 to-kitchen-lux-dark-green-100 flex items-center justify-center">
-                        <span className="text-4xl">🎨</span>
-                      </div>
+                      {item.image ? (
+                        <div className="aspect-video relative bg-kitchen-lux-dark-green-50">
+                          <Image
+                            src={item.image}
+                            alt={item.title}
+                            fill
+                            className="object-cover"
+                            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                          />
+                        </div>
+                      ) : (
+                        <div className="aspect-video bg-gradient-to-br from-kitchen-lux-dark-green-50 to-kitchen-lux-dark-green-100 flex items-center justify-center">
+                          <span className="text-4xl">🎨</span>
+                        </div>
+                      )}
                       <div className="p-4">
                         <h3 className="font-semibold text-kitchen-lux-dark-green-800 mb-1">{item.title}</h3>
                         <p className="text-sm text-kitchen-lux-dark-green-600">{item.description}</p>

@@ -34,6 +34,7 @@ const adaptService = (dbService: any): any => {
       image: p.image_url,
       description: p.description,
     })),
+    videoUrl: dbService.video_url || '',
     deliveryTime: dbService.delivery_time,
     revisions: dbService.revisions,
     languages: dbService.languages,
