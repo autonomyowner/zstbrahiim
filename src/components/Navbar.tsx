@@ -17,6 +17,7 @@ type NavItem = {
 
 const primaryNav: NavItem[] = [
   { label: 'Marketplace', href: '/' },
+  { label: 'GROS', href: '/GROS' },
   { label: 'B2B', href: '/b2b' },
   { label: 'Services', href: '/services' },
   { label: 'Freelance', href: '/freelance' },

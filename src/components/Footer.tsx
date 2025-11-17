@@ -7,7 +7,7 @@ const footerLinks = [
     title: 'Explore',
     items: [
       { label: 'Marketplace', href: '/' },
-      { label: 'Winter Collection', href: '/winter' },
+      { label: 'GROS', href: '/GROS' },
       { label: 'Services', href: '/services' },
       { label: 'Freelance Hub', href: '/freelance' },
     ],
