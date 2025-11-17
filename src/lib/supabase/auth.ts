@@ -13,6 +13,84 @@ type UserProfileUpdatePayload = {
   seller_category?: SellerCategory | null
 }
 
+// Helper to detect network errors
+const isNetworkError = (error: any): boolean => {
+  if (!error) return false
+  const errorMessage = error.message?.toLowerCase() || ''
+  return (
+    errorMessage.includes('failed to fetch') ||
+    errorMessage.includes('network error') ||
+    errorMessage.includes('network request failed') ||
+    errorMessage.includes('networkerror') ||
+    error.name === 'NetworkError' ||
+    error.name === 'TypeError'
+  )
+}
+
+// Helper to format user-friendly error messages
+const formatAuthError = (error: any): string => {
+  if (!error) return 'An unexpected error occurred'
+
+  // Network errors
+  if (isNetworkError(error)) {
+    return 'Unable to connect to the server. Please check your internet connection and try again.'
+  }
+
+  const errorMessage = error.message?.toLowerCase() || ''
+
+  // Specific auth errors
+  if (errorMessage.includes('already registered')) {
+    return 'This email is already registered. Please sign in instead.'
+  }
+  if (errorMessage.includes('invalid login credentials') || errorMessage.includes('invalid email or password')) {
+    return 'Invalid email or password. Please check your credentials and try again.'
+  }
+  if (errorMessage.includes('email not confirmed')) {
+    return 'Please verify your email address before signing in. Check your inbox for the verification link.'
+  }
+  if (errorMessage.includes('user not found')) {
+    return 'No account found with this email address. Please sign up first.'
+  }
+  if (errorMessage.includes('too many requests')) {
+    return 'Too many attempts. Please wait a few minutes and try again.'
+  }
+  if (errorMessage.includes('password')) {
+    return 'Password is too weak. Please use a stronger password with at least 8 characters.'
+  }
+
+  // Generic fallback
+  return error.message || 'An unexpected error occurred. Please try again.'
+}
+
+// Retry helper with exponential backoff
+const retryWithBackoff = async <T>(
+  fn: () => Promise<T>,
+  maxRetries: number = 3,
+  initialDelay: number = 1000
+): Promise<T> => {
+  let lastError: any
+
+  for (let attempt = 0; attempt < maxRetries; attempt++) {
+    try {
+      return await fn()
+    } catch (error: any) {
+      lastError = error
+
+      // Only retry on network errors
+      if (!isNetworkError(error) || attempt === maxRetries - 1) {
+        throw error
+      }
+
+      // Wait before retrying with exponential backoff
+      const delay = initialDelay * Math.pow(2, attempt)
+      console.log(`Retry attempt ${attempt + 1} after ${delay}ms...`)
+      await new Promise(resolve => setTimeout(resolve, delay))
+    }
+  }
+
+  throw lastError
+}
+
 // Sign up with email and password
 export const signUp = async (
   email: string,
@@ -21,7 +99,7 @@ export const signUp = async (
   phone?: string,
   role: UserRole = 'customer',
   sellerCategory?: SellerCategory
-): Promise<{ user: any; error: any }> => {
+): Promise<{ user: any; error: any; userFriendlyError?: string }> => {
   try {
     const metadata: Record<string, any> = {
       full_name: fullName,
@@ -33,27 +111,31 @@ export const signUp = async (
       metadata.seller_category = sellerCategory || 'fournisseur'
     }
 
-    // Create auth user with metadata
-    // The database trigger will automatically create the user profile
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: {
-        data: metadata,
-      },
+    // Retry signup with exponential backoff on network errors
+    const { data, error } = await retryWithBackoff(async () => {
+      return await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: metadata,
+        },
+      })
     })
 
     if (error) {
       console.error('Error signing up:', error)
-      return { user: null, error }
+      const userFriendlyError = formatAuthError(error)
+      return { user: null, error, userFriendlyError }
     }
 
     if (data.user && role === 'seller') {
       try {
-        await supabase
-          .from('user_profiles')
-          .update({ seller_category: sellerCategory || 'fournisseur' })
-          .eq('id', data.user.id)
+        await retryWithBackoff(async () => {
+          return await supabase
+            .from('user_profiles')
+            .update({ seller_category: sellerCategory || 'fournisseur' })
+            .eq('id', data.user.id)
+        })
       } catch (profileError) {
         console.error('Error assigning seller category:', profileError)
       }
@@ -63,9 +145,10 @@ export const signUp = async (
     // No need to manually insert into user_profiles
 
     return { user: data.user, error: null }
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error in signUp:', error)
-    return { user: null, error }
+    const userFriendlyError = formatAuthError(error)
+    return { user: null, error, userFriendlyError }
   }
 }
 
@@ -73,22 +156,27 @@ export const signUp = async (
 export const signIn = async (
   email: string,
   password: string
-): Promise<{ user: any; error: any }> => {
+): Promise<{ user: any; error: any; userFriendlyError?: string }> => {
   try {
-    const { data, error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
+    // Retry signin with exponential backoff on network errors
+    const { data, error } = await retryWithBackoff(async () => {
+      return await supabase.auth.signInWithPassword({
+        email,
+        password,
+      })
     })
 
     if (error) {
       console.error('Error signing in:', error)
-      return { user: null, error }
+      const userFriendlyError = formatAuthError(error)
+      return { user: null, error, userFriendlyError }
     }
 
     return { user: data.user, error: null }
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error in signIn:', error)
-    return { user: null, error }
+    const userFriendlyError = formatAuthError(error)
+    return { user: null, error, userFriendlyError }
   }
 }
 

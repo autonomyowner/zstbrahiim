@@ -45,7 +45,7 @@ export default function SignUpPage() {
 
     try {
       const selectedSellerCategory = userType === 'seller' ? sellerCategory : undefined
-      const { user, error: signUpError } = await signUp(
+      const { user, error: signUpError, userFriendlyError } = await signUp(
         email,
         password,
         fullName,
@@ -55,14 +55,8 @@ export default function SignUpPage() {
       )
 
       if (signUpError) {
-        // Handle specific error cases
-        if (signUpError.message?.includes('already registered')) {
-          setError('This email is already registered. Please sign in instead.')
-        } else if (signUpError.message?.includes('Password')) {
-          setError('Password is too weak. Please use a stronger password.')
-        } else {
-          setError(signUpError.message || 'Failed to sign up')
-        }
+        // Use the user-friendly error message from the auth helper
+        setError(userFriendlyError || 'Failed to sign up. Please try again.')
         setLoading(false)
         return
       }
@@ -71,7 +65,7 @@ export default function SignUpPage() {
         setSuccess(true)
         // Check if email confirmation is required
         const confirmationRequired = user.identities?.length === 0
-        
+
         if (confirmationRequired) {
           // User needs to verify email
           setError(null)
@@ -88,7 +82,7 @@ export default function SignUpPage() {
       }
     } catch (err) {
       console.error('Signup error:', err)
-      setError('An unexpected error occurred. Please try again.')
+      setError('Unable to connect to the server. Please check your internet connection and try again.')
       setLoading(false)
     }
   }

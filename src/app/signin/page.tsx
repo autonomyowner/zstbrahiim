@@ -18,24 +18,11 @@ export default function SignInPage() {
     setLoading(true)
 
     try {
-      const { user, error: signInError } = await signIn(email, password)
+      const { user, error: signInError, userFriendlyError } = await signIn(email, password)
 
       if (signInError) {
-        // Handle specific error cases
-        const errorMessage = signInError.message?.toLowerCase() || ''
-        
-        if (errorMessage.includes('invalid login credentials') || 
-            errorMessage.includes('invalid email or password')) {
-          setError('Invalid email or password. Please check your credentials and try again.')
-        } else if (errorMessage.includes('email not confirmed')) {
-          setError('Please verify your email address before signing in. Check your inbox for the verification link.')
-        } else if (errorMessage.includes('user not found')) {
-          setError('No account found with this email address. Please sign up first.')
-        } else if (errorMessage.includes('too many requests')) {
-          setError('Too many login attempts. Please wait a few minutes and try again.')
-        } else {
-          setError(signInError.message || 'Failed to sign in. Please try again.')
-        }
+        // Use the user-friendly error message from the auth helper
+        setError(userFriendlyError || 'Failed to sign in. Please try again.')
         setLoading(false)
         return
       }
@@ -47,7 +34,7 @@ export default function SignInPage() {
       }
     } catch (err) {
       console.error('Sign in error:', err)
-      setError('An unexpected error occurred. Please try again later.')
+      setError('Unable to connect to the server. Please check your internet connection and try again.')
       setLoading(false)
     }
   }
