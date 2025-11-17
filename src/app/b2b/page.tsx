@@ -25,6 +25,7 @@ export default function B2BMarketplacePage() {
   const [offers, setOffers] = useState<B2BOfferWithDetails[]>([])
   const [filteredOffers, setFilteredOffers] = useState<B2BOfferWithDetails[]>([])
   const [loading, setLoading] = useState(true)
+  const [accessDenied, setAccessDenied] = useState(false)
   const [sortBy, setSortBy] = useState<'newest' | 'price_asc' | 'price_desc' | 'ending_soon'>('newest')
   const [filters, setFilters] = useState<{
     offerType?: B2BOfferType
@@ -71,8 +72,8 @@ export default function B2BMarketplacePage() {
 
       // Check if user is a seller
       if (profile?.role !== 'seller') {
-        alert('Vous devez être un vendeur pour accéder au marché B2B')
-        router.push('/')
+        setAccessDenied(true)
+        setLoading(false)
         return
       }
 
@@ -204,12 +205,71 @@ export default function B2BMarketplacePage() {
     )
   }
 
-  if (!userProfile) {
+  if (accessDenied) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <p className="text-gray-900 font-semibold mb-2">Accès refusé</p>
-          <p className="text-gray-600">Vous devez être connecté en tant que vendeur</p>
+      <div className="min-h-screen bg-gray-50">
+        <div className="container mx-auto px-4 py-16">
+          <div className="max-w-2xl mx-auto">
+            <div className="bg-white rounded-lg shadow-lg p-8 md:p-12 text-center">
+              <div className="w-20 h-20 bg-yellow-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                <svg className="w-10 h-10 text-yellow-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                </svg>
+              </div>
+
+              <h1 className="text-3xl font-bold text-gray-900 mb-4">
+                Accès B2B Réservé aux Vendeurs Professionnels
+              </h1>
+
+              <p className="text-lg text-gray-700 mb-6">
+                Le marché B2B de ZST est exclusivement accessible aux comptes vendeurs professionnels.
+              </p>
+
+              <div className="bg-gray-50 rounded-lg p-6 mb-8 text-left">
+                <h2 className="text-lg font-semibold text-gray-900 mb-3">
+                  Pour accéder à cette section, vous devez être :
+                </h2>
+                <ul className="space-y-3">
+                  <li className="flex items-start">
+                    <span className="inline-block w-2 h-2 bg-brand-primary rounded-full mt-2 mr-3 flex-shrink-0"></span>
+                    <div>
+                      <span className="font-semibold text-gray-900">Fournisseur (Détaillant)</span>
+                      <p className="text-gray-600 text-sm mt-1">Accédez aux offres des grossistes et importateurs</p>
+                    </div>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="inline-block w-2 h-2 bg-brand-primary rounded-full mt-2 mr-3 flex-shrink-0"></span>
+                    <div>
+                      <span className="font-semibold text-gray-900">Importateur</span>
+                      <p className="text-gray-600 text-sm mt-1">Créez des offres pour les grossistes</p>
+                    </div>
+                  </li>
+                  <li className="flex items-start">
+                    <span className="inline-block w-2 h-2 bg-brand-primary rounded-full mt-2 mr-3 flex-shrink-0"></span>
+                    <div>
+                      <span className="font-semibold text-gray-900">Grossiste</span>
+                      <p className="text-gray-600 text-sm mt-1">Créez des offres pour les détaillants</p>
+                    </div>
+                  </li>
+                </ul>
+              </div>
+
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <button
+                  onClick={() => router.push('/auth/signup')}
+                  className="px-8 py-3 bg-brand-primary hover:bg-brand-primary/90 text-gray-900 font-semibold rounded-lg transition-colors duration-200"
+                >
+                  Créer un compte vendeur
+                </button>
+                <button
+                  onClick={() => router.push('/')}
+                  className="px-8 py-3 bg-white hover:bg-gray-50 text-gray-900 font-semibold rounded-lg border-2 border-gray-300 transition-colors duration-200"
+                >
+                  Retour à l'accueil
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     )
