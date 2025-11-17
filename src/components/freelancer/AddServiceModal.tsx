@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import Image from 'next/image'
 import { ImageUpload } from '@/components/ImageUpload'
+import { VideoUpload } from '@/components/VideoUpload'
 
 type ServiceCategory = 'Développement Web' | 'Design Graphique' | 'Montage Vidéo' | 'Marketing Digital' | 'Rédaction' | 'Photographie' | 'Traduction' | 'Consultation'
 type ExperienceLevel = 'Débutant' | 'Intermédiaire' | 'Expert'
@@ -22,6 +23,7 @@ export type ServiceFormData = {
   languages: string
   responseTime: string
   portfolioImages: string[]
+  videoUrl?: string
 }
 
 type AddServiceModalProps = {
@@ -45,6 +47,7 @@ export function AddServiceModal({ isOpen, onClose, onSubmit }: AddServiceModalPr
     languages: 'Français, Arabe',
     responseTime: '2 heures',
     portfolioImages: [],
+    videoUrl: '',
   })
 
   const [errors, setErrors] = useState<Record<string, string>>({})
@@ -87,6 +90,7 @@ export function AddServiceModal({ isOpen, onClose, onSubmit }: AddServiceModalPr
       languages: 'Français, Arabe',
       responseTime: '2 heures',
       portfolioImages: [],
+      videoUrl: '',
     })
     setErrors({})
     setCurrentPortfolioImage('')
@@ -386,6 +390,20 @@ export function AddServiceModal({ isOpen, onClose, onSubmit }: AddServiceModalPr
                   </p>
                 </div>
               )}
+
+              {/* Video Upload */}
+              <div>
+                <VideoUpload
+                  onVideoUploaded={(url) => updateField('videoUrl', url)}
+                  currentVideoUrl={formData.videoUrl}
+                  label="Vidéo de présentation du service (optionnel)"
+                  required={false}
+                  bucketPath="service-videos"
+                />
+                <p className="text-xs text-kitchen-lux-dark-green-600 mt-2">
+                  Ajoutez une vidéo pour montrer votre travail et vos compétences
+                </p>
+              </div>
             </div>
           </div>
 

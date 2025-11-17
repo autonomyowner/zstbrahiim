@@ -258,6 +258,119 @@ export type ServiceFilters = {
 
 export type SortOption = 'best-sellers' | 'price-asc' | 'price-desc' | 'newest' | 'highest-rated'
 
+// B2B Marketplace Types
+export type B2BOfferType = 'negotiable' | 'auction'
+export type B2BOfferStatus = 'active' | 'expired' | 'closed' | 'sold'
+export type B2BResponseType = 'bid' | 'negotiation'
+export type B2BResponseStatus = 'pending' | 'accepted' | 'rejected' | 'outbid' | 'withdrawn'
+export type B2BNotificationType =
+  | 'new_offer'
+  | 'new_bid'
+  | 'outbid'
+  | 'negotiation_submitted'
+  | 'negotiation_accepted'
+  | 'negotiation_rejected'
+  | 'auction_won'
+  | 'auction_lost'
+  | 'auction_ending_soon'
+  | 'offer_expired'
+
+export type B2BOffer = {
+  id: string
+  seller_id: string
+  title: string
+  description: string
+  images: string[]
+  tags: string[]
+  base_price: number
+  min_quantity: number
+  available_quantity: number
+  offer_type: B2BOfferType
+  status: B2BOfferStatus
+  current_bid: number | null
+  highest_bidder_id: string | null
+  starts_at: string | null
+  ends_at: string | null
+  target_category: SellerCategory
+  created_at: string
+  updated_at: string
+}
+
+export type B2BOfferWithDetails = B2BOffer & {
+  seller_name: string
+  seller_category: SellerCategory
+  seller_email: string
+  pending_responses_count: number
+  total_responses_count: number
+  highest_bid_amount: number | null
+  display_status: string
+  seconds_remaining: number | null
+}
+
+export type B2BOfferResponse = {
+  id: string
+  offer_id: string
+  buyer_id: string
+  response_type: B2BResponseType
+  status: B2BResponseStatus
+  amount: number
+  quantity: number
+  message: string | null
+  created_at: string
+  updated_at: string
+}
+
+export type B2BResponseWithDetails = B2BOfferResponse & {
+  offer_title: string
+  seller_id: string
+  offer_type: B2BOfferType
+  offer_status: B2BOfferStatus
+  buyer_name: string
+  buyer_category: SellerCategory
+  seller_name: string
+  seller_category: SellerCategory
+}
+
+export type B2BNotification = {
+  id: string
+  user_id: string
+  type: B2BNotificationType
+  title: string
+  message: string
+  offer_id: string | null
+  response_id: string | null
+  metadata: Record<string, any>
+  read: boolean
+  read_at: string | null
+  created_at: string
+}
+
+// B2B API Request Types
+export type CreateB2BOfferRequest = {
+  title: string
+  description: string
+  images?: string[]
+  tags?: string[]
+  base_price: number
+  min_quantity: number
+  available_quantity: number
+  offer_type: B2BOfferType
+  starts_at?: string
+  ends_at?: string
+}
+
+export type UpdateB2BOfferRequest = Partial<
+  Omit<B2BOffer, 'id' | 'seller_id' | 'created_at' | 'updated_at' | 'target_category'>
+>
+
+export type CreateB2BResponseRequest = {
+  offer_id: string
+  response_type: B2BResponseType
+  amount: number
+  quantity: number
+  message?: string
+}
+
 // Supabase Database Type (for type-safe queries)
 export type Database = {
   public: {

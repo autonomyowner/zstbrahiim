@@ -30,9 +30,15 @@ import {
   type SellerDashboardStats,
 } from '@/lib/supabase/orders'
 import { upsertProductVideo, deleteProductVideo } from '@/lib/supabase/productVideos'
-import type { UserProfile } from '@/lib/supabase/types'
+import type { UserProfile, B2BOfferWithDetails, CreateB2BOfferRequest } from '@/lib/supabase/types'
+import { getMyOffers, createOffer as createB2BOffer, deleteOffer } from '@/lib/supabase/b2b-offers'
+import { getOfferResponses } from '@/lib/supabase/b2b-responses'
+import { getSellerStatistics } from '@/lib/supabase/b2b-offers'
+import CreateOfferModal from '@/components/b2b/CreateOfferModal'
+import OfferCard from '@/components/b2b/OfferCard'
+import OfferDetailsModal from '@/components/b2b/OfferDetailsModal'
 
-type TabType = 'dashboard' | 'orders' | 'products' | 'analytics'
+type TabType = 'dashboard' | 'orders' | 'products' | 'analytics' | 'b2b'
 
 const rangePresetDays: Record<StatsRangePreset, number> = {
   '7d': 7,
@@ -73,6 +79,14 @@ export default function SellerPortalPage(): JSX.Element {
   const [isOrderDetailsModalOpen, setIsOrderDetailsModalOpen] = useState(false)
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null)
+
+  // B2B states
+  const [b2bOffers, setB2BOffers] = useState<B2BOfferWithDetails[]>([])
+  const [b2bStats, setB2BStats] = useState<any>(null)
+  const [isCreateOfferModalOpen, setIsCreateOfferModalOpen] = useState(false)
+  const [isB2BDetailsModalOpen, setIsB2BDetailsModalOpen] = useState(false)
+  const [selectedB2BOffer, setSelectedB2BOffer] = useState<B2BOfferWithDetails | null>(null)
+  const [b2bLoading, setB2BLoading] = useState(false)
 
   // Order filters
   const [statusFilter, setStatusFilter] = useState<OrderStatus | 'all'>('all')
@@ -183,6 +197,30 @@ export default function SellerPortalPage(): JSX.Element {
 
     fetchStats()
   }, [authChecking, statsRange.start.getTime(), statsRange.end.getTime()])
+
+  // Fetch B2B offers for importateurs and grossistes
+  useEffect(() => {
+    if (authChecking) return
+    if (!sellerProfile) return
+    if (sellerProfile.seller_category !== 'importateur' && sellerProfile.seller_category !== 'grossiste') return
+
+    const fetchB2BData = async () => {
+      try {
+        setB2BLoading(true)
+        const offers = await getMyOffers()
+        setB2BOffers(offers)
+
+        const stats = await getSellerStatistics()
+        setB2BStats(stats)
+      } catch (error) {
+        console.error('Error fetching B2B data:', error)
+      } finally {
+        setB2BLoading(false)
+      }
+    }
+
+    fetchB2BData()
+  }, [authChecking, sellerProfile])
 
   // Filter orders
   const filteredOrders = useMemo(() => {
@@ -410,10 +448,57 @@ export default function SellerPortalPage(): JSX.Element {
     printInvoice(order)
   }
 
+  // B2B handlers
+  const handleCreateB2BOffer = async (offerData: CreateB2BOfferRequest) => {
+    try {
+      setProductError(null)
+      await createB2BOffer(offerData)
+      setSuccessMessage('Offre B2B créée avec succès!')
+
+      // Refresh B2B offers
+      const offers = await getMyOffers()
+      setB2BOffers(offers)
+
+      setTimeout(() => setSuccessMessage(null), 3000)
+    } catch (error: any) {
+      console.error('Error creating B2B offer:', error)
+      setProductError(error.message || 'Erreur lors de la création de l\'offre B2B')
+    }
+  }
+
+  const handleDeleteB2BOffer = async (offerId: string) => {
+    if (confirm('Êtes-vous sûr de vouloir supprimer cette offre B2B?')) {
+      try {
+        setProductError(null)
+        await deleteOffer(offerId)
+        setSuccessMessage('Offre B2B supprimée avec succès!')
+
+        // Refresh B2B offers
+        const offers = await getMyOffers()
+        setB2BOffers(offers)
+
+        setTimeout(() => setSuccessMessage(null), 3000)
+      } catch (error: any) {
+        console.error('Error deleting B2B offer:', error)
+        setProductError(error.message || 'Erreur lors de la suppression de l\'offre B2B')
+      }
+    }
+  }
+
+  const handleViewB2BDetails = (offer: B2BOfferWithDetails) => {
+    setSelectedB2BOffer(offer)
+    setIsB2BDetailsModalOpen(true)
+  }
+
+  const canAccessB2B = () => {
+    return sellerProfile?.seller_category === 'importateur' || sellerProfile?.seller_category === 'grossiste'
+  }
+
   const tabs = [
     { id: 'dashboard' as TabType, label: 'Tableau de Bord' },
     { id: 'orders' as TabType, label: 'Commandes' },
     { id: 'products' as TabType, label: 'Produits' },
+    ...(canAccessB2B() ? [{ id: 'b2b' as TabType, label: 'Offres B2B' }] : []),
     { id: 'analytics' as TabType, label: 'Analytiques' },
   ]
 
@@ -567,6 +652,7 @@ export default function SellerPortalPage(): JSX.Element {
                     onAddProduct={handleAddProduct}
                     onManageInventory={() => setActiveTab('products')}
                     onViewAnalytics={() => setActiveTab('analytics')}
+                    onCreateB2BOffer={canAccessB2B() ? () => setIsCreateOfferModalOpen(true) : undefined}
                   />
                   <div className="mt-10 rounded-3xl border border-brand-border bg-white/95 p-6 shadow-card-sm">
                     <div className="flex items-center justify-between">
@@ -637,6 +723,90 @@ export default function SellerPortalPage(): JSX.Element {
                 </div>
               )}
 
+              {activeTab === 'b2b' && canAccessB2B() && (
+                <div className="space-y-6">
+                  <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                      <p className="text-xs uppercase tracking-[0.3em] text-text-muted">
+                        {sellerProfile?.seller_category === 'importateur' ? 'Importateur' : 'Grossiste'}
+                      </p>
+                      <h2 className="text-2xl font-semibold text-text-primary">Mes offres B2B</h2>
+                    </div>
+                    <button
+                      onClick={() => setIsCreateOfferModalOpen(true)}
+                      className="rounded-xl bg-brand-dark px-6 py-3 text-sm font-bold text-brand-primary transition-all hover:bg-black shadow-card-sm hover:shadow-card-md"
+                    >
+                      Créer une offre B2B
+                    </button>
+                  </div>
+
+                  {/* B2B Statistics */}
+                  {b2bStats && (
+                    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                      <div className="rounded-2xl border border-brand-border bg-white p-4 shadow-card-sm">
+                        <p className="text-xs uppercase tracking-[0.3em] text-text-muted">Offres actives</p>
+                        <p className="mt-2 text-2xl font-bold text-text-primary">{b2bStats.active_offers_count || 0}</p>
+                      </div>
+                      <div className="rounded-2xl border border-brand-border bg-white p-4 shadow-card-sm">
+                        <p className="text-xs uppercase tracking-[0.3em] text-text-muted">Réponses reçues</p>
+                        <p className="mt-2 text-2xl font-bold text-text-primary">{b2bStats.total_responses_count || 0}</p>
+                      </div>
+                      <div className="rounded-2xl border border-brand-border bg-white p-4 shadow-card-sm">
+                        <p className="text-xs uppercase tracking-[0.3em] text-text-muted">Offres vendues</p>
+                        <p className="mt-2 text-2xl font-bold text-text-primary">{b2bStats.sold_offers_count || 0}</p>
+                      </div>
+                      <div className="rounded-2xl border border-brand-border bg-white p-4 shadow-card-sm">
+                        <p className="text-xs uppercase tracking-[0.3em] text-text-muted">Enchère max</p>
+                        <p className="mt-2 text-2xl font-bold text-text-primary">
+                          {b2bStats.highest_bid ? `${b2bStats.highest_bid} DZD` : '0 DZD'}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* B2B Offers List */}
+                  {b2bLoading ? (
+                    <div className="rounded-2xl border border-brand-border bg-white px-4 py-12 text-center shadow-card-sm">
+                      <div className="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-b-2 border-brand-dark"></div>
+                      <p className="text-text-muted">Chargement des offres B2B...</p>
+                    </div>
+                  ) : b2bOffers.length > 0 ? (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                      {b2bOffers.map((offer) => (
+                        <div key={offer.id} className="relative">
+                          <OfferCard
+                            offer={offer}
+                            onViewDetails={handleViewB2BDetails}
+                            onMakeOffer={() => {}}
+                          />
+                          <button
+                            onClick={() => handleDeleteB2BOffer(offer.id)}
+                            className="absolute top-4 right-4 rounded-lg bg-red-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-red-700 transition-colors"
+                          >
+                            Supprimer
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="rounded-2xl border border-brand-border bg-white px-4 py-12 text-center shadow-card-sm">
+                      <p className="text-lg font-semibold text-text-muted mb-2">
+                        Aucune offre B2B pour le moment
+                      </p>
+                      <p className="text-sm text-text-muted mb-4">
+                        Créez votre première offre pour commencer à vendre en gros
+                      </p>
+                      <button
+                        onClick={() => setIsCreateOfferModalOpen(true)}
+                        className="rounded-xl bg-brand-dark px-6 py-3 text-sm font-bold text-brand-primary hover:bg-black transition-all"
+                      >
+                        Créer une offre B2B
+                      </button>
+                    </div>
+                  )}
+                </div>
+              )}
+
               {activeTab === 'analytics' && (
                 <div className="space-y-6">
                   <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -695,6 +865,29 @@ export default function SellerPortalPage(): JSX.Element {
         }}
         onPrintInvoice={handlePrintInvoice}
       />
+
+      {canAccessB2B() && sellerProfile?.seller_category && (
+        <>
+          <CreateOfferModal
+            isOpen={isCreateOfferModalOpen}
+            onClose={() => setIsCreateOfferModalOpen(false)}
+            onSubmit={handleCreateB2BOffer}
+            sellerCategory={sellerProfile.seller_category as 'importateur' | 'grossiste'}
+          />
+
+          <OfferDetailsModal
+            isOpen={isB2BDetailsModalOpen}
+            onClose={() => {
+              setIsB2BDetailsModalOpen(false)
+              setSelectedB2BOffer(null)
+            }}
+            offer={selectedB2BOffer}
+            onSubmitResponse={async () => {}}
+            canRespond={false}
+            isOwner={true}
+          />
+        </>
+      )}
     </div>
   )
 }

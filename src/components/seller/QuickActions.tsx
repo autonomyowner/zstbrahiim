@@ -27,6 +27,7 @@ type QuickActionsProps = {
   onAddProduct: () => void
   onManageInventory: () => void
   onViewAnalytics: () => void
+  onCreateB2BOffer?: () => void
 }
 
 export function QuickActions({
@@ -34,6 +35,7 @@ export function QuickActions({
   onAddProduct,
   onManageInventory,
   onViewAnalytics,
+  onCreateB2BOffer,
 }: QuickActionsProps): JSX.Element {
   const actions: QuickAction[] = [
     {
@@ -50,6 +52,17 @@ export function QuickActions({
       accent: 'bg-green-100 text-green-600',
       onClick: onAddProduct,
     },
+    ...(onCreateB2BOffer
+      ? [
+          {
+            title: 'Créer Offre B2B',
+            description: 'Publiez une offre pour grossistes/fournisseurs.',
+            icon: 'handshake',
+            accent: 'bg-amber-100 text-amber-700',
+            onClick: onCreateB2BOffer,
+          },
+        ]
+      : []),
     {
       title: 'Gérer Inventaire',
       description: 'Ajustez les stocks et promotions.',
