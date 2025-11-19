@@ -2,7 +2,6 @@
 
 import * as React from 'react'
 import { productCategoryOptions, type FilterState } from '@/data/products'
-import { BudgetSlider } from './BudgetSlider'
 
 type ShopFiltersProps = {
   filters: FilterState
@@ -41,6 +40,20 @@ export const ShopFilters = ({
 
   const handlePriceChange = (range: [number, number]): void => {
     updateFilter('priceRange', { min: range[0], max: range[1] })
+  }
+
+  const priceRangeOptions = [
+    { label: '0 DA - 10.000 DA', min: 0, max: 10000 },
+    { label: '10.000 DA - 50.000 DA', min: 10000, max: 50000 },
+    { label: '50.000 DA - 100.000 DA', min: 50000, max: 100000 },
+  ]
+
+  const handlePriceRangeSelect = (event: React.ChangeEvent<HTMLSelectElement>): void => {
+    const selectedIndex = parseInt(event.target.value)
+    if (selectedIndex >= 0) {
+      const selectedRange = priceRangeOptions[selectedIndex]
+      updateFilter('priceRange', { min: selectedRange.min, max: selectedRange.max })
+    }
   }
 
   const availabilityOptions = [
@@ -92,21 +105,21 @@ export const ShopFilters = ({
 
       <div className="mt-8 flex flex-wrap gap-6">
         <div className="w-full rounded-2xl border border-brand-border bg-white/70 p-5 shadow-card-sm lg:max-w-sm">
-          <div className="flex items-center justify-between text-sm text-text-muted">
-            <p className="font-semibold text-text-primary">Budget cible</p>
-            <span>
-              {filters.priceRange.min.toLocaleString()} DA - {filters.priceRange.max.toLocaleString()} DA
-            </span>
-          </div>
-          <div className="mt-4">
-            <BudgetSlider
-              min={0}
-              max={900000}
-              step={1000}
-              value={[filters.priceRange.min, filters.priceRange.max]}
-              onValueChange={handlePriceChange}
-            />
-          </div>
+          <label htmlFor="budget-select" className="block text-sm font-semibold text-text-primary mb-3">
+            Budget cible
+          </label>
+          <select
+            id="budget-select"
+            onChange={handlePriceRangeSelect}
+            className="w-full rounded-xl border border-brand-border bg-white px-4 py-3 text-sm font-medium text-text-primary shadow-sm transition hover:border-brand-dark focus:border-brand-dark focus:outline-none focus:ring-2 focus:ring-brand-dark/20"
+          >
+            <option value="">Sélectionner une fourchette de prix</option>
+            {priceRangeOptions.map((option, index) => (
+              <option key={index} value={index}>
+                {option.label}
+              </option>
+            ))}
+          </select>
         </div>
       </div>
 

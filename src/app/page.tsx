@@ -195,6 +195,13 @@ export default function HomePage(): JSX.Element {
 
       <section className="space-y-10 bg-transparent">
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 space-y-10">
+          <ShopFilters
+            filters={filters}
+            onFiltersChange={setFilters}
+            onResetFilters={handleResetFilters}
+            productCounts={productCounts}
+          />
+
           <div className="rounded-2xl sm:rounded-3xl border border-brand-border bg-white/95 backdrop-blur-sm p-5 sm:p-8 shadow-card-md">
             <div className="flex items-center justify-between gap-3 sm:gap-4 mb-6 sm:mb-8">
               <div className="min-w-0 flex-1">
@@ -304,13 +311,6 @@ export default function HomePage(): JSX.Element {
               })}
             </div>
           </div>
-
-          <ShopFilters
-            filters={filters}
-            onFiltersChange={setFilters}
-            onResetFilters={handleResetFilters}
-            productCounts={productCounts}
-          />
 
           <ProductControls
             productCount={sortedProducts.length}
