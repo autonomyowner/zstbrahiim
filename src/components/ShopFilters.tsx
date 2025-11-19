@@ -30,12 +30,25 @@ export const ShopFilters = ({
   onResetFilters,
   productCounts,
 }: ShopFiltersProps): JSX.Element => {
+  const categoriesScrollRef = React.useRef<HTMLDivElement>(null)
+
   const updateFilter = <K extends keyof FilterState>(key: K, value: FilterState[K]): void => {
     onFiltersChange({ ...filters, [key]: value })
   }
 
   const handleCategorySelect = (categoryId: string): void => {
     updateFilter('category', categoryId)
+  }
+
+  const scrollCategories = (direction: 'left' | 'right'): void => {
+    if (categoriesScrollRef.current) {
+      const scrollAmount = 300
+      const newScrollLeft = categoriesScrollRef.current.scrollLeft + (direction === 'right' ? scrollAmount : -scrollAmount)
+      categoriesScrollRef.current.scrollTo({
+        left: newScrollLeft,
+        behavior: 'smooth'
+      })
+    }
   }
 
   const handlePriceChange = (range: [number, number]): void => {
@@ -85,21 +98,43 @@ export const ShopFilters = ({
         <p className="text-xs font-semibold uppercase tracking-[0.3em] text-text-muted">
           Catégories rapides
         </p>
-        <div className="flex flex-wrap gap-3">
-          {marketplaceCategories.map((category) => (
-            <button
-              key={category.id}
-              type="button"
-              onClick={() => handleCategorySelect(category.id)}
-              className={`rounded-2xl border px-4 py-3 text-sm font-semibold transition ${
-                filters.category === category.id
-                  ? 'border-brand-dark bg-brand-dark text-text-inverted shadow-md'
-                  : 'border-brand-border text-text-muted hover:text-text-primary'
-              }`}
-            >
-              {category.label}
-            </button>
-          ))}
+        <div className="relative group">
+          <button
+            type="button"
+            onClick={() => scrollCategories('left')}
+            className="hidden lg:flex absolute left-0 top-1/2 -translate-y-1/2 z-10 items-center justify-center w-10 h-10 rounded-full bg-white border border-brand-border shadow-md opacity-0 group-hover:opacity-100 transition-opacity hover:bg-brand-dark hover:text-white"
+            aria-label="Défiler vers la gauche"
+          >
+            <svg viewBox="0 0 24 24" className="w-5 h-5" fill="currentColor">
+              <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/>
+            </svg>
+          </button>
+          <div ref={categoriesScrollRef} className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
+            {marketplaceCategories.map((category) => (
+              <button
+                key={category.id}
+                type="button"
+                onClick={() => handleCategorySelect(category.id)}
+                className={`flex-shrink-0 rounded-2xl border px-4 py-3 text-sm font-semibold transition ${
+                  filters.category === category.id
+                    ? 'border-brand-dark bg-brand-dark text-text-inverted shadow-md'
+                    : 'border-brand-border text-text-muted hover:text-text-primary'
+                }`}
+              >
+                {category.label}
+              </button>
+            ))}
+          </div>
+          <button
+            type="button"
+            onClick={() => scrollCategories('right')}
+            className="hidden lg:flex absolute right-0 top-1/2 -translate-y-1/2 z-10 items-center justify-center w-10 h-10 rounded-full bg-white border border-brand-border shadow-md opacity-0 group-hover:opacity-100 transition-opacity hover:bg-brand-dark hover:text-white"
+            aria-label="Défiler vers la droite"
+          >
+            <svg viewBox="0 0 24 24" className="w-5 h-5" fill="currentColor">
+              <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/>
+            </svg>
+          </button>
         </div>
       </div>
 
@@ -130,10 +165,10 @@ export const ShopFilters = ({
         <button
           type="button"
           onClick={onResetFilters}
-          className="inline-flex items-center gap-2 rounded-full border border-brand-border px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] text-text-primary hover:border-brand-dark"
+          className="inline-flex items-center justify-center rounded-full border border-brand-border p-2 text-text-primary hover:border-brand-dark hover:bg-brand-dark hover:text-white transition"
+          aria-label="Réinitialiser les filtres"
         >
           <span className="material-symbols-outlined text-base">refresh</span>
-          Réinitialiser
         </button>
       </div>
     </section>

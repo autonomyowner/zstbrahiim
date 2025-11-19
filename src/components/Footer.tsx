@@ -41,8 +41,7 @@ export const Footer = (): JSX.Element => {
               </div>
             </Link>
             <p className="text-sm text-white/60">
-              Delivering curated selections of perfumes, apparel, and wholesale goods across all 58 wilayas,
-              backed by Supabase-powered fulfilment.
+              Delivering curated selections of perfumes, apparel, and wholesale goods across all 58 wilayas.
             </p>
           </div>
 
@@ -76,7 +75,6 @@ export const Footer = (): JSX.Element => {
             <Link href="/#terms" className="hover:text-brand-primary">
               Terms
             </Link>
-            <span className="text-white/40">Powered by Supabase</span>
           </div>
         </div>
       </div>

@@ -26,9 +26,8 @@ export const HeroSection = ({ stats }: HeroSectionProps): JSX.Element => {
       <div className="grid gap-8 overflow-hidden rounded-3xl bg-black text-text-inverted shadow-card-lg lg:grid-cols-2">
         <div className="flex flex-col gap-6 p-6 sm:p-10 lg:p-12">
           <div className="flex flex-col gap-4">
-            <span className="inline-flex w-fit items-center gap-2 rounded-full bg-white/10 px-3 py-1.5 text-[10px] sm:text-[11px] font-semibold uppercase tracking-[0.3em] sm:tracking-[0.4em]">
-              Verified
-              <span className="material-symbols-outlined text-xs sm:text-sm">verified</span>
+            <span className="inline-flex w-fit items-center justify-center rounded-full bg-white/10 p-2">
+              <span className="material-symbols-outlined text-base sm:text-lg">verified</span>
             </span>
             <h1 className="text-3xl sm:text-4xl lg:text-5xl font-black leading-tight tracking-tight break-words">
               Quality products, trusted Algerian suppliers.
