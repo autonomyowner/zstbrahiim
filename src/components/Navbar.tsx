@@ -12,13 +12,19 @@ import type { UserProfile } from '@/lib/supabase/types'
 
 type NavItem = {
   label: string
-  href: string
+  href?: string
+  dropdown?: { label: string; href: string }[]
 }
 
 const primaryNav: NavItem[] = [
   { label: 'Marketplace', href: '/' },
-  { label: 'GROS', href: '/GROS' },
-  { label: 'B2B', href: '/b2b' },
+  {
+    label: 'Business',
+    dropdown: [
+      { label: 'GROS', href: '/GROS' },
+      { label: 'B2B', href: '/b2b' },
+    ],
+  },
   { label: 'Freelance', href: '/freelance' },
 ]
 
@@ -31,6 +37,7 @@ const topNav: NavItem[] = [
 export const Navbar = (): JSX.Element => {
   const [isScrolled, setIsScrolled] = useState<boolean>(false)
   const [mobileOpen, setMobileOpen] = useState<boolean>(false)
+  const [openDropdown, setOpenDropdown] = useState<string | null>(null)
   const [user, setUser] = useState<UserProfile | null>(null)
   const [loading, setLoading] = useState<boolean>(true)
   const pathname = usePathname()
@@ -164,14 +171,95 @@ export const Navbar = (): JSX.Element => {
       }`}
     >
       {primaryNav.map((item) => {
+        if (item.dropdown) {
+          const isDropdownActive = item.dropdown.some((subItem) => pathname === subItem.href)
+
+          if (orientation === 'column') {
+            // Mobile: render as expandable section
+            return (
+              <div key={item.label} className="flex flex-col gap-2">
+                <button
+                  onClick={() => setOpenDropdown(openDropdown === item.label ? null : item.label)}
+                  className="relative text-sm font-bold text-white/70 hover:text-white transition-all py-2 text-left flex items-center justify-between"
+                >
+                  {item.label}
+                  <svg
+                    className={`w-4 h-4 transition-transform ${openDropdown === item.label ? 'rotate-180' : ''}`}
+                    fill="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path d="M7 10l5 5 5-5z" />
+                  </svg>
+                </button>
+                {openDropdown === item.label && (
+                  <div className="flex flex-col gap-2 pl-4">
+                    {item.dropdown.map((subItem) => (
+                      <Link
+                        key={subItem.href}
+                        href={subItem.href}
+                        className={`text-sm font-semibold transition-all py-2 ${
+                          pathname === subItem.href ? 'text-brand-primary' : 'text-white/60 hover:text-white'
+                        }`}
+                      >
+                        {subItem.label}
+                      </Link>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )
+          }
+
+          // Desktop: render as hover dropdown
+          return (
+            <div
+              key={item.label}
+              className="relative group"
+              onMouseEnter={() => setOpenDropdown(item.label)}
+              onMouseLeave={() => setOpenDropdown(null)}
+            >
+              <button
+                className={`relative text-sm font-bold transition-all ${
+                  isDropdownActive ? 'text-brand-primary' : 'text-white/70 hover:text-white'
+                }`}
+              >
+                {item.label}
+                {isDropdownActive && (
+                  <span className="absolute -bottom-2 left-0 right-0 h-1 rounded-full bg-brand-primary shadow-sm" />
+                )}
+                {!isDropdownActive && (
+                  <span className="absolute -bottom-2 left-0 right-0 h-1 rounded-full bg-brand-primary scale-x-0 group-hover:scale-x-100 transition-transform origin-left" />
+                )}
+              </button>
+              {openDropdown === item.label && (
+                <div className="absolute top-full left-0 mt-2 py-2 bg-black border border-white/10 rounded-xl shadow-card-md min-w-[160px] z-50">
+                  {item.dropdown.map((subItem) => (
+                    <Link
+                      key={subItem.href}
+                      href={subItem.href}
+                      className={`block px-4 py-2 text-sm font-semibold transition-all ${
+                        pathname === subItem.href
+                          ? 'text-brand-primary bg-white/5'
+                          : 'text-white/70 hover:text-white hover:bg-white/5'
+                      }`}
+                    >
+                      {subItem.label}
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </div>
+          )
+        }
+
         const isActive = pathname === item.href
         return (
           <Link
             key={item.href}
-            href={item.href}
+            href={item.href!}
             className={`relative text-sm font-bold transition-all group ${
-              isActive 
-                ? 'text-brand-primary' 
+              isActive
+                ? 'text-brand-primary'
                 : 'text-white/70 hover:text-white'
             } ${orientation === 'column' ? 'py-2' : ''}`}
           >
