@@ -19,7 +19,6 @@ const primaryNav: NavItem[] = [
   { label: 'Marketplace', href: '/' },
   { label: 'GROS', href: '/GROS' },
   { label: 'B2B', href: '/b2b' },
-  { label: 'Services', href: '/services' },
   { label: 'Freelance', href: '/freelance' },
 ]
 
@@ -230,12 +229,6 @@ export const Navbar = (): JSX.Element => {
 
             <div className="hidden md:flex items-center gap-3 text-sm font-medium">
               <Link
-                href="/freelance"
-                className="text-white/70 transition-all hover:text-white font-semibold"
-              >
-                Help Center
-              </Link>
-              <Link
                 href="/services"
                 className="inline-flex items-center gap-2 rounded-full border border-white/20 px-4 py-2.5 text-sm font-bold text-white hover:border-brand-primary hover:bg-white/10 transition-all shadow-sm hover:shadow-card-sm"
               >
@@ -260,12 +253,6 @@ export const Navbar = (): JSX.Element => {
           <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8 flex flex-col gap-6">
             {renderNavLinks('column')}
             <div className="flex flex-col gap-3 text-sm">
-              <Link
-                href="/freelance"
-                className="text-white/70 hover:text-white font-semibold transition-colors py-2"
-              >
-                Help Center
-              </Link>
               <Link
                 href="/services"
                 className="inline-flex items-center gap-2 rounded-xl border border-white/20 bg-white/10 px-4 py-3 font-bold text-white hover:border-brand-primary hover:bg-white/20 transition-all shadow-sm"
