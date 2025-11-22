@@ -286,8 +286,8 @@ export const Navbar = (): JSX.Element => {
           <div className="flex items-center gap-4 sm:gap-6 text-brand-dark">
             {topNav.map((item) => (
               <Link
-                key={item.href}
-                href={item.href}
+                key={item.href || item.label}
+                href={item.href || '/'}
                 className="transition-all hover:text-brand-dark/70 hover:scale-105 whitespace-nowrap text-[10px] sm:text-xs"
               >
                 {item.label}
