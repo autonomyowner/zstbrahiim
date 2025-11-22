@@ -302,82 +302,111 @@ export function AddProductModal({ isOpen, onClose, onSubmit }: AddProductModalPr
                   />
                 </div>
 
-                {/* Image Upload */}
-                <div className="md:col-span-2">
-                  <ImageUpload
-                    onImageUploaded={(url) => updateField('image', url)}
-                    showPreview={false}
-                    label="Image du produit"
-                    required={false}
-                  />
-                </div>
-
-                {/* Video Upload */}
-                <div className="md:col-span-2 space-y-3">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <label className="block text-sm font-medium text-kitchen-lux-dark-green-700 mb-1">
-                        Vidéo de démonstration (optionnel)
-                      </label>
-                      <p className="text-xs text-kitchen-lux-dark-green-500">
-                        MP4/WebM • {MAX_PRODUCT_VIDEO_DURATION_SECONDS}s max • 10 MB max
-                      </p>
-                    </div>
-                    {videoSelection && (
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setVideoSelection(null)
-                          setVideoError(null)
-                        }}
-                        className="text-xs text-red-600 hover:text-red-700"
-                      >
-                        Supprimer la vidéo
-                      </button>
-                    )}
+                {/* Image & Video Upload - Side by Side */}
+                <div className="md:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* Image Upload Card */}
+                  <div className="rounded-xl border-2 border-dashed border-kitchen-lux-dark-green-300 bg-kitchen-lux-dark-green-50/50 p-4">
+                    <ImageUpload
+                      onImageUploaded={(url) => updateField('image', url)}
+                      showPreview={false}
+                      label="Image du produit"
+                      required={false}
+                    />
                   </div>
-                  <input
-                    type="file"
-                    accept="video/mp4,video/webm"
-                    onChange={handleVideoChange}
-                    className="w-full text-sm text-kitchen-lux-dark-green-700 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-kitchen-lux-dark-green-50 file:text-kitchen-lux-dark-green-700 hover:file:bg-kitchen-lux-dark-green-100"
-                  />
-                  {videoError && <p className="text-xs text-red-600">{videoError}</p>}
-                  {isProcessingVideo && (
-                    <p className="text-xs text-kitchen-lux-dark-green-600">Analyse de la vidéo...</p>
-                  )}
-                  {videoSelection && (
-                    <div className="flex items-center gap-4 rounded-xl border border-kitchen-lux-dark-green-200 bg-kitchen-lux-dark-green-50 p-3">
-                      <div className="relative w-24 h-24 rounded-lg overflow-hidden border border-kitchen-lux-dark-green-200">
-                        <Image
-                          src={videoSelection.thumbnailDataUrl}
-                          alt="Miniature vidéo"
-                          fill
-                          sizes="96px"
-                          className="object-cover"
-                          unoptimized
-                        />
-                        <span className="absolute bottom-1 right-1 bg-black/70 text-white text-xs px-2 py-0.5 rounded-full">
-                          {videoSelection.durationSeconds}s
-                        </span>
-                        <span className="absolute inset-0 flex items-center justify-center">
-                          <svg
-                            className="w-6 h-6 text-white drop-shadow"
-                            fill="currentColor"
-                            viewBox="0 0 20 20"
-                          >
-                            <path d="M6.5 5.5v9l7-4.5-7-4.5z" />
-                          </svg>
-                        </span>
-                      </div>
-                      <div className="text-sm text-kitchen-lux-dark-green-700">
-                        <p className="font-semibold">Vidéo prête</p>
+
+                  {/* Video Upload Card */}
+                  <div className="rounded-xl border-2 border-dashed border-kitchen-lux-dark-green-300 bg-kitchen-lux-dark-green-50/50 p-4 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <label className="block text-sm font-medium text-kitchen-lux-dark-green-700 mb-1">
+                          Vidéo de démonstration (optionnel)
+                        </label>
                         <p className="text-xs text-kitchen-lux-dark-green-500">
-                          {Math.round(videoSelection.file.size / 1024)} Ko
+                          MP4/WebM • {MAX_PRODUCT_VIDEO_DURATION_SECONDS}s max • 10 MB max
                         </p>
                       </div>
+                      {videoSelection && (
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setVideoSelection(null)
+                            setVideoError(null)
+                          }}
+                          className="text-xs text-red-600 hover:text-red-700"
+                        >
+                          Supprimer
+                        </button>
+                      )}
                     </div>
-                  )}
+
+                    {/* Video Upload Area */}
+                    {!videoSelection ? (
+                      <label className="block w-full h-48 rounded-lg border-2 border-dashed border-kitchen-lux-dark-green-300 bg-white flex flex-col items-center justify-center cursor-pointer hover:border-kitchen-lux-dark-green-500 transition-colors">
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="h-10 w-10 text-kitchen-lux-dark-green-400 mb-2"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"
+                          />
+                        </svg>
+                        <p className="text-sm text-kitchen-lux-dark-green-600 mb-1">
+                          Cliquez pour ajouter une vidéo
+                        </p>
+                        <p className="text-xs text-kitchen-lux-dark-green-500">
+                          MP4/WebM • {MAX_PRODUCT_VIDEO_DURATION_SECONDS}s max • 10 MB
+                        </p>
+                        <input
+                          type="file"
+                          accept="video/mp4,video/webm"
+                          onChange={handleVideoChange}
+                          className="hidden"
+                        />
+                      </label>
+                    ) : (
+                      <div className="flex items-center gap-4 rounded-xl border border-kitchen-lux-dark-green-200 bg-white p-3">
+                        <div className="relative w-20 h-20 rounded-lg overflow-hidden border border-kitchen-lux-dark-green-200 flex-shrink-0">
+                          <Image
+                            src={videoSelection.thumbnailDataUrl}
+                            alt="Miniature vidéo"
+                            fill
+                            sizes="80px"
+                            className="object-cover"
+                            unoptimized
+                          />
+                          <span className="absolute bottom-1 right-1 bg-black/70 text-white text-xs px-1.5 py-0.5 rounded-full">
+                            {videoSelection.durationSeconds}s
+                          </span>
+                          <span className="absolute inset-0 flex items-center justify-center">
+                            <svg
+                              className="w-5 h-5 text-white drop-shadow"
+                              fill="currentColor"
+                              viewBox="0 0 20 20"
+                            >
+                              <path d="M6.5 5.5v9l7-4.5-7-4.5z" />
+                            </svg>
+                          </span>
+                        </div>
+                        <div className="text-sm text-kitchen-lux-dark-green-700 min-w-0 flex-1">
+                          <p className="font-semibold truncate">Vidéo prête</p>
+                          <p className="text-xs text-kitchen-lux-dark-green-500">
+                            {Math.round(videoSelection.file.size / 1024)} Ko
+                          </p>
+                        </div>
+                      </div>
+                    )}
+
+                    {videoError && <p className="text-xs text-red-600">{videoError}</p>}
+                    {isProcessingVideo && (
+                      <p className="text-xs text-kitchen-lux-dark-green-600">Analyse de la vidéo...</p>
+                    )}
+                  </div>
                 </div>
 
                 {/* Description */}

@@ -320,7 +320,7 @@ export const Navbar = (): JSX.Element => {
                 href="/services"
                 className="inline-flex items-center gap-2 rounded-full border border-white/20 px-4 py-2.5 text-sm font-bold text-white hover:border-brand-primary hover:bg-white/10 transition-all shadow-sm hover:shadow-card-sm"
               >
-                Sell your product
+                Dashboard
               </Link>
               {renderAuthSection('desktop')}
             </div>
@@ -345,7 +345,7 @@ export const Navbar = (): JSX.Element => {
                 href="/services"
                 className="inline-flex items-center gap-2 rounded-xl border border-white/20 bg-white/10 px-4 py-3 font-bold text-white hover:border-brand-primary hover:bg-white/20 transition-all shadow-sm"
               >
-                Sell your product
+                Dashboard
               </Link>
             </div>
             {renderAuthSection('mobile')}

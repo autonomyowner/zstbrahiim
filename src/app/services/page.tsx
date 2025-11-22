@@ -91,7 +91,6 @@ export default function SellerPortalPage(): JSX.Element {
   // Order filters
   const [statusFilter, setStatusFilter] = useState<OrderStatus | 'all'>('all')
   const [paymentFilter, setPaymentFilter] = useState<PaymentStatus | 'all'>('all')
-  const [searchQuery, setSearchQuery] = useState('')
 
   // Check authentication and seller role
   useEffect(() => {
@@ -227,15 +226,10 @@ export default function SellerPortalPage(): JSX.Element {
     return orders.filter((order) => {
       const matchesStatus = statusFilter === 'all' || order.status === statusFilter
       const matchesPayment = paymentFilter === 'all' || order.paymentStatus === paymentFilter
-      const matchesSearch =
-        searchQuery === '' ||
-        order.orderNumber.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        order.customer.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        order.customer.email.toLowerCase().includes(searchQuery.toLowerCase())
 
-      return matchesStatus && matchesPayment && matchesSearch
+      return matchesStatus && matchesPayment
     })
-  }, [orders, statusFilter, paymentFilter, searchQuery])
+  }, [orders, statusFilter, paymentFilter])
 
   const handleUpdateOrderStatus = async (orderId: string, newStatus: OrderStatus) => {
     try {
@@ -692,10 +686,8 @@ export default function SellerPortalPage(): JSX.Element {
                   <OrderFilters
                     statusFilter={statusFilter}
                     paymentFilter={paymentFilter}
-                    searchQuery={searchQuery}
                     onStatusFilterChange={setStatusFilter}
                     onPaymentFilterChange={setPaymentFilter}
-                    onSearchQueryChange={setSearchQuery}
                   />
                   <OrdersTable
                     orders={filteredOrders}

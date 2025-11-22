@@ -17,22 +17,16 @@ export function ProductManagement({
   onEditProduct,
   onDeleteProduct,
 }: ProductManagementProps): JSX.Element {
-  const [searchQuery, setSearchQuery] = useState('')
   const [stockFilter, setStockFilter] = useState<'all' | 'in-stock' | 'out-of-stock' | 'low-stock'>('all')
 
   const filteredProducts = products.filter((product) => {
-    const matchesSearch =
-      product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      product.brand.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      product.id.toLowerCase().includes(searchQuery.toLowerCase())
-
     const matchesStock =
       stockFilter === 'all' ||
       (stockFilter === 'in-stock' && product.inStock) ||
       (stockFilter === 'out-of-stock' && !product.inStock) ||
       (stockFilter === 'low-stock' && product.inStock && (product as any).quantity < 10)
 
-    return matchesSearch && matchesStock
+    return matchesStock
   })
 
   const formatPrice = (price: number): string => {
@@ -56,29 +50,8 @@ export function ProductManagement({
       </div>
 
       <div className="rounded-3xl border border-brand-border bg-white/95 p-6 shadow-card-sm">
-        <div className="mb-6 grid grid-cols-1 gap-4 md:grid-cols-2">
-          <div>
-            <label
-              htmlFor="product-search"
-              className="text-xs font-semibold uppercase tracking-[0.3em] text-text-muted"
-            >
-              Rechercher un produit
-            </label>
-            <div className="relative mt-2">
-              <span className="material-symbols-outlined pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-text-muted">
-                search
-              </span>
-              <input
-                type="text"
-                id="product-search"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Nom, marque, ID..."
-                className="w-full rounded-full border border-brand-border bg-white py-3 pl-12 pr-4 text-sm text-text-primary focus:border-brand-dark focus:outline-none focus:ring-2 focus:ring-brand-primary/30"
-              />
-            </div>
-          </div>
-          <div>
+        <div className="mb-6">
+          <div className="max-w-xs">
             <label
               htmlFor="stock-filter"
               className="text-xs font-semibold uppercase tracking-[0.3em] text-text-muted"
