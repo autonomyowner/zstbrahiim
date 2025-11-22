@@ -16,24 +16,6 @@ export const ProductDetails = ({ product }: ProductDetailsProps): JSX.Element =>
   const [isWishlisted, setIsWishlisted] = useState(false)
   const [isCheckoutModalOpen, setIsCheckoutModalOpen] = useState(false)
 
-  const handleAddToCart = (): void => {
-    const phoneNumber = '+213673734578'
-    const totalPrice = product.price * quantity
-    const message = `Bonjour! Je souhaite ajouter au panier:
-
-📦 Produit: ${product.name}
-💰 Prix unitaire: ${product.price.toLocaleString()} DA
-📊 Quantité: ${quantity}
-💵 Prix total: ${totalPrice.toLocaleString()} DA
-🏷️ Type: ${product.productType}
-${product.category ? `📂 Catégorie: ${product.category}` : ''}
-${product.need ? `✨ Usage: ${product.need}` : ''}
-
-Merci!`
-    const whatsappUrl = `https://wa.me/${phoneNumber}?text=${encodeURIComponent(message)}`
-    window.open(whatsappUrl, '_blank')
-  }
-
   const handleBuyNow = (): void => {
     setIsCheckoutModalOpen(true)
   }
@@ -136,16 +118,8 @@ Merci!`
           />
         </div>
 
-        {/* CTA Buttons */}
+        {/* CTA Button */}
         <div className="flex flex-col gap-3">
-          <button
-            onClick={handleAddToCart}
-            disabled={!product.inStock}
-            className="w-full bg-black text-white px-8 py-4 rounded-lg font-semibold uppercase tracking-[0.2em] text-sm hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed transition-colors duration-200"
-            type="button"
-          >
-            AJOUTER AU PANIER
-          </button>
           <button
             onClick={handleBuyNow}
             disabled={!product.inStock}
@@ -166,35 +140,6 @@ Merci!`
 
       {/* Accordion Sections */}
       <div className="space-y-0 pt-6 border-t border-kitchen-lux-dark-green-200">
-        <Accordion title="Informations supplémentaires">
-          <div className="space-y-4">
-            <div>
-              <h4 className="font-semibold text-kitchen-lux-dark-green-800 mb-2">
-                Ingrédients
-              </h4>
-              <p className="text-kitchen-lux-dark-green-700">{product.ingredients}</p>
-            </div>
-            <div>
-              <h4 className="font-semibold text-kitchen-lux-dark-green-800 mb-2">
-                Conseils d&apos;utilisation
-              </h4>
-              <p className="text-kitchen-lux-dark-green-700">
-                {product.usageInstructions}
-              </p>
-            </div>
-            <div>
-              <h4 className="font-semibold text-kitchen-lux-dark-green-800 mb-2">
-                Bénéfices
-              </h4>
-              <ul className="list-disc list-inside space-y-1 text-kitchen-lux-dark-green-700">
-                {product.benefits.map((benefit, index) => (
-                  <li key={index}>{benefit}</li>
-                ))}
-              </ul>
-            </div>
-          </div>
-        </Accordion>
-
         <Accordion title="Livraison & Retours">
           <div className="space-y-3">
             <div>

@@ -76,17 +76,17 @@ export const ShopFilters = ({
   ]
 
   return (
-    <section className="rounded-3xl border border-brand-border bg-white/90 p-6 shadow-card-sm backdrop-blur">
-      <div className="flex flex-wrap items-center gap-3">
+    <section className="rounded-2xl border border-brand-border/50 bg-white/90 p-4 shadow-sm backdrop-blur-sm">
+      <div className="flex flex-wrap items-center gap-2">
         {availabilityOptions.map((option) => (
           <button
             key={option.value}
             type="button"
             onClick={() => updateFilter('availability', option.value as FilterState['availability'])}
-            className={`inline-flex items-center gap-2 rounded-full border px-4 py-2 text-xs font-semibold uppercase tracking-[0.2em] transition ${
+            className={`rounded-full px-3 py-1 text-xs font-medium transition-all duration-200 ${
               filters.availability === option.value
-                ? 'border-brand-dark bg-brand-dark text-text-inverted'
-                : 'border-brand-border text-text-muted hover:border-brand-dark/40'
+                ? 'bg-brand-dark text-white shadow-sm'
+                : 'bg-brand-border/20 text-text-muted hover:bg-brand-border/40 hover:text-text-primary'
             }`}
           >
             {option.label}
@@ -94,31 +94,28 @@ export const ShopFilters = ({
         ))}
       </div>
 
-      <div className="mt-6 space-y-3">
-        <p className="text-xs font-semibold uppercase tracking-[0.3em] text-text-muted">
-          Catégories rapides
-        </p>
+      <div className="mt-4">
         <div className="relative group">
           <button
             type="button"
             onClick={() => scrollCategories('left')}
-            className="hidden lg:flex absolute left-0 top-1/2 -translate-y-1/2 z-10 items-center justify-center w-10 h-10 rounded-full bg-white border border-brand-border shadow-md opacity-0 group-hover:opacity-100 transition-opacity hover:bg-brand-dark hover:text-white"
+            className="hidden lg:flex absolute -left-2 top-1/2 -translate-y-1/2 z-10 items-center justify-center w-7 h-7 rounded-full bg-white/95 border border-brand-border/60 shadow-sm opacity-0 group-hover:opacity-100 transition-all duration-200 hover:bg-brand-dark hover:text-white hover:border-brand-dark"
             aria-label="Défiler vers la gauche"
           >
-            <svg viewBox="0 0 24 24" className="w-5 h-5" fill="currentColor">
+            <svg viewBox="0 0 24 24" className="w-3.5 h-3.5" fill="currentColor">
               <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/>
             </svg>
           </button>
-          <div ref={categoriesScrollRef} className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
+          <div ref={categoriesScrollRef} className="flex gap-1.5 overflow-x-auto pb-1 scrollbar-hide">
             {marketplaceCategories.map((category) => (
               <button
                 key={category.id}
                 type="button"
                 onClick={() => handleCategorySelect(category.id)}
-                className={`flex-shrink-0 rounded-2xl border px-4 py-3 text-sm font-semibold transition ${
+                className={`flex-shrink-0 rounded-full px-3 py-1.5 text-xs font-medium transition-all duration-200 ${
                   filters.category === category.id
-                    ? 'border-brand-dark bg-brand-dark text-text-inverted shadow-md'
-                    : 'border-brand-border text-text-muted hover:text-text-primary'
+                    ? 'bg-brand-dark text-white shadow-sm'
+                    : 'bg-brand-border/20 text-text-muted hover:bg-brand-border/40 hover:text-text-primary'
                 }`}
               >
                 {category.label}
@@ -128,48 +125,45 @@ export const ShopFilters = ({
           <button
             type="button"
             onClick={() => scrollCategories('right')}
-            className="hidden lg:flex absolute right-0 top-1/2 -translate-y-1/2 z-10 items-center justify-center w-10 h-10 rounded-full bg-white border border-brand-border shadow-md opacity-0 group-hover:opacity-100 transition-opacity hover:bg-brand-dark hover:text-white"
+            className="hidden lg:flex absolute -right-2 top-1/2 -translate-y-1/2 z-10 items-center justify-center w-7 h-7 rounded-full bg-white/95 border border-brand-border/60 shadow-sm opacity-0 group-hover:opacity-100 transition-all duration-200 hover:bg-brand-dark hover:text-white hover:border-brand-dark"
             aria-label="Défiler vers la droite"
           >
-            <svg viewBox="0 0 24 24" className="w-5 h-5" fill="currentColor">
+            <svg viewBox="0 0 24 24" className="w-3.5 h-3.5" fill="currentColor">
               <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/>
             </svg>
           </button>
         </div>
       </div>
 
-      <div className="mt-8 flex flex-wrap gap-6">
-        <div className="w-full rounded-2xl border border-brand-border bg-white/70 p-5 shadow-card-sm lg:max-w-sm">
-          <label htmlFor="budget-select" className="block text-sm font-semibold text-text-primary mb-3">
-            Budget cible
-          </label>
-          <select
-            id="budget-select"
-            onChange={handlePriceRangeSelect}
-            className="w-full rounded-xl border border-brand-border bg-white px-4 py-3 text-sm font-medium text-text-primary shadow-sm transition hover:border-brand-dark focus:border-brand-dark focus:outline-none focus:ring-2 focus:ring-brand-dark/20"
-          >
-            <option value="">Sélectionner une fourchette de prix</option>
-            {priceRangeOptions.map((option, index) => (
-              <option key={index} value={index}>
-                {option.label}
-              </option>
-            ))}
-          </select>
-        </div>
-      </div>
-
-      <div className="mt-8 flex flex-wrap items-center justify-between gap-4 text-sm text-text-muted">
-        <p>
-          {productCounts.inStock} articles disponibles • {productCounts.outOfStock} en réapprovisionnement.
-        </p>
-        <button
-          type="button"
-          onClick={onResetFilters}
-          className="inline-flex items-center justify-center rounded-full border border-brand-border p-2 text-text-primary hover:border-brand-dark hover:bg-brand-dark hover:text-white transition"
-          aria-label="Réinitialiser les filtres"
+      <div className="mt-4 flex flex-wrap items-center gap-3">
+        <select
+          id="budget-select"
+          onChange={handlePriceRangeSelect}
+          className="rounded-full border border-brand-border/50 bg-white px-3 py-1.5 text-xs font-medium text-text-primary transition-colors hover:border-brand-dark/30 focus:border-brand-dark focus:outline-none"
         >
-          <span className="material-symbols-outlined text-base">refresh</span>
-        </button>
+          <option value="">Budget</option>
+          {priceRangeOptions.map((option, index) => (
+            <option key={index} value={index}>
+              {option.label}
+            </option>
+          ))}
+        </select>
+
+        <div className="ml-auto flex items-center gap-3">
+          <span className="text-xs text-text-muted">
+            {productCounts.inStock} disponibles
+          </span>
+          <button
+            type="button"
+            onClick={onResetFilters}
+            className="rounded-full p-1.5 text-text-muted transition-all duration-200 hover:bg-brand-border/30 hover:text-text-primary"
+            aria-label="Réinitialiser les filtres"
+          >
+            <svg viewBox="0 0 24 24" className="w-4 h-4" fill="currentColor">
+              <path d="M17.65 6.35A7.958 7.958 0 0012 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08A5.99 5.99 0 0112 18c-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/>
+            </svg>
+          </button>
+        </div>
       </div>
     </section>
   )

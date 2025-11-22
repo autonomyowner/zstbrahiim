@@ -28,9 +28,6 @@ export type ProductFormData = {
   isPromo: boolean
   isNew: boolean
   description: string
-  benefits: string
-  ingredients: string
-  usageInstructions: string
   deliveryEstimate: string
   image: string
 }
@@ -53,9 +50,6 @@ export function AddProductModal({ isOpen, onClose, onSubmit }: AddProductModalPr
     isPromo: false,
     isNew: true,
     description: '',
-    benefits: '',
-    ingredients: '',
-    usageInstructions: '',
     deliveryEstimate: '2-3 jours',
     image: '/perfums/placeholder.jpg',
   })
@@ -98,9 +92,6 @@ export function AddProductModal({ isOpen, onClose, onSubmit }: AddProductModalPr
       isPromo: false,
       isNew: true,
       description: '',
-      benefits: '',
-      ingredients: '',
-      usageInstructions: '',
       deliveryEstimate: '2-3 jours',
       image: '/perfums/placeholder.jpg',
     })
@@ -405,51 +396,6 @@ export function AddProductModal({ isOpen, onClose, onSubmit }: AddProductModalPr
                     placeholder="Décrivez le produit..."
                   />
                   {errors.description && <p className="text-red-500 text-xs mt-1">{errors.description}</p>}
-                </div>
-
-                {/* Benefits */}
-                <div className="md:col-span-2">
-                  <label htmlFor="benefits" className="block text-sm font-medium text-kitchen-lux-dark-green-700 mb-2">
-                    Caractéristiques / Avantages (un par ligne)
-                  </label>
-                  <textarea
-                    id="benefits"
-                    value={formData.benefits}
-                    onChange={(e) => updateField('benefits', e.target.value)}
-                    rows={3}
-                    className="w-full px-4 py-2 border border-kitchen-lux-dark-green-300 rounded-lg focus:ring-2 focus:ring-kitchen-lux-dark-green-500 focus:border-transparent"
-                    placeholder="Haute qualité&#10;Confortable&#10;Design élégant&#10;Matière premium"
-                  />
-                </div>
-
-                {/* Ingredients / Materials */}
-                <div className="md:col-span-2">
-                  <label htmlFor="ingredients" className="block text-sm font-medium text-kitchen-lux-dark-green-700 mb-2">
-                    Composition / Matériaux
-                  </label>
-                  <textarea
-                    id="ingredients"
-                    value={formData.ingredients}
-                    onChange={(e) => updateField('ingredients', e.target.value)}
-                    rows={2}
-                    className="w-full px-4 py-2 border border-kitchen-lux-dark-green-300 rounded-lg focus:ring-2 focus:ring-kitchen-lux-dark-green-500 focus:border-transparent"
-                    placeholder="100% Coton, Polyester, Laine..."
-                  />
-                </div>
-
-                {/* Usage Instructions / Care */}
-                <div className="md:col-span-2">
-                  <label htmlFor="usageInstructions" className="block text-sm font-medium text-kitchen-lux-dark-green-700 mb-2">
-                    Instructions d&apos;Entretien / Utilisation
-                  </label>
-                  <textarea
-                    id="usageInstructions"
-                    value={formData.usageInstructions}
-                    onChange={(e) => updateField('usageInstructions', e.target.value)}
-                    rows={2}
-                    className="w-full px-4 py-2 border border-kitchen-lux-dark-green-300 rounded-lg focus:ring-2 focus:ring-kitchen-lux-dark-green-500 focus:border-transparent"
-                    placeholder="Lavage à 30°C, Séchage à l'air libre..."
-                  />
                 </div>
 
                 {/* Checkboxes */}

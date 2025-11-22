@@ -35,18 +35,15 @@ export const ProductControls = ({
   onSortChange,
 }: ProductControlsProps): JSX.Element => {
   return (
-    <div className="rounded-3xl border border-brand-border bg-gradient-to-br from-white/95 via-white/80 to-brand-primary/5 p-5 shadow-card-md">
-      <div className="flex flex-col gap-5 md:flex-row md:items-center md:justify-between">
-        <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.3em] text-text-muted">Résultats filtrés</p>
-          <p className="text-3xl font-elegant text-brand-dark">
-            {productCount.toLocaleString('fr-DZ')}
-            <span className="ml-2 text-sm font-sans text-text-muted">{productCount === 1 ? 'résultat' : 'résultats'}</span>
-          </p>
-        </div>
+    <div className="rounded-2xl border border-brand-border/40 bg-white/80 px-4 py-3 shadow-sm backdrop-blur-sm">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <p className="text-sm text-text-muted">
+          <span className="font-semibold text-brand-dark">{productCount.toLocaleString('fr-DZ')}</span>
+          <span className="ml-1">{productCount === 1 ? 'article' : 'articles'}</span>
+        </p>
 
-        <div className="flex flex-wrap items-center gap-4">
-          <div className="inline-flex items-stretch rounded-full border border-brand-border/60 bg-white/90 p-1 shadow-inner shadow-black/5 backdrop-blur">
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="inline-flex items-stretch rounded-full border border-brand-border/50 bg-white p-0.5">
             {displayModes.map((mode) => {
               const isActive = displayMode === mode.value
               return (
@@ -55,34 +52,29 @@ export const ProductControls = ({
                   onClick={() => onDisplayModeChange(mode.value)}
                   type="button"
                   aria-label={`Vue en ${mode.label.toLowerCase()}`}
-                  className={`flex min-w-[120px] flex-1 items-center gap-2 rounded-full px-4 py-2 text-sm font-semibold transition ${
+                  className={`rounded-full px-3 py-1.5 text-xs font-medium transition-all duration-200 ${
                     isActive
-                      ? 'bg-brand-dark text-text-inverted shadow-lg'
-                      : 'text-text-muted hover:text-text-primary'
+                      ? 'bg-brand-dark text-white shadow-sm'
+                      : 'text-text-muted hover:text-brand-dark'
                   }`}
                 >
-                  <span>{mode.label}</span>
+                  {mode.label}
                 </button>
               )
             })}
           </div>
 
-          <label className="flex flex-col text-sm font-semibold text-text-primary">
-            <span className="mb-2 text-xs font-medium uppercase tracking-[0.2em] text-text-muted">Trier par</span>
-            <div className="relative rounded-full border border-brand-border/60 bg-white/90 px-4 pr-4 py-2 shadow-inner shadow-black/5 backdrop-blur">
-            <select
-              value={sortOption}
-              onChange={(event) => onSortChange(event.target.value as SortOption)}
-              className="w-full appearance-none bg-transparent text-sm font-semibold text-text-primary focus:outline-none"
-            >
-              {sortOptions.map((option) => (
-                <option key={option.value} value={option.value}>
-                  {option.label}
-                </option>
-              ))}
-            </select>
-            </div>
-          </label>
+          <select
+            value={sortOption}
+            onChange={(event) => onSortChange(event.target.value as SortOption)}
+            className="rounded-full border border-brand-border/50 bg-white px-3 py-1.5 text-xs font-medium text-text-primary transition-colors hover:border-brand-dark/30 focus:border-brand-dark focus:outline-none"
+          >
+            {sortOptions.map((option) => (
+              <option key={option.value} value={option.value}>
+                {option.label}
+              </option>
+            ))}
+          </select>
         </div>
       </div>
     </div>
