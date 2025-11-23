@@ -17,7 +17,6 @@ export default function AccountPage() {
   const [editing, setEditing] = useState(false)
   const [orders, setOrders] = useState<any[]>([])
   const [loadingOrders, setLoadingOrders] = useState(true)
-  const [orderSearch, setOrderSearch] = useState('')
   const [orderStatusFilter, setOrderStatusFilter] = useState<OrderStatusFilter>('all')
   const [formData, setFormData] = useState<{
     full_name: string
@@ -108,16 +107,9 @@ export default function AccountPage() {
 
   const visibleOrders = useMemo(() => {
     return orders.filter((order) => {
-      const matchesStatus = orderStatusFilter === 'all' || order.status === orderStatusFilter
-      const query = orderSearch.trim().toLowerCase()
-      const matchesSearch =
-        query === '' ||
-        order.orderNumber?.toLowerCase().includes(query) ||
-        order.items?.some((item: any) => item.productName?.toLowerCase().includes(query))
-
-      return matchesStatus && matchesSearch
+      return orderStatusFilter === 'all' || order.status === orderStatusFilter
     })
-  }, [orders, orderStatusFilter, orderSearch])
+  }, [orders, orderStatusFilter])
 
   if (loading) {
     return (
@@ -330,18 +322,6 @@ export default function AccountPage() {
           </div>
 
           <div className="flex flex-col gap-4">
-            <div className="relative">
-              <span className="material-symbols-outlined pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-text-muted">
-                search
-              </span>
-              <input
-                type="text"
-                value={orderSearch}
-                onChange={(e) => setOrderSearch(e.target.value)}
-                placeholder="Rechercher une commande ou un article..."
-                className="w-full rounded-xl border border-brand-border px-4 py-3.5 pl-12 text-sm text-text-primary focus:border-brand-primary focus:outline-none focus:ring-2 focus:ring-brand-primary/40 transition-all bg-white"
-              />
-            </div>
             <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
               {[
                 { label: 'Toutes', value: 'all' },
