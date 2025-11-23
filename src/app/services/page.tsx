@@ -61,7 +61,7 @@ const formatCurrency = (amount: number): string => {
   }).format(amount)
 }
 
-// Elegant stat card component
+// Compact stat card for mobile
 function StatCard({
   label,
   value,
@@ -84,22 +84,22 @@ function StatCard({
 
   return (
     <div className={`
-      relative overflow-hidden rounded-2xl border p-5
+      relative overflow-hidden rounded-xl sm:rounded-2xl border p-3 sm:p-5
       transition-all duration-300 hover:shadow-card-md
       ${variantStyles[variant]}
     `}>
-      <p className={`text-[11px] font-semibold uppercase tracking-widest ${
+      <p className={`text-[10px] sm:text-[11px] font-semibold uppercase tracking-wider sm:tracking-widest ${
         variant === 'primary' ? 'text-white/60' : 'text-text-muted'
       }`}>
         {label}
       </p>
-      <p className={`mt-2 text-3xl font-black tracking-tight ${
+      <p className={`mt-1 sm:mt-2 text-xl sm:text-3xl font-black tracking-tight ${
         variant === 'primary' ? 'text-brand-primary' : 'text-text-primary'
       }`}>
         {value}
       </p>
       {trend && (
-        <div className={`mt-3 inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-bold ${
+        <div className={`mt-2 sm:mt-3 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-[10px] sm:text-xs font-bold ${
           trendUp
             ? 'bg-emerald-100 text-emerald-700'
             : 'bg-red-100 text-red-600'
@@ -112,7 +112,7 @@ function StatCard({
   )
 }
 
-// Quick action button component
+// Compact action button for mobile
 function ActionButton({
   title,
   description,
@@ -128,25 +128,71 @@ function ActionButton({
     <button
       onClick={onClick}
       className={`
-        group flex flex-col items-start gap-2 rounded-2xl p-5 text-left
-        transition-all duration-300 hover:-translate-y-0.5
+        group flex flex-col items-start gap-1 sm:gap-2 rounded-xl sm:rounded-2xl p-4 sm:p-5 text-left w-full
+        transition-all duration-300 active:scale-[0.98] sm:hover:-translate-y-0.5
         ${variant === 'primary'
-          ? 'bg-brand-dark text-white hover:bg-black shadow-card-md'
-          : 'bg-white border border-brand-border hover:border-brand-dark hover:shadow-card-sm'
+          ? 'bg-brand-dark text-white shadow-card-md'
+          : 'bg-white border border-brand-border'
         }
       `}
     >
-      <span className={`text-base font-bold ${
+      <span className={`text-sm sm:text-base font-bold ${
         variant === 'primary' ? 'text-brand-primary' : 'text-text-primary'
       }`}>
         {title}
       </span>
-      <span className={`text-sm leading-relaxed ${
+      <span className={`text-xs sm:text-sm leading-relaxed ${
         variant === 'primary' ? 'text-white/70' : 'text-text-muted'
       }`}>
         {description}
       </span>
     </button>
+  )
+}
+
+// Mobile bottom navigation component
+function MobileBottomNav({
+  activeTab,
+  onTabChange,
+  showB2B
+}: {
+  activeTab: TabType
+  onTabChange: (tab: TabType) => void
+  showB2B: boolean
+}) {
+  const tabs = [
+    { id: 'dashboard' as TabType, label: 'Accueil', shortLabel: 'Accueil' },
+    { id: 'orders' as TabType, label: 'Commandes', shortLabel: 'Cmd' },
+    { id: 'products' as TabType, label: 'Produits', shortLabel: 'Prod' },
+    ...(showB2B ? [{ id: 'b2b' as TabType, label: 'B2B', shortLabel: 'B2B' }] : []),
+    { id: 'analytics' as TabType, label: 'Stats', shortLabel: 'Stats' },
+  ]
+
+  return (
+    <nav className="fixed bottom-0 left-0 right-0 z-50 border-t border-brand-border bg-white/95 backdrop-blur-md md:hidden safe-area-pb">
+      <div className="flex items-stretch justify-around">
+        {tabs.map((tab) => (
+          <button
+            key={tab.id}
+            onClick={() => onTabChange(tab.id)}
+            className={`
+              flex flex-1 flex-col items-center justify-center gap-0.5 py-2 px-1
+              transition-colors
+              ${activeTab === tab.id
+                ? 'text-brand-dark'
+                : 'text-text-muted'
+              }
+            `}
+          >
+            <div className={`
+              h-1 w-6 rounded-full mb-1 transition-all
+              ${activeTab === tab.id ? 'bg-brand-primary' : 'bg-transparent'}
+            `} />
+            <span className="text-[11px] font-semibold">{tab.shortLabel}</span>
+          </button>
+        ))}
+      </div>
+    </nav>
   )
 }
 
@@ -540,7 +586,7 @@ export default function SellerPortalPage(): JSX.Element {
       setTimeout(() => setSuccessMessage(null), 3000)
     } catch (error: any) {
       console.error('Error creating B2B offer:', error)
-      setProductError(error.message || 'Erreur lors de la création de l\'offre B2B')
+      setProductError(error.message || "Erreur lors de la création de l'offre B2B")
     }
   }
 
@@ -557,7 +603,7 @@ export default function SellerPortalPage(): JSX.Element {
         setTimeout(() => setSuccessMessage(null), 3000)
       } catch (error: any) {
         console.error('Error deleting B2B offer:', error)
-        setProductError(error.message || 'Erreur lors de la suppression de l\'offre B2B')
+        setProductError(error.message || "Erreur lors de la suppression de l'offre B2B")
       }
     }
   }
@@ -585,20 +631,20 @@ export default function SellerPortalPage(): JSX.Element {
     return (
       <div className="min-h-screen bg-brand-light flex items-center justify-center">
         <div className="text-center">
-          <div className="relative mx-auto mb-6 h-16 w-16">
+          <div className="relative mx-auto mb-6 h-14 w-14">
             <div className="absolute inset-0 rounded-full border-4 border-brand-border"></div>
             <div className="absolute inset-0 rounded-full border-4 border-transparent border-t-brand-dark animate-spin"></div>
           </div>
-          <p className="text-text-muted font-medium">Vérification...</p>
+          <p className="text-text-muted font-medium text-sm">Vérification...</p>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-brand-light">
-      {/* Refined Header */}
-      <header className="sticky top-0 z-40 border-b border-brand-border bg-white/95 backdrop-blur-sm">
+    <div className="min-h-screen bg-brand-light pb-16 md:pb-0">
+      {/* Desktop Header - Hidden on mobile */}
+      <header className="hidden md:block sticky top-0 z-40 border-b border-brand-border bg-white/95 backdrop-blur-sm">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex h-16 items-center justify-between">
             {/* Logo & Title */}
@@ -606,7 +652,7 @@ export default function SellerPortalPage(): JSX.Element {
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-dark">
                 <span className="text-lg font-black text-brand-primary">Z</span>
               </div>
-              <div className="hidden sm:block">
+              <div>
                 <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-text-muted">
                   Espace Vendeur
                 </p>
@@ -616,7 +662,7 @@ export default function SellerPortalPage(): JSX.Element {
               </div>
             </div>
 
-            {/* Navigation Tabs */}
+            {/* Desktop Navigation Tabs */}
             <nav className="flex items-center gap-1">
               {[
                 { id: 'dashboard' as TabType, label: 'Accueil' },
@@ -646,7 +692,7 @@ export default function SellerPortalPage(): JSX.Element {
 
             {/* Seller Badge */}
             {sellerProfile?.seller_category && sellerProfile.seller_category !== 'fournisseur' && (
-              <div className="hidden lg:flex items-center gap-2 rounded-full bg-brand-dark px-3 py-1.5">
+              <div className="flex items-center gap-2 rounded-full bg-brand-dark px-3 py-1.5">
                 <span className="text-xs font-bold uppercase tracking-wider text-brand-primary">
                   {sellerProfile.seller_category === 'grossiste' ? 'Grossiste' : 'Importateur'}
                 </span>
@@ -656,11 +702,34 @@ export default function SellerPortalPage(): JSX.Element {
         </div>
       </header>
 
+      {/* Mobile Header - Simplified */}
+      <header className="md:hidden sticky top-0 z-40 border-b border-brand-border bg-white/95 backdrop-blur-sm">
+        <div className="flex h-14 items-center justify-between px-4">
+          <div className="flex items-center gap-3">
+            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-brand-dark">
+              <span className="text-base font-black text-brand-primary">Z</span>
+            </div>
+            <div>
+              <p className="text-sm font-bold text-text-primary">
+                {sellerProfile?.provider_name || sellerProfile?.full_name || 'Dashboard'}
+              </p>
+            </div>
+          </div>
+          {sellerProfile?.seller_category && sellerProfile.seller_category !== 'fournisseur' && (
+            <div className="rounded-full bg-brand-dark px-2.5 py-1">
+              <span className="text-[10px] font-bold uppercase tracking-wide text-brand-primary">
+                {sellerProfile.seller_category === 'grossiste' ? 'GROS' : 'IMP'}
+              </span>
+            </div>
+          )}
+        </div>
+      </header>
+
       {/* Toast Messages */}
       {(successMessage || productError) && (
-        <div className="fixed top-20 left-1/2 z-50 -translate-x-1/2 animate-fade-in">
+        <div className="fixed top-16 md:top-20 left-4 right-4 md:left-1/2 md:right-auto md:-translate-x-1/2 z-50 animate-fade-in">
           <div className={`
-            rounded-xl px-5 py-3 shadow-card-md
+            rounded-xl px-4 py-3 shadow-card-md
             ${successMessage
               ? 'bg-emerald-600 text-white'
               : 'bg-red-600 text-white'
@@ -672,16 +741,16 @@ export default function SellerPortalPage(): JSX.Element {
       )}
 
       {/* Main Content */}
-      <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+      <main className="mx-auto max-w-7xl px-4 py-4 sm:py-6 md:py-8 sm:px-6 lg:px-8">
 
         {/* Dashboard Tab */}
         {activeTab === 'dashboard' && (
-          <div className="space-y-8 animate-fade-in">
+          <div className="space-y-5 sm:space-y-8 animate-fade-in">
             {/* Welcome Section */}
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+            <div className="flex flex-col gap-3 sm:gap-4 sm:flex-row sm:items-end sm:justify-between">
               <div>
-                <p className="text-sm text-text-muted">Bienvenue,</p>
-                <h1 className="mt-1 text-3xl font-black tracking-tight text-text-primary sm:text-4xl">
+                <p className="text-xs sm:text-sm text-text-muted">Bienvenue,</p>
+                <h1 className="mt-0.5 sm:mt-1 text-2xl sm:text-3xl md:text-4xl font-black tracking-tight text-text-primary">
                   {sellerProfile?.provider_name || sellerProfile?.full_name || 'Votre Boutique'}
                 </h1>
               </div>
@@ -693,17 +762,17 @@ export default function SellerPortalPage(): JSX.Element {
               />
             </div>
 
-            {/* Stats Grid */}
+            {/* Stats Grid - 2 columns on mobile */}
             {statsLoading ? (
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
                 {[...Array(4)].map((_, i) => (
-                  <div key={i} className="h-32 animate-pulse rounded-2xl bg-brand-border/30" />
+                  <div key={i} className="h-24 sm:h-32 animate-pulse rounded-xl sm:rounded-2xl bg-brand-border/30" />
                 ))}
               </div>
             ) : dashboardStats && (
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
                 <StatCard
-                  label="Revenu Total"
+                  label="Revenu"
                   value={formatCurrency(dashboardStats.totalRevenue)}
                   {...getTrendProps(dashboardStats.trend.totalRevenue)}
                   variant="primary"
@@ -719,36 +788,36 @@ export default function SellerPortalPage(): JSX.Element {
                   variant={dashboardStats.pendingOrders > 0 ? 'warning' : 'default'}
                 />
                 <StatCard
-                  label="Produits Actifs"
+                  label="Produits"
                   value={dashboardStats.totalProducts}
                 />
               </div>
             )}
 
-            {/* Quick Actions */}
+            {/* Quick Actions - 2 columns on mobile */}
             <section>
-              <h2 className="mb-4 text-lg font-bold text-text-primary">Actions Rapides</h2>
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              <h2 className="mb-3 sm:mb-4 text-base sm:text-lg font-bold text-text-primary">Actions Rapides</h2>
+              <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
                 <ActionButton
                   title="Nouveau Produit"
-                  description="Ajouter un article au catalogue"
+                  description="Ajouter au catalogue"
                   onClick={handleAddProduct}
                   variant="primary"
                 />
                 <ActionButton
                   title="Commandes"
-                  description="Gérer les commandes en cours"
+                  description="Gérer les commandes"
                   onClick={() => setActiveTab('orders')}
                 />
                 <ActionButton
                   title="Inventaire"
-                  description="Modifier stocks et prix"
+                  description="Stocks et prix"
                   onClick={() => setActiveTab('products')}
                 />
                 {canAccessB2B() && (
                   <ActionButton
                     title="Offre B2B"
-                    description="Créer une offre grossiste"
+                    description="Créer une offre"
                     onClick={() => setIsCreateOfferModalOpen(true)}
                   />
                 )}
@@ -756,46 +825,48 @@ export default function SellerPortalPage(): JSX.Element {
             </section>
 
             {/* Recent Orders Preview */}
-            <section className="rounded-2xl border border-brand-border bg-white p-6">
-              <div className="mb-4 flex items-center justify-between">
-                <h2 className="text-lg font-bold text-text-primary">Commandes Récentes</h2>
+            <section className="rounded-xl sm:rounded-2xl border border-brand-border bg-white p-4 sm:p-6">
+              <div className="mb-3 sm:mb-4 flex items-center justify-between">
+                <h2 className="text-base sm:text-lg font-bold text-text-primary">Commandes Récentes</h2>
                 <button
                   onClick={() => setActiveTab('orders')}
-                  className="text-sm font-semibold text-brand-dark hover:underline"
+                  className="text-xs sm:text-sm font-semibold text-brand-dark"
                 >
                   Voir tout
                 </button>
               </div>
-              <OrdersTable
-                orders={orders.slice(0, 5)}
-                onUpdateStatus={handleUpdateOrderStatus}
-                onViewDetails={handleViewOrderDetails}
-              />
+              <div className="overflow-x-auto -mx-4 sm:mx-0 px-4 sm:px-0">
+                <OrdersTable
+                  orders={orders.slice(0, 5)}
+                  onUpdateStatus={handleUpdateOrderStatus}
+                  onViewDetails={handleViewOrderDetails}
+                />
+              </div>
             </section>
           </div>
         )}
 
         {/* Orders Tab */}
         {activeTab === 'orders' && (
-          <div className="space-y-6 animate-fade-in">
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="space-y-4 sm:space-y-6 animate-fade-in">
+            <div className="flex flex-col gap-3 sm:gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div>
-                <h1 className="text-2xl font-black text-text-primary">Gestion des Commandes</h1>
-                <p className="mt-1 text-sm text-text-muted">
+                <h1 className="text-xl sm:text-2xl font-black text-text-primary">Commandes</h1>
+                <p className="mt-0.5 text-xs sm:text-sm text-text-muted">
                   {filteredOrders.length} commande{filteredOrders.length !== 1 ? 's' : ''}
                 </p>
               </div>
               <ExportButton orders={filteredOrders} products={productsList} type="orders" />
             </div>
 
-            <div className="rounded-2xl border border-brand-border bg-white p-6">
+            <div className="rounded-xl sm:rounded-2xl border border-brand-border bg-white p-4 sm:p-6">
               <OrderFilters
                 statusFilter={statusFilter}
                 paymentFilter={paymentFilter}
                 onStatusFilterChange={setStatusFilter}
                 onPaymentFilterChange={setPaymentFilter}
               />
-              <div className="mt-6">
+              <div className="mt-4 sm:mt-6 overflow-x-auto -mx-4 sm:mx-0 px-4 sm:px-0">
                 <OrdersTable
                   orders={filteredOrders}
                   onUpdateStatus={handleUpdateOrderStatus}
@@ -808,21 +879,21 @@ export default function SellerPortalPage(): JSX.Element {
 
         {/* Products Tab */}
         {activeTab === 'products' && (
-          <div className="space-y-6 animate-fade-in">
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="space-y-4 sm:space-y-6 animate-fade-in">
+            <div className="flex flex-col gap-3 sm:gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div>
-                <h1 className="text-2xl font-black text-text-primary">Catalogue Produits</h1>
-                <p className="mt-1 text-sm text-text-muted">
+                <h1 className="text-xl sm:text-2xl font-black text-text-primary">Produits</h1>
+                <p className="mt-0.5 text-xs sm:text-sm text-text-muted">
                   {productsList.length} produit{productsList.length !== 1 ? 's' : ''} actif{productsList.length !== 1 ? 's' : ''}
                 </p>
               </div>
-              <div className="flex gap-3">
+              <div className="flex gap-2 sm:gap-3">
                 <ExportButton orders={orders} products={productsList} type="products" />
                 <button
                   onClick={handleAddProduct}
-                  className="rounded-xl bg-brand-dark px-5 py-2.5 text-sm font-bold text-brand-primary transition-all hover:bg-black"
+                  className="rounded-lg sm:rounded-xl bg-brand-dark px-4 sm:px-5 py-2 sm:py-2.5 text-xs sm:text-sm font-bold text-brand-primary transition-all active:scale-95"
                 >
-                  Ajouter un produit
+                  Ajouter
                 </button>
               </div>
             </div>
@@ -838,44 +909,44 @@ export default function SellerPortalPage(): JSX.Element {
 
         {/* B2B Tab */}
         {activeTab === 'b2b' && canAccessB2B() && (
-          <div className="space-y-6 animate-fade-in">
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="space-y-4 sm:space-y-6 animate-fade-in">
+            <div className="flex flex-col gap-3 sm:gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div>
-                <h1 className="text-2xl font-black text-text-primary">Mes Offres B2B</h1>
-                <p className="mt-1 text-sm text-text-muted">
-                  Gérez vos offres pour grossistes et fournisseurs
+                <h1 className="text-xl sm:text-2xl font-black text-text-primary">Offres B2B</h1>
+                <p className="mt-0.5 text-xs sm:text-sm text-text-muted">
+                  Gérez vos offres grossistes
                 </p>
               </div>
               <button
                 onClick={() => setIsCreateOfferModalOpen(true)}
-                className="rounded-xl bg-brand-dark px-5 py-2.5 text-sm font-bold text-brand-primary transition-all hover:bg-black"
+                className="rounded-lg sm:rounded-xl bg-brand-dark px-4 sm:px-5 py-2 sm:py-2.5 text-xs sm:text-sm font-bold text-brand-primary transition-all active:scale-95"
               >
-                Nouvelle offre B2B
+                Nouvelle offre
               </button>
             </div>
 
             {/* B2B Stats */}
             {b2bStats && (
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                <StatCard label="Offres Actives" value={b2bStats.active_offers_count || 0} />
-                <StatCard label="Réponses Reçues" value={b2bStats.total_responses_count || 0} />
-                <StatCard label="Offres Vendues" value={b2bStats.sold_offers_count || 0} variant="success" />
+              <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
+                <StatCard label="Actives" value={b2bStats.active_offers_count || 0} />
+                <StatCard label="Réponses" value={b2bStats.total_responses_count || 0} />
+                <StatCard label="Vendues" value={b2bStats.sold_offers_count || 0} variant="success" />
                 <StatCard
-                  label="Meilleure Enchère"
-                  value={b2bStats.highest_bid ? `${b2bStats.highest_bid} DZD` : '—'}
+                  label="Max Enchère"
+                  value={b2bStats.highest_bid ? `${b2bStats.highest_bid}` : '—'}
                 />
               </div>
             )}
 
             {/* B2B Offers Grid */}
             {b2bLoading ? (
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+              <div className="grid gap-3 sm:gap-4 sm:grid-cols-2 lg:grid-cols-3">
                 {[...Array(3)].map((_, i) => (
-                  <div key={i} className="h-64 animate-pulse rounded-2xl bg-brand-border/30" />
+                  <div key={i} className="h-48 sm:h-64 animate-pulse rounded-xl sm:rounded-2xl bg-brand-border/30" />
                 ))}
               </div>
             ) : b2bOffers.length > 0 ? (
-              <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              <div className="grid gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3">
                 {b2bOffers.map((offer) => (
                   <div key={offer.id} className="relative">
                     <OfferCard
@@ -885,22 +956,22 @@ export default function SellerPortalPage(): JSX.Element {
                     />
                     <button
                       onClick={() => handleDeleteB2BOffer(offer.id)}
-                      className="absolute right-4 top-4 rounded-lg bg-red-600 px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-red-700"
+                      className="absolute right-3 top-3 sm:right-4 sm:top-4 rounded-lg bg-red-600 px-2.5 py-1 sm:px-3 sm:py-1.5 text-[10px] sm:text-xs font-semibold text-white transition-colors active:bg-red-700"
                     >
-                      Supprimer
+                      Suppr.
                     </button>
                   </div>
                 ))}
               </div>
             ) : (
-              <div className="rounded-2xl border-2 border-dashed border-brand-border bg-white/50 px-6 py-16 text-center">
-                <p className="text-lg font-semibold text-text-muted">Aucune offre B2B</p>
-                <p className="mt-2 text-sm text-text-muted">
-                  Créez votre première offre pour commencer
+              <div className="rounded-xl sm:rounded-2xl border-2 border-dashed border-brand-border bg-white/50 px-4 sm:px-6 py-12 sm:py-16 text-center">
+                <p className="text-base sm:text-lg font-semibold text-text-muted">Aucune offre B2B</p>
+                <p className="mt-1 sm:mt-2 text-xs sm:text-sm text-text-muted">
+                  Créez votre première offre
                 </p>
                 <button
                   onClick={() => setIsCreateOfferModalOpen(true)}
-                  className="mt-6 rounded-xl bg-brand-dark px-6 py-3 text-sm font-bold text-brand-primary transition-all hover:bg-black"
+                  className="mt-4 sm:mt-6 rounded-xl bg-brand-dark px-5 sm:px-6 py-2.5 sm:py-3 text-xs sm:text-sm font-bold text-brand-primary transition-all active:scale-95"
                 >
                   Créer une offre
                 </button>
@@ -911,15 +982,15 @@ export default function SellerPortalPage(): JSX.Element {
 
         {/* Analytics Tab */}
         {activeTab === 'analytics' && (
-          <div className="space-y-6 animate-fade-in">
-            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="space-y-4 sm:space-y-6 animate-fade-in">
+            <div className="flex flex-col gap-3 sm:gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div>
-                <h1 className="text-2xl font-black text-text-primary">Analytiques</h1>
-                <p className="mt-1 text-sm text-text-muted">
-                  Suivez vos performances de vente
+                <h1 className="text-xl sm:text-2xl font-black text-text-primary">Statistiques</h1>
+                <p className="mt-0.5 text-xs sm:text-sm text-text-muted">
+                  Performances de vente
                 </p>
               </div>
-              <div className="flex gap-3">
+              <div className="flex flex-wrap gap-2 sm:gap-3">
                 <StatsRangePicker
                   value={statsPreset}
                   onChange={setStatsPreset}
@@ -931,13 +1002,13 @@ export default function SellerPortalPage(): JSX.Element {
             </div>
 
             {statsLoading ? (
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
                 {[...Array(8)].map((_, i) => (
-                  <div key={i} className="h-32 animate-pulse rounded-2xl bg-brand-border/30" />
+                  <div key={i} className="h-24 sm:h-32 animate-pulse rounded-xl sm:rounded-2xl bg-brand-border/30" />
                 ))}
               </div>
             ) : dashboardStats && (
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+              <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
                 <StatCard
                   label="Revenu Total"
                   value={formatCurrency(dashboardStats.totalRevenue)}
@@ -945,23 +1016,23 @@ export default function SellerPortalPage(): JSX.Element {
                   variant="primary"
                 />
                 <StatCard
-                  label="Revenu Mensuel"
+                  label="Revenu Mois"
                   value={formatCurrency(dashboardStats.monthlyRevenue)}
                   {...getTrendProps(dashboardStats.trend.monthlyRevenue)}
                 />
                 <StatCard
-                  label="Commandes Totales"
+                  label="Commandes"
                   value={dashboardStats.totalOrders}
                   {...getTrendProps(dashboardStats.trend.totalOrders)}
                 />
                 <StatCard
-                  label="Taux de Réussite"
+                  label="Réussite"
                   value={`${Math.round(dashboardStats.completionRate)}%`}
                   {...getTrendProps(dashboardStats.trend.completionRate)}
                   variant="success"
                 />
                 <StatCard label="En Attente" value={dashboardStats.pendingOrders} />
-                <StatCard label="En Traitement" value={dashboardStats.processingOrders} />
+                <StatCard label="Traitement" value={dashboardStats.processingOrders} />
                 <StatCard label="Complétées" value={dashboardStats.completedOrders} variant="success" />
                 <StatCard
                   label="Stock Faible"
@@ -973,6 +1044,13 @@ export default function SellerPortalPage(): JSX.Element {
           </div>
         )}
       </main>
+
+      {/* Mobile Bottom Navigation */}
+      <MobileBottomNav
+        activeTab={activeTab}
+        onTabChange={setActiveTab}
+        showB2B={canAccessB2B()}
+      />
 
       {/* Modals */}
       <AddProductModal
