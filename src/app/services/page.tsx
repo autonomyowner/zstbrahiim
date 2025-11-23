@@ -2,12 +2,9 @@
 
 import { useState, useMemo, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { DashboardStats } from '@/components/seller/DashboardStats'
-import { QuickActions } from '@/components/seller/QuickActions'
 import { OrdersTable } from '@/components/seller/OrdersTable'
 import { OrderFilters } from '@/components/seller/OrderFilters'
 import { ProductManagement } from '@/components/seller/ProductManagement'
-import { AnalyticsSection } from '@/components/seller/AnalyticsSection'
 import { StatsRangePicker, type StatsRangePreset } from '@/components/seller/StatsRangePicker'
 import {
   AddProductModal,
@@ -32,7 +29,6 @@ import {
 import { upsertProductVideo, deleteProductVideo } from '@/lib/supabase/productVideos'
 import type { UserProfile, B2BOfferWithDetails, CreateB2BOfferRequest } from '@/lib/supabase/types'
 import { getMyOffers, createOffer as createB2BOffer, deleteOffer } from '@/lib/supabase/b2b-offers'
-import { getOfferResponses } from '@/lib/supabase/b2b-responses'
 import { getSellerStatistics } from '@/lib/supabase/b2b-offers'
 import CreateOfferModal from '@/components/b2b/CreateOfferModal'
 import OfferCard from '@/components/b2b/OfferCard'
@@ -55,6 +51,103 @@ const computeRange = (preset: StatsRangePreset) => {
   start.setHours(0, 0, 0, 0)
 
   return { start, end }
+}
+
+const formatCurrency = (amount: number): string => {
+  return new Intl.NumberFormat('fr-DZ', {
+    style: 'currency',
+    currency: 'DZD',
+    minimumFractionDigits: 0,
+  }).format(amount)
+}
+
+// Elegant stat card component
+function StatCard({
+  label,
+  value,
+  trend,
+  trendUp,
+  variant = 'default'
+}: {
+  label: string
+  value: string | number
+  trend?: string
+  trendUp?: boolean
+  variant?: 'default' | 'primary' | 'success' | 'warning'
+}) {
+  const variantStyles = {
+    default: 'bg-white border-brand-border',
+    primary: 'bg-brand-dark text-white border-brand-dark',
+    success: 'bg-emerald-50 border-emerald-200',
+    warning: 'bg-amber-50 border-amber-200',
+  }
+
+  return (
+    <div className={`
+      relative overflow-hidden rounded-2xl border p-5
+      transition-all duration-300 hover:shadow-card-md
+      ${variantStyles[variant]}
+    `}>
+      <p className={`text-[11px] font-semibold uppercase tracking-widest ${
+        variant === 'primary' ? 'text-white/60' : 'text-text-muted'
+      }`}>
+        {label}
+      </p>
+      <p className={`mt-2 text-3xl font-black tracking-tight ${
+        variant === 'primary' ? 'text-brand-primary' : 'text-text-primary'
+      }`}>
+        {value}
+      </p>
+      {trend && (
+        <div className={`mt-3 inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-bold ${
+          trendUp
+            ? 'bg-emerald-100 text-emerald-700'
+            : 'bg-red-100 text-red-600'
+        }`}>
+          <span>{trendUp ? '↑' : '↓'}</span>
+          <span>{trend}</span>
+        </div>
+      )}
+    </div>
+  )
+}
+
+// Quick action button component
+function ActionButton({
+  title,
+  description,
+  onClick,
+  variant = 'default'
+}: {
+  title: string
+  description: string
+  onClick: () => void
+  variant?: 'default' | 'primary'
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className={`
+        group flex flex-col items-start gap-2 rounded-2xl p-5 text-left
+        transition-all duration-300 hover:-translate-y-0.5
+        ${variant === 'primary'
+          ? 'bg-brand-dark text-white hover:bg-black shadow-card-md'
+          : 'bg-white border border-brand-border hover:border-brand-dark hover:shadow-card-sm'
+        }
+      `}
+    >
+      <span className={`text-base font-bold ${
+        variant === 'primary' ? 'text-brand-primary' : 'text-text-primary'
+      }`}>
+        {title}
+      </span>
+      <span className={`text-sm leading-relaxed ${
+        variant === 'primary' ? 'text-white/70' : 'text-text-muted'
+      }`}>
+        {description}
+      </span>
+    </button>
+  )
 }
 
 export default function SellerPortalPage(): JSX.Element {
@@ -128,11 +221,10 @@ export default function SellerPortalPage(): JSX.Element {
   // Fetch products from Supabase (only seller's products)
   useEffect(() => {
     if (authChecking) return
-    
+
     const fetchProducts = async () => {
       try {
         setLoading(true)
-        // Use getSellerProducts to fetch only the authenticated seller's products
         const fetchedProducts = await getSellerProducts()
         setProductsList(fetchedProducts)
       } catch (error) {
@@ -148,12 +240,12 @@ export default function SellerPortalPage(): JSX.Element {
   // Fetch orders for seller
   useEffect(() => {
     if (authChecking) return
-    
+
     const fetchOrders = async () => {
       try {
         const { data: { user } } = await supabase.auth.getUser()
         if (!user) return
-        
+
         const sellerOrders = await getOrdersForSeller(user.id)
         setOrders(sellerOrders)
       } catch (error) {
@@ -233,14 +325,12 @@ export default function SellerPortalPage(): JSX.Element {
 
   const handleUpdateOrderStatus = async (orderId: string, newStatus: OrderStatus) => {
     try {
-      // Update in database
       const success = await updateOrderStatusInDb({
         order_id: orderId,
         status: newStatus,
       })
-      
+
       if (success) {
-        // Update local state
         setOrders((prevOrders) =>
           prevOrders.map((order) =>
             order.id === orderId
@@ -274,16 +364,14 @@ export default function SellerPortalPage(): JSX.Element {
   ) => {
     try {
       setProductError(null)
-      
-      // Get current user (seller)
+
       const { data: { user } } = await supabase.auth.getUser()
-      
+
       if (!user) {
         setProductError('Vous devez être connecté pour ajouter un produit')
         return
       }
-      
-      // Prepare product data for Supabase
+
       const productPayload = {
         slug: `${productData.name.toLowerCase().replace(/\s+/g, '-')}-${Date.now()}`,
         name: productData.name,
@@ -309,12 +397,12 @@ export default function SellerPortalPage(): JSX.Element {
         payment_info: 'Paiement à la livraison',
         exclusive_offers: null,
         images: [productData.image],
-        seller_id: user.id, // Add seller ID to track product ownership
+        seller_id: user.id,
         seller_category: sellerProfile?.seller_category ?? null,
       }
 
       const productId = await createProduct(productPayload)
-      
+
       if (productId) {
         if (video) {
           try {
@@ -326,12 +414,11 @@ export default function SellerPortalPage(): JSX.Element {
             })
           } catch (videoError: any) {
             console.error('Error uploading product video:', videoError)
-            setProductError(videoError?.message || 'Erreur lors de l’ajout de la vidéo.')
+            setProductError(videoError?.message || "Erreur lors de l'ajout de la vidéo.")
           }
         }
 
         setSuccessMessage(`Produit "${productData.name}" ajouté avec succès!`)
-        // Refresh products list (only seller's products)
         const updatedProducts = await getSellerProducts()
         setProductsList(updatedProducts)
         setTimeout(() => setSuccessMessage(null), 3000)
@@ -357,7 +444,7 @@ export default function SellerPortalPage(): JSX.Element {
   ) => {
     try {
       setProductError(null)
-      
+
       const updatePayload = {
         id: productId,
         name: productData.name,
@@ -379,7 +466,7 @@ export default function SellerPortalPage(): JSX.Element {
       }
 
       const success = await updateProduct(updatePayload)
-      
+
       if (success) {
         if (removeVideo) {
           try {
@@ -403,7 +490,6 @@ export default function SellerPortalPage(): JSX.Element {
         }
 
         setSuccessMessage(`Produit "${productData.name}" modifié avec succès!`)
-        // Refresh products list (only seller's products)
         const updatedProducts = await getSellerProducts()
         setProductsList(updatedProducts)
         setTimeout(() => setSuccessMessage(null), 3000)
@@ -421,10 +507,9 @@ export default function SellerPortalPage(): JSX.Element {
       try {
         setProductError(null)
         const success = await deleteProduct(productId)
-        
+
         if (success) {
           setSuccessMessage('Produit supprimé avec succès!')
-          // Refresh products list (only seller's products)
           const updatedProducts = await getSellerProducts()
           setProductsList(updatedProducts)
           setTimeout(() => setSuccessMessage(null), 3000)
@@ -449,7 +534,6 @@ export default function SellerPortalPage(): JSX.Element {
       await createB2BOffer(offerData)
       setSuccessMessage('Offre B2B créée avec succès!')
 
-      // Refresh B2B offers
       const offers = await getMyOffers()
       setB2BOffers(offers)
 
@@ -467,7 +551,6 @@ export default function SellerPortalPage(): JSX.Element {
         await deleteOffer(offerId)
         setSuccessMessage('Offre B2B supprimée avec succès!')
 
-        // Refresh B2B offers
         const offers = await getMyOffers()
         setB2BOffers(offers)
 
@@ -488,350 +571,410 @@ export default function SellerPortalPage(): JSX.Element {
     return sellerProfile?.seller_category === 'importateur' || sellerProfile?.seller_category === 'grossiste'
   }
 
-  const tabs = [
-    { id: 'dashboard' as TabType, label: 'Tableau de Bord' },
-    { id: 'orders' as TabType, label: 'Commandes' },
-    { id: 'products' as TabType, label: 'Produits' },
-    ...(canAccessB2B() ? [{ id: 'b2b' as TabType, label: 'Offres B2B' }] : []),
-    { id: 'analytics' as TabType, label: 'Analytiques' },
-  ]
-
-  const sellerSpaceBanner = useMemo(() => {
-    if (!sellerProfile || !sellerProfile.seller_category || sellerProfile.seller_category === 'fournisseur') {
-      return null
+  const getTrendProps = (value: number | null): { trend?: string; trendUp?: boolean } => {
+    if (value === null || Number.isNaN(value)) return {}
+    const rounded = Math.round(value * 10) / 10
+    return {
+      trend: `${rounded > 0 ? '+' : ''}${rounded}%`,
+      trendUp: rounded >= 0,
     }
-
-    return sellerProfile.seller_category === 'grossiste'
-      ? {
-          title: 'Espace grossistes ZST',
-          description: 'Accès direct aux offres importateurs et commandes inter-boutiques.',
-        }
-      : {
-          title: 'Espace importateurs ZST',
-          description: 'Publiez vos lots réservés aux grossistes certifiés ZST.',
-        }
-  }, [sellerProfile])
+  }
 
   // Show loading while checking auth
   if (authChecking) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-kitchen-lux-dark-green-50 to-kitchen-lux-dark-green-100 flex items-center justify-center">
+      <div className="min-h-screen bg-brand-light flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-kitchen-lux-dark-green-900 mx-auto mb-4"></div>
-          <p className="text-kitchen-lux-dark-green-700">Vérification de l&apos;authentification...</p>
+          <div className="relative mx-auto mb-6 h-16 w-16">
+            <div className="absolute inset-0 rounded-full border-4 border-brand-border"></div>
+            <div className="absolute inset-0 rounded-full border-4 border-transparent border-t-brand-dark animate-spin"></div>
+          </div>
+          <p className="text-text-muted font-medium">Vérification...</p>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-brand-light px-4 py-16 sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-7xl">
-        <div className="flex flex-col gap-8 lg:flex-row">
-          <aside className="lg:w-72 xl:w-80">
-            <div className="sticky top-28 rounded-3xl bg-brand-dark p-5 sm:p-6 text-text-inverted shadow-card-md">
-              <div className="flex items-center gap-3">
-                <div className="rounded-2xl bg-brand-primary px-3 py-2 text-brand-dark font-black text-lg">
-                  Z
-                </div>
-                <div className="min-w-0 flex-1">
-                  <p className="text-[10px] uppercase tracking-[0.2em] text-white/70 whitespace-nowrap overflow-hidden text-ellipsis">
-                    Seller suite
-                  </p>
-                  <p className="text-base sm:text-lg font-bold whitespace-nowrap overflow-hidden text-ellipsis">
-                    ZST Dashboard
-                  </p>
-                </div>
+    <div className="min-h-screen bg-brand-light">
+      {/* Refined Header */}
+      <header className="sticky top-0 z-40 border-b border-brand-border bg-white/95 backdrop-blur-sm">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="flex h-16 items-center justify-between">
+            {/* Logo & Title */}
+            <div className="flex items-center gap-4">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-brand-dark">
+                <span className="text-lg font-black text-brand-primary">Z</span>
               </div>
-              <p className="mt-4 text-xs sm:text-sm text-white/70 leading-relaxed">
-                Suivez vos commandes, gérez le catalogue et exportez vos rapports.
-              </p>
-              <div className="mt-6 space-y-2 text-xs sm:text-sm font-semibold">
-                {tabs.map((tab) => (
-                  <button
-                    key={tab.id}
-                    onClick={() => setActiveTab(tab.id)}
-                    className={`w-full rounded-xl sm:rounded-2xl px-3 sm:px-4 py-2.5 sm:py-3 text-left transition ${
-                      activeTab === tab.id ? 'bg-white/15 text-white' : 'text-white/70 hover:bg-white/10'
-                    }`}
-                  >
-                    {tab.label}
-                  </button>
-                ))}
+              <div className="hidden sm:block">
+                <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-text-muted">
+                  Espace Vendeur
+                </p>
+                <p className="text-sm font-bold text-text-primary">
+                  {sellerProfile?.provider_name || sellerProfile?.full_name || 'Dashboard'}
+                </p>
               </div>
             </div>
-          </aside>
 
-          <div className="flex-1">
-            {sellerSpaceBanner && (
-              <div className="mb-6 rounded-2xl border border-brand-border bg-white px-5 py-4 text-brand-dark shadow-card-sm">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.3em] text-brand-dark/70">
-                  {sellerSpaceBanner.title}
-                </p>
-                <p className="mt-2 text-sm text-brand-dark/80">{sellerSpaceBanner.description}</p>
-              </div>
-            )}
-            {successMessage && (
-              <div className="mb-6 rounded-2xl border border-green-200 bg-green-50 px-4 py-3 text-green-800 shadow-card-sm">
-                {successMessage}
-              </div>
-            )}
-            {productError && (
-              <div className="mb-6 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-red-700 shadow-card-sm">
-                {productError}
-              </div>
-            )}
+            {/* Navigation Tabs */}
+            <nav className="flex items-center gap-1">
+              {[
+                { id: 'dashboard' as TabType, label: 'Accueil' },
+                { id: 'orders' as TabType, label: 'Commandes' },
+                { id: 'products' as TabType, label: 'Produits' },
+                ...(canAccessB2B() ? [{ id: 'b2b' as TabType, label: 'B2B' }] : []),
+                { id: 'analytics' as TabType, label: 'Stats' },
+              ].map((tab) => (
+                <button
+                  key={tab.id}
+                  onClick={() => setActiveTab(tab.id)}
+                  className={`
+                    relative px-4 py-2 text-sm font-semibold transition-colors
+                    ${activeTab === tab.id
+                      ? 'text-text-primary'
+                      : 'text-text-muted hover:text-text-primary'
+                    }
+                  `}
+                >
+                  {tab.label}
+                  {activeTab === tab.id && (
+                    <span className="absolute bottom-0 left-1/2 h-0.5 w-6 -translate-x-1/2 rounded-full bg-brand-primary" />
+                  )}
+                </button>
+              ))}
+            </nav>
 
-            <div className="mb-8">
-              <p className="text-[10px] sm:text-xs uppercase tracking-[0.2em] sm:tracking-[0.3em] text-text-muted">
-                Portail vendeur
-              </p>
-              <div className="mt-3 flex flex-wrap items-center gap-3 sm:gap-4">
-                <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-text-primary">
-                  Espace fournisseur ZST
-                </h1>
-                <span className="rounded-full bg-brand-dark px-3 sm:px-4 py-1 text-[9px] sm:text-xs font-semibold uppercase tracking-[0.15em] sm:tracking-[0.2em] text-brand-primary whitespace-nowrap">
-                  Grossiste / Importateur
+            {/* Seller Badge */}
+            {sellerProfile?.seller_category && sellerProfile.seller_category !== 'fournisseur' && (
+              <div className="hidden lg:flex items-center gap-2 rounded-full bg-brand-dark px-3 py-1.5">
+                <span className="text-xs font-bold uppercase tracking-wider text-brand-primary">
+                  {sellerProfile.seller_category === 'grossiste' ? 'Grossiste' : 'Importateur'}
                 </span>
               </div>
-              <p className="mt-2 text-xs sm:text-sm text-text-muted leading-relaxed">
-                Gérez vos commandes, vos fiches produits et analysez vos performances en un seul endroit.
-              </p>
-            </div>
-
-            <div className="mb-8 border-b border-brand-border">
-              <nav className="flex gap-4 overflow-x-auto">
-                {tabs.map((tab) => (
-                  <button
-                    key={tab.id}
-                    onClick={() => setActiveTab(tab.id)}
-                    className={`rounded-full px-5 py-2 text-sm font-semibold transition ${
-                      activeTab === tab.id
-                        ? 'bg-brand-dark text-text-inverted'
-                        : 'bg-white text-text-muted ring-1 ring-brand-border hover:text-text-primary'
-                    }`}
-                  >
-                    {tab.label}
-                  </button>
-                ))}
-              </nav>
-            </div>
-
-            <div className="space-y-10">
-              {activeTab === 'dashboard' && (
-                <div>
-                  <div className="space-y-4">
-                    <StatsRangePicker
-                      value={statsPreset}
-                      onChange={setStatsPreset}
-                      startDate={statsRange.start}
-                      endDate={statsRange.end}
-                    />
-                    {statsError && (
-                      <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-                        {statsError}
-                      </div>
-                    )}
-                    {statsLoading && (
-                      <div className="rounded-2xl border border-brand-border bg-white px-4 py-3 text-sm text-text-muted shadow-card-sm">
-                        Chargement des statistiques...
-                      </div>
-                    )}
-                    {!statsLoading && dashboardStats && (
-                      <DashboardStats stats={dashboardStats} />
-                    )}
-                  </div>
-                  <QuickActions
-                    onViewOrders={() => setActiveTab('orders')}
-                    onAddProduct={handleAddProduct}
-                    onManageInventory={() => setActiveTab('products')}
-                    onViewAnalytics={() => setActiveTab('analytics')}
-                    onCreateB2BOffer={canAccessB2B() ? () => setIsCreateOfferModalOpen(true) : undefined}
-                  />
-                  <div className="mt-10 rounded-3xl border border-brand-border bg-white/95 p-6 shadow-card-sm">
-                    <div className="flex items-center justify-between">
-                      <h2 className="text-xl font-semibold text-text-primary">Commandes récentes</h2>
-                      <button
-                        onClick={() => setActiveTab('orders')}
-                        className="text-sm font-semibold text-brand-dark"
-                      >
-                        Voir tout →
-                      </button>
-                    </div>
-                    <div className="mt-4">
-                      <OrdersTable
-                        orders={orders.slice(0, 5)}
-                        onUpdateStatus={handleUpdateOrderStatus}
-                        onViewDetails={handleViewOrderDetails}
-                      />
-                    </div>
-                  </div>
-                  {!statsLoading && dashboardStats && (
-                    <div className="mt-10">
-                      <AnalyticsSection stats={dashboardStats} />
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {activeTab === 'orders' && (
-                <div className="space-y-6">
-                  <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                    <div>
-                      <p className="text-xs uppercase tracking-[0.3em] text-text-muted">Commandes</p>
-                      <h2 className="text-2xl font-semibold text-text-primary">Gestion des commandes</h2>
-                    </div>
-                    <ExportButton orders={filteredOrders} products={productsList} type="orders" />
-                  </div>
-                  <OrderFilters
-                    statusFilter={statusFilter}
-                    paymentFilter={paymentFilter}
-                    onStatusFilterChange={setStatusFilter}
-                    onPaymentFilterChange={setPaymentFilter}
-                  />
-                  <OrdersTable
-                    orders={filteredOrders}
-                    onUpdateStatus={handleUpdateOrderStatus}
-                    onViewDetails={handleViewOrderDetails}
-                  />
-                </div>
-              )}
-
-              {activeTab === 'products' && (
-                <div className="space-y-6">
-                  <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                    <div>
-                      <p className="text-xs uppercase tracking-[0.3em] text-text-muted">Catalogue</p>
-                      <h2 className="text-2xl font-semibold text-text-primary">Gestion des produits</h2>
-                    </div>
-                    <ExportButton orders={orders} products={productsList} type="products" />
-                  </div>
-                  <ProductManagement
-                    products={productsList}
-                    onAddProduct={handleAddProduct}
-                    onEditProduct={handleEditProduct}
-                    onDeleteProduct={handleDeleteProduct}
-                  />
-                </div>
-              )}
-
-              {activeTab === 'b2b' && canAccessB2B() && (
-                <div className="space-y-6">
-                  <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                    <div>
-                      <p className="text-xs uppercase tracking-[0.3em] text-text-muted">
-                        {sellerProfile?.seller_category === 'importateur' ? 'Importateur' : 'Grossiste'}
-                      </p>
-                      <h2 className="text-2xl font-semibold text-text-primary">Mes offres B2B</h2>
-                    </div>
-                    <button
-                      onClick={() => setIsCreateOfferModalOpen(true)}
-                      className="rounded-xl bg-brand-dark px-6 py-3 text-sm font-bold text-brand-primary transition-all hover:bg-black shadow-card-sm hover:shadow-card-md"
-                    >
-                      Créer une offre B2B
-                    </button>
-                  </div>
-
-                  {/* B2B Statistics */}
-                  {b2bStats && (
-                    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                      <div className="rounded-2xl border border-brand-border bg-white p-4 shadow-card-sm">
-                        <p className="text-xs uppercase tracking-[0.3em] text-text-muted">Offres actives</p>
-                        <p className="mt-2 text-2xl font-bold text-text-primary">{b2bStats.active_offers_count || 0}</p>
-                      </div>
-                      <div className="rounded-2xl border border-brand-border bg-white p-4 shadow-card-sm">
-                        <p className="text-xs uppercase tracking-[0.3em] text-text-muted">Réponses reçues</p>
-                        <p className="mt-2 text-2xl font-bold text-text-primary">{b2bStats.total_responses_count || 0}</p>
-                      </div>
-                      <div className="rounded-2xl border border-brand-border bg-white p-4 shadow-card-sm">
-                        <p className="text-xs uppercase tracking-[0.3em] text-text-muted">Offres vendues</p>
-                        <p className="mt-2 text-2xl font-bold text-text-primary">{b2bStats.sold_offers_count || 0}</p>
-                      </div>
-                      <div className="rounded-2xl border border-brand-border bg-white p-4 shadow-card-sm">
-                        <p className="text-xs uppercase tracking-[0.3em] text-text-muted">Enchère max</p>
-                        <p className="mt-2 text-2xl font-bold text-text-primary">
-                          {b2bStats.highest_bid ? `${b2bStats.highest_bid} DZD` : '0 DZD'}
-                        </p>
-                      </div>
-                    </div>
-                  )}
-
-                  {/* B2B Offers List */}
-                  {b2bLoading ? (
-                    <div className="rounded-2xl border border-brand-border bg-white px-4 py-12 text-center shadow-card-sm">
-                      <div className="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-b-2 border-brand-dark"></div>
-                      <p className="text-text-muted">Chargement des offres B2B...</p>
-                    </div>
-                  ) : b2bOffers.length > 0 ? (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                      {b2bOffers.map((offer) => (
-                        <div key={offer.id} className="relative">
-                          <OfferCard
-                            offer={offer}
-                            onViewDetails={handleViewB2BDetails}
-                            onMakeOffer={() => {}}
-                          />
-                          <button
-                            onClick={() => handleDeleteB2BOffer(offer.id)}
-                            className="absolute top-4 right-4 rounded-lg bg-red-600 px-3 py-1.5 text-xs font-semibold text-white hover:bg-red-700 transition-colors"
-                          >
-                            Supprimer
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <div className="rounded-2xl border border-brand-border bg-white px-4 py-12 text-center shadow-card-sm">
-                      <p className="text-lg font-semibold text-text-muted mb-2">
-                        Aucune offre B2B pour le moment
-                      </p>
-                      <p className="text-sm text-text-muted mb-4">
-                        Créez votre première offre pour commencer à vendre en gros
-                      </p>
-                      <button
-                        onClick={() => setIsCreateOfferModalOpen(true)}
-                        className="rounded-xl bg-brand-dark px-6 py-3 text-sm font-bold text-brand-primary hover:bg-black transition-all"
-                      >
-                        Créer une offre B2B
-                      </button>
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {activeTab === 'analytics' && (
-                <div className="space-y-6">
-                  <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-                    <div>
-                      <p className="text-xs uppercase tracking-[0.3em] text-text-muted">Rapports</p>
-                      <h2 className="text-2xl font-semibold text-text-primary">Analytiques & rapports</h2>
-                    </div>
-                    <ExportButton orders={orders} products={productsList} type="all" />
-                  </div>
-                  <StatsRangePicker
-                    value={statsPreset}
-                    onChange={setStatsPreset}
-                    startDate={statsRange.start}
-                    endDate={statsRange.end}
-                  />
-                  {statsError && (
-                    <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-                      {statsError}
-                    </div>
-                  )}
-                  {statsLoading && (
-                    <div className="rounded-2xl border border-brand-border bg-white px-4 py-3 text-sm text-text-muted shadow-card-sm">
-                      Chargement des statistiques...
-                    </div>
-                  )}
-                  {!statsLoading && dashboardStats && <AnalyticsSection stats={dashboardStats} />}
-                </div>
-              )}
-            </div>
+            )}
           </div>
         </div>
-      </div>
+      </header>
 
+      {/* Toast Messages */}
+      {(successMessage || productError) && (
+        <div className="fixed top-20 left-1/2 z-50 -translate-x-1/2 animate-fade-in">
+          <div className={`
+            rounded-xl px-5 py-3 shadow-card-md
+            ${successMessage
+              ? 'bg-emerald-600 text-white'
+              : 'bg-red-600 text-white'
+            }
+          `}>
+            <p className="text-sm font-semibold">{successMessage || productError}</p>
+          </div>
+        </div>
+      )}
+
+      {/* Main Content */}
+      <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+
+        {/* Dashboard Tab */}
+        {activeTab === 'dashboard' && (
+          <div className="space-y-8 animate-fade-in">
+            {/* Welcome Section */}
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+              <div>
+                <p className="text-sm text-text-muted">Bienvenue,</p>
+                <h1 className="mt-1 text-3xl font-black tracking-tight text-text-primary sm:text-4xl">
+                  {sellerProfile?.provider_name || sellerProfile?.full_name || 'Votre Boutique'}
+                </h1>
+              </div>
+              <StatsRangePicker
+                value={statsPreset}
+                onChange={setStatsPreset}
+                startDate={statsRange.start}
+                endDate={statsRange.end}
+              />
+            </div>
+
+            {/* Stats Grid */}
+            {statsLoading ? (
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                {[...Array(4)].map((_, i) => (
+                  <div key={i} className="h-32 animate-pulse rounded-2xl bg-brand-border/30" />
+                ))}
+              </div>
+            ) : dashboardStats && (
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                <StatCard
+                  label="Revenu Total"
+                  value={formatCurrency(dashboardStats.totalRevenue)}
+                  {...getTrendProps(dashboardStats.trend.totalRevenue)}
+                  variant="primary"
+                />
+                <StatCard
+                  label="Commandes"
+                  value={dashboardStats.totalOrders}
+                  {...getTrendProps(dashboardStats.trend.totalOrders)}
+                />
+                <StatCard
+                  label="En Attente"
+                  value={dashboardStats.pendingOrders}
+                  variant={dashboardStats.pendingOrders > 0 ? 'warning' : 'default'}
+                />
+                <StatCard
+                  label="Produits Actifs"
+                  value={dashboardStats.totalProducts}
+                />
+              </div>
+            )}
+
+            {/* Quick Actions */}
+            <section>
+              <h2 className="mb-4 text-lg font-bold text-text-primary">Actions Rapides</h2>
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                <ActionButton
+                  title="Nouveau Produit"
+                  description="Ajouter un article au catalogue"
+                  onClick={handleAddProduct}
+                  variant="primary"
+                />
+                <ActionButton
+                  title="Commandes"
+                  description="Gérer les commandes en cours"
+                  onClick={() => setActiveTab('orders')}
+                />
+                <ActionButton
+                  title="Inventaire"
+                  description="Modifier stocks et prix"
+                  onClick={() => setActiveTab('products')}
+                />
+                {canAccessB2B() && (
+                  <ActionButton
+                    title="Offre B2B"
+                    description="Créer une offre grossiste"
+                    onClick={() => setIsCreateOfferModalOpen(true)}
+                  />
+                )}
+              </div>
+            </section>
+
+            {/* Recent Orders Preview */}
+            <section className="rounded-2xl border border-brand-border bg-white p-6">
+              <div className="mb-4 flex items-center justify-between">
+                <h2 className="text-lg font-bold text-text-primary">Commandes Récentes</h2>
+                <button
+                  onClick={() => setActiveTab('orders')}
+                  className="text-sm font-semibold text-brand-dark hover:underline"
+                >
+                  Voir tout
+                </button>
+              </div>
+              <OrdersTable
+                orders={orders.slice(0, 5)}
+                onUpdateStatus={handleUpdateOrderStatus}
+                onViewDetails={handleViewOrderDetails}
+              />
+            </section>
+          </div>
+        )}
+
+        {/* Orders Tab */}
+        {activeTab === 'orders' && (
+          <div className="space-y-6 animate-fade-in">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <h1 className="text-2xl font-black text-text-primary">Gestion des Commandes</h1>
+                <p className="mt-1 text-sm text-text-muted">
+                  {filteredOrders.length} commande{filteredOrders.length !== 1 ? 's' : ''}
+                </p>
+              </div>
+              <ExportButton orders={filteredOrders} products={productsList} type="orders" />
+            </div>
+
+            <div className="rounded-2xl border border-brand-border bg-white p-6">
+              <OrderFilters
+                statusFilter={statusFilter}
+                paymentFilter={paymentFilter}
+                onStatusFilterChange={setStatusFilter}
+                onPaymentFilterChange={setPaymentFilter}
+              />
+              <div className="mt-6">
+                <OrdersTable
+                  orders={filteredOrders}
+                  onUpdateStatus={handleUpdateOrderStatus}
+                  onViewDetails={handleViewOrderDetails}
+                />
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Products Tab */}
+        {activeTab === 'products' && (
+          <div className="space-y-6 animate-fade-in">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <h1 className="text-2xl font-black text-text-primary">Catalogue Produits</h1>
+                <p className="mt-1 text-sm text-text-muted">
+                  {productsList.length} produit{productsList.length !== 1 ? 's' : ''} actif{productsList.length !== 1 ? 's' : ''}
+                </p>
+              </div>
+              <div className="flex gap-3">
+                <ExportButton orders={orders} products={productsList} type="products" />
+                <button
+                  onClick={handleAddProduct}
+                  className="rounded-xl bg-brand-dark px-5 py-2.5 text-sm font-bold text-brand-primary transition-all hover:bg-black"
+                >
+                  Ajouter un produit
+                </button>
+              </div>
+            </div>
+
+            <ProductManagement
+              products={productsList}
+              onAddProduct={handleAddProduct}
+              onEditProduct={handleEditProduct}
+              onDeleteProduct={handleDeleteProduct}
+            />
+          </div>
+        )}
+
+        {/* B2B Tab */}
+        {activeTab === 'b2b' && canAccessB2B() && (
+          <div className="space-y-6 animate-fade-in">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <h1 className="text-2xl font-black text-text-primary">Mes Offres B2B</h1>
+                <p className="mt-1 text-sm text-text-muted">
+                  Gérez vos offres pour grossistes et fournisseurs
+                </p>
+              </div>
+              <button
+                onClick={() => setIsCreateOfferModalOpen(true)}
+                className="rounded-xl bg-brand-dark px-5 py-2.5 text-sm font-bold text-brand-primary transition-all hover:bg-black"
+              >
+                Nouvelle offre B2B
+              </button>
+            </div>
+
+            {/* B2B Stats */}
+            {b2bStats && (
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                <StatCard label="Offres Actives" value={b2bStats.active_offers_count || 0} />
+                <StatCard label="Réponses Reçues" value={b2bStats.total_responses_count || 0} />
+                <StatCard label="Offres Vendues" value={b2bStats.sold_offers_count || 0} variant="success" />
+                <StatCard
+                  label="Meilleure Enchère"
+                  value={b2bStats.highest_bid ? `${b2bStats.highest_bid} DZD` : '—'}
+                />
+              </div>
+            )}
+
+            {/* B2B Offers Grid */}
+            {b2bLoading ? (
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+                {[...Array(3)].map((_, i) => (
+                  <div key={i} className="h-64 animate-pulse rounded-2xl bg-brand-border/30" />
+                ))}
+              </div>
+            ) : b2bOffers.length > 0 ? (
+              <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                {b2bOffers.map((offer) => (
+                  <div key={offer.id} className="relative">
+                    <OfferCard
+                      offer={offer}
+                      onViewDetails={handleViewB2BDetails}
+                      onMakeOffer={() => {}}
+                    />
+                    <button
+                      onClick={() => handleDeleteB2BOffer(offer.id)}
+                      className="absolute right-4 top-4 rounded-lg bg-red-600 px-3 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-red-700"
+                    >
+                      Supprimer
+                    </button>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="rounded-2xl border-2 border-dashed border-brand-border bg-white/50 px-6 py-16 text-center">
+                <p className="text-lg font-semibold text-text-muted">Aucune offre B2B</p>
+                <p className="mt-2 text-sm text-text-muted">
+                  Créez votre première offre pour commencer
+                </p>
+                <button
+                  onClick={() => setIsCreateOfferModalOpen(true)}
+                  className="mt-6 rounded-xl bg-brand-dark px-6 py-3 text-sm font-bold text-brand-primary transition-all hover:bg-black"
+                >
+                  Créer une offre
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Analytics Tab */}
+        {activeTab === 'analytics' && (
+          <div className="space-y-6 animate-fade-in">
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <h1 className="text-2xl font-black text-text-primary">Analytiques</h1>
+                <p className="mt-1 text-sm text-text-muted">
+                  Suivez vos performances de vente
+                </p>
+              </div>
+              <div className="flex gap-3">
+                <StatsRangePicker
+                  value={statsPreset}
+                  onChange={setStatsPreset}
+                  startDate={statsRange.start}
+                  endDate={statsRange.end}
+                />
+                <ExportButton orders={orders} products={productsList} type="all" />
+              </div>
+            </div>
+
+            {statsLoading ? (
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                {[...Array(8)].map((_, i) => (
+                  <div key={i} className="h-32 animate-pulse rounded-2xl bg-brand-border/30" />
+                ))}
+              </div>
+            ) : dashboardStats && (
+              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                <StatCard
+                  label="Revenu Total"
+                  value={formatCurrency(dashboardStats.totalRevenue)}
+                  {...getTrendProps(dashboardStats.trend.totalRevenue)}
+                  variant="primary"
+                />
+                <StatCard
+                  label="Revenu Mensuel"
+                  value={formatCurrency(dashboardStats.monthlyRevenue)}
+                  {...getTrendProps(dashboardStats.trend.monthlyRevenue)}
+                />
+                <StatCard
+                  label="Commandes Totales"
+                  value={dashboardStats.totalOrders}
+                  {...getTrendProps(dashboardStats.trend.totalOrders)}
+                />
+                <StatCard
+                  label="Taux de Réussite"
+                  value={`${Math.round(dashboardStats.completionRate)}%`}
+                  {...getTrendProps(dashboardStats.trend.completionRate)}
+                  variant="success"
+                />
+                <StatCard label="En Attente" value={dashboardStats.pendingOrders} />
+                <StatCard label="En Traitement" value={dashboardStats.processingOrders} />
+                <StatCard label="Complétées" value={dashboardStats.completedOrders} variant="success" />
+                <StatCard
+                  label="Stock Faible"
+                  value={dashboardStats.lowStockProducts}
+                  variant={dashboardStats.lowStockProducts > 0 ? 'warning' : 'default'}
+                />
+              </div>
+            )}
+          </div>
+        )}
+      </main>
+
+      {/* Modals */}
       <AddProductModal
         isOpen={isAddProductModalOpen}
         onClose={() => setIsAddProductModalOpen(false)}

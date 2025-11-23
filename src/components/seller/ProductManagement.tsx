@@ -39,16 +39,6 @@ export function ProductManagement({
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-end">
-        <button
-          onClick={onAddProduct}
-          className="inline-flex items-center gap-2 rounded-full bg-brand-dark px-6 py-3 text-sm font-semibold text-text-inverted transition hover:bg-black"
-        >
-          <span className="material-symbols-outlined text-base">add</span>
-          Ajouter un produit
-        </button>
-      </div>
-
       <div className="rounded-3xl border border-brand-border bg-white/95 p-6 shadow-card-sm">
         <div className="mb-6">
           <div className="max-w-xs">
