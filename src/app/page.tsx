@@ -6,7 +6,6 @@ import Image from 'next/image'
 import { HeroSection } from '@/components/HeroSection'
 import { ProductGrid } from '@/components/ProductGrid'
 import { ShopFilters } from '@/components/ShopFilters'
-import { ProductControls } from '@/components/ProductControls'
 import {
   womenPerfumes,
   type FilterState,
@@ -311,14 +310,6 @@ export default function HomePage(): JSX.Element {
               })}
             </div>
           </div>
-
-          <ProductControls
-            productCount={sortedProducts.length}
-            displayMode={displayMode}
-            onDisplayModeChange={setDisplayMode}
-            sortOption={sortOption}
-            onSortChange={setSortOption}
-          />
 
           {isLoadingProducts ? (
             <div className="rounded-3xl border border-brand-border bg-white/80 py-12 text-center text-text-muted shadow-card-sm">
