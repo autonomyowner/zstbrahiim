@@ -87,9 +87,6 @@ export function CustomerOrderHistory({ orders }: CustomerOrderHistoryProps) {
     return (
       <div className="rounded-3xl border border-brand-border bg-white/95 p-8 text-center shadow-card-sm">
         <div className="text-text-muted">
-          <span className="material-symbols-outlined mx-auto mb-4 block text-4xl text-brand-dark/60">
-            shopping_bag
-          </span>
           <p className="text-lg font-semibold text-text-primary">Aucune commande</p>
           <p className="mt-2 text-sm">Vous n&apos;avez pas encore passé de commande.</p>
         </div>
