@@ -27,6 +27,22 @@ const PromoBadge = () => (
   </span>
 )
 
+const ImageIcon = ({ className = '' }: { className?: string }) => (
+  <svg
+    viewBox="0 0 24 24"
+    className={className}
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="2"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+  >
+    <rect x="3" y="3" width="18" height="18" rx="2" ry="2" />
+    <circle cx="8.5" cy="8.5" r="1.5" />
+    <polyline points="21 15 16 10 5 21" />
+  </svg>
+)
+
 const VideoToggleButton = ({
   label,
   isActive,
@@ -47,7 +63,7 @@ const VideoToggleButton = ({
     aria-label={label}
   >
     {isActive ? (
-      <span className="material-symbols-outlined text-base">image</span>
+      <ImageIcon className="w-4 h-4" />
     ) : (
       <TrianglePlayIcon />
     )}
@@ -75,16 +91,19 @@ export const ProductGrid = ({ products, displayMode }: ProductGridProps): JSX.El
 
     return (
       <div
-        className={`relative aspect-[9/16] overflow-hidden rounded-[32px] border border-brand-border bg-neutral-950/80 ${containerSize}`}
+        className={`relative aspect-[3/4] sm:aspect-[4/5] lg:aspect-[9/16] overflow-hidden rounded-2xl sm:rounded-3xl lg:rounded-[32px] border border-brand-border bg-neutral-950/80 ${containerSize} transition-all duration-300`}
       >
         {product.isPromo && (
-          <div className="absolute left-4 top-4 z-10">
-            <PromoBadge />
+          <div className="absolute left-2 top-2 sm:left-3 sm:top-3 lg:left-4 lg:top-4 z-10">
+            <span className="inline-flex items-center gap-0.5 sm:gap-1 rounded-full bg-brand-dark px-2 py-0.5 sm:px-3 sm:py-1 text-[9px] sm:text-[11px] font-semibold uppercase tracking-[0.2em] sm:tracking-[0.3em] text-text-inverted shadow-lg">
+              Promo
+              <span className="material-symbols-outlined text-xs sm:text-sm">bolt</span>
+            </span>
           </div>
         )}
         {hasVideo && (
           <VideoToggleButton
-            label={isVideoActive ? 'Photo' : 'Regarder'}
+            label={isVideoActive ? 'Voir la photo' : 'Regarder la vidéo'}
             isActive={isVideoActive}
             onClick={() => handleVideoToggle(product.id, hasVideo)}
           />
@@ -111,25 +130,51 @@ export const ProductGrid = ({ products, displayMode }: ProductGridProps): JSX.El
               src={product.image}
               alt={product.name}
               fill
-              className="object-cover"
-              sizes="(max-width: 768px) 80vw, 20vw"
+              className="object-cover transition-transform duration-500 group-hover:scale-105"
+              sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
             />
           </div>
         )}
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent h-2/5" />
-        <div className="absolute inset-x-3 bottom-3 rounded-2xl bg-white/70 p-4 text-black shadow-lg backdrop-blur-md">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.25em] text-brand-dark">
-            {product.category}
-          </p>
-          <h3 className="mt-1 text-lg font-black text-neutral-900 line-clamp-1">{product.name}</h3>
-          <p className="mt-1 text-xs text-neutral-700 line-clamp-2">{product.description}</p>
-          <div className="mt-3 flex items-center justify-between">
-            <div className="flex flex-col">
-              <span className="text-xl font-black text-neutral-900">{formatPrice(product.price)}</span>
-              {product.originalPrice && product.originalPrice > product.price && (
-                <span className="text-xs text-neutral-500 line-through">{formatPrice(product.originalPrice)}</span>
-              )}
+
+        {/* Subtle gradient overlay for better text readability */}
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent h-1/3" />
+
+        {/* Minimal info overlay - only shows on hover on desktop */}
+        <div className="absolute inset-x-0 bottom-0 p-2 sm:p-3 lg:p-4 transition-all duration-300">
+          {/* Category badge - always visible */}
+          <div className="mb-1.5 sm:mb-2">
+            <span className="inline-block rounded-md bg-white/90 backdrop-blur-sm px-2 py-0.5 sm:px-2.5 sm:py-1 text-[9px] sm:text-[10px] font-bold uppercase tracking-[0.25em] text-brand-dark shadow-sm">
+              {product.category}
+            </span>
+          </div>
+
+          {/* Product info - compact and elegant */}
+          <div className="rounded-xl sm:rounded-2xl bg-white/85 backdrop-blur-md p-2 sm:p-3 shadow-xl transition-all duration-300 group-hover:bg-white/95">
+            <div className="flex items-start justify-between gap-2">
+              <div className="flex-1 min-w-0">
+                <h3 className="text-xs sm:text-sm lg:text-base font-black text-neutral-900 line-clamp-1 leading-tight">
+                  {product.name}
+                </h3>
+                <p className="mt-0.5 text-[9px] sm:text-[10px] text-neutral-600 line-clamp-1 leading-snug opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                  {product.description}
+                </p>
+              </div>
+
+              {/* Price - prominent */}
+              <div className="flex flex-col items-end flex-shrink-0">
+                <span className="text-sm sm:text-base lg:text-lg font-black text-neutral-900 whitespace-nowrap">
+                  {(product.price / 1000).toFixed(0)}K
+                  <span className="text-[9px] sm:text-[10px] font-medium ml-0.5">DA</span>
+                </span>
+                {product.originalPrice && product.originalPrice > product.price && (
+                  <span className="text-[9px] sm:text-[10px] text-neutral-500 line-through whitespace-nowrap">
+                    {(product.originalPrice / 1000).toFixed(0)}K DA
+                  </span>
+                )}
+              </div>
             </div>
+
+            {/* Video button - integrated into bottom bar */}
             {hasVideo && (
               <button
                 type="button"
@@ -138,14 +183,20 @@ export const ProductGrid = ({ products, displayMode }: ProductGridProps): JSX.El
                   event.stopPropagation()
                   handleVideoToggle(product.id, hasVideo)
                 }}
-            className="pointer-events-auto inline-flex items-center justify-center rounded-full bg-neutral-900 p-3 text-white shadow-md transition hover:bg-neutral-800"
-            aria-label={isVideoActive ? 'Voir la photo' : 'Regarder la vidéo'}
+                className="pointer-events-auto mt-2 w-full flex items-center justify-center gap-1.5 rounded-lg bg-neutral-900 px-3 py-1.5 sm:py-2 text-white shadow-md transition hover:bg-neutral-800 hover:shadow-lg"
+                aria-label={isVideoActive ? 'Voir la photo' : 'Regarder la vidéo'}
               >
-            {isVideoActive ? (
-              <span className="material-symbols-outlined text-base">image</span>
-            ) : (
-              <TrianglePlayIcon />
-            )}
+                {isVideoActive ? (
+                  <>
+                    <ImageIcon className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                    <span className="text-[10px] sm:text-xs font-semibold uppercase tracking-wider">Photo</span>
+                  </>
+                ) : (
+                  <>
+                    <TrianglePlayIcon className="scale-90 sm:scale-100" />
+                    <span className="text-[10px] sm:text-xs font-semibold uppercase tracking-wider">Vidéo</span>
+                  </>
+                )}
               </button>
             )}
           </div>
@@ -171,12 +222,12 @@ export const ProductGrid = ({ products, displayMode }: ProductGridProps): JSX.El
   }
 
   return (
-    <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+    <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 lg:gap-5 xl:grid-cols-4">
       {products.map((product) => (
         <Link
           key={product.id}
           href={`/products/${product.id}`}
-          className="group block transition-transform duration-300 hover:-translate-y-2"
+          className="group block transition-transform duration-300 hover:-translate-y-1 sm:hover:-translate-y-2"
         >
           {renderMedia(product, 'grid')}
         </Link>
