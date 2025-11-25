@@ -2,11 +2,12 @@
 
 import { useState, useEffect } from 'react'
 import type { Product } from '@/data/products'
+import type { AdaptedProduct } from '@/lib/supabase/products'
 import { supabase } from '@/lib/supabase/client'
 import { createOrderFromCheckout } from '@/lib/supabase/orders'
 
 type CheckoutModalProps = {
-  product: Product
+  product: Product | AdaptedProduct
   quantity: number
   isOpen: boolean
   onClose: () => void

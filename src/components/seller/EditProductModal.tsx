@@ -3,6 +3,7 @@
 import Image from 'next/image'
 import { useState, useEffect } from 'react'
 import { type Product, type ProductType, type ProductNeed } from '@/data/products'
+import { type AdaptedProduct } from '@/lib/supabase/products'
 import { type ProductFormData, type ProductVideoFormValue } from './AddProductModal'
 import { ImageUpload } from '@/components/ImageUpload'
 import { extractVideoMetadata } from '@/utils/video'
@@ -13,7 +14,7 @@ import {
 
 type EditProductModalProps = {
   isOpen: boolean
-  product: Product | null
+  product: Product | AdaptedProduct | null
   onClose: () => void
   onSubmit: (
     productId: string,
@@ -52,8 +53,8 @@ export function EditProductModal({ isOpen, product, onClose, onSubmit }: EditPro
         price: product.price,
         originalPrice: product.originalPrice,
         category: product.category,
-        productType: product.productType,
-        need: product.need,
+        productType: product.productType as ProductType,
+        need: (product.need as ProductNeed) || undefined,
         inStock: product.inStock,
         isPromo: product.isPromo,
         isNew: product.isNew || false,
@@ -423,7 +424,7 @@ export function EditProductModal({ isOpen, product, onClose, onSubmit }: EditPro
                         <p className="text-xs text-kitchen-lux-dark-green-500">
                           {videoSelection
                             ? `${Math.round(videoSelection.file.size / 1024)} Ko`
-                            : product.video
+                            : product.video?.fileSizeBytes
                             ? `${Math.round(product.video.fileSizeBytes / 1024)} Ko`
                             : ''}
                         </p>

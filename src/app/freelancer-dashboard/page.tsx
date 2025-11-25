@@ -7,10 +7,48 @@ import { EditServiceModal } from '@/components/freelancer/EditServiceModal'
 import { getFreelanceServices, createService, updateService, deleteService } from '@/lib/supabase/services'
 import { isFreelancer } from '@/lib/supabase/auth'
 import { supabase } from '@/lib/supabase/client'
+import type { FreelanceServiceWithDetails } from '@/lib/supabase/types'
+
+// Adapted service type for frontend display
+type AdaptedService = {
+  id: string
+  slug: string
+  providerId: string
+  serviceTitle: string
+  category: string
+  experienceLevel: string
+  price: number
+  priceType: string
+  shortDescription: string
+  description: string
+  skills: string[]
+  deliveryTime: string
+  revisions: string
+  languages: string[]
+  responseTime: string
+  availability: string
+  featured: boolean | null
+  verified: boolean | null
+  topRated: boolean | null
+  rating: number
+  reviewsCount: number
+  completedProjects: number
+  portfolio: Array<{
+    title: string
+    description: string
+    imageUrl: string
+    displayOrder: number
+  }>
+  provider?: {
+    providerName: string | null
+    providerAvatar: string | null
+    bio: string | null
+  }
+}
 
 export default function FreelancerDashboardPage() {
   const router = useRouter()
-  const [services, setServices] = useState<any[]>([])
+  const [services, setServices] = useState<AdaptedService[]>([])
   const [loading, setLoading] = useState(true)
   const [authChecking, setAuthChecking] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -18,7 +56,7 @@ export default function FreelancerDashboardPage() {
 
   const [isAddServiceModalOpen, setIsAddServiceModalOpen] = useState(false)
   const [isEditServiceModalOpen, setIsEditServiceModalOpen] = useState(false)
-  const [selectedService, setSelectedService] = useState<any | null>(null)
+  const [selectedService, setSelectedService] = useState<AdaptedService | null>(null)
 
   // Check authentication
   useEffect(() => {
@@ -49,8 +87,8 @@ export default function FreelancerDashboardPage() {
         if (!user) return
 
         // Fetch only this freelancer's services
-        const allServices = await getFreelanceServices()
-        const myServices = allServices.filter((s: any) => s.providerId === user.id)
+        const allServices = await getFreelanceServices() as AdaptedService[]
+        const myServices = allServices.filter((s) => s.providerId === user.id)
         setServices(myServices)
       } catch (error) {
         console.error('Error fetching services:', error)
@@ -104,8 +142,8 @@ export default function FreelancerDashboardPage() {
       
       if (serviceId) {
         setSuccess('Service créé avec succès!')
-        const updatedServices = await getFreelanceServices()
-        const myServices = updatedServices.filter((s: any) => s.providerId === user.id)
+        const updatedServices = await getFreelanceServices() as AdaptedService[]
+        const myServices = updatedServices.filter((s) => s.providerId === user.id)
         setServices(myServices)
         setTimeout(() => setSuccess(null), 3000)
       }
@@ -115,7 +153,7 @@ export default function FreelancerDashboardPage() {
     }
   }
 
-  const handleEditService = (service: any) => {
+  const handleEditService = (service: AdaptedService) => {
     setSelectedService(service)
     setIsEditServiceModalOpen(true)
   }
@@ -143,8 +181,8 @@ export default function FreelancerDashboardPage() {
       if (updated) {
         setSuccess('Service modifié avec succès!')
         const { data: { user } } = await supabase.auth.getUser()
-        const updatedServices = await getFreelanceServices()
-        const myServices = updatedServices.filter((s: any) => s.providerId === user?.id)
+        const updatedServices = await getFreelanceServices() as AdaptedService[]
+        const myServices = updatedServices.filter((s) => s.providerId === user?.id)
         setServices(myServices)
         setTimeout(() => setSuccess(null), 3000)
       }

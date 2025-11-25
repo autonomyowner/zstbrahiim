@@ -9,6 +9,7 @@ import type {
   UpdateProductRequest,
   ProductVideo,
   SellerCategory,
+  ProductCategoryType,
 } from './types'
 import { deleteProductVideo } from './productVideos'
 
@@ -16,12 +17,55 @@ type ProductQueryOptions = {
   sellerCategories?: SellerCategory[]
 }
 
+// Adapted product type for frontend display (camelCase)
+export type AdaptedProduct = {
+  id: string
+  slug: string
+  name: string
+  brand: string
+  price: number
+  originalPrice?: number
+  image: string
+  images: string[]
+  category: string
+  productType: string
+  product_category?: ProductCategoryType
+  need: string | null
+  inStock: boolean
+  isPromo: boolean
+  rating?: number
+  isNew?: boolean | null
+  description: string
+  benefits: string[]
+  ingredients: string
+  usageInstructions: string
+  deliveryEstimate: string
+  viewersCount: number
+  countdownEndDate: string | null
+  createdAt: string
+  seller_id: string | null
+  sellerCategory: SellerCategory | null
+  minQuantity: number
+  additionalInfo: {
+    shipping: string
+    returns: string
+    payment: string
+    exclusiveOffers: string | null
+  }
+  video?: {
+    url: string | undefined
+    thumbnailUrl: string | undefined
+    durationSeconds: number | undefined
+    fileSizeBytes: number | undefined
+  }
+}
+
 // Adapter to convert database format to frontend format
 const adaptProduct = (
   dbProduct: Product,
   images: { image_url: string }[],
   video?: Partial<ProductVideo> | null
-): any => {
+): AdaptedProduct => {
   const imageUrls = images.map((img) => img.image_url)
   const enhancedVideo = video
     ? {
@@ -44,7 +88,7 @@ const adaptProduct = (
     images: imageUrls,
     category: dbProduct.category,
     productType: dbProduct.product_type,
-    product_category: (dbProduct as any).product_category, // Add for filtering
+    product_category: dbProduct.product_category, // Add for filtering
     need: dbProduct.need,
     inStock: dbProduct.in_stock,
     isPromo: dbProduct.is_promo,
@@ -57,8 +101,10 @@ const adaptProduct = (
     deliveryEstimate: dbProduct.delivery_estimate,
     viewersCount: dbProduct.viewers_count,
     countdownEndDate: dbProduct.countdown_end_date,
+    createdAt: dbProduct.created_at,
     seller_id: dbProduct.seller_id || null, // Add for checkout
     sellerCategory: dbProduct.seller_category ?? null,
+    minQuantity: dbProduct.min_quantity ?? 1,
     additionalInfo: {
       shipping: dbProduct.shipping_info,
       returns: dbProduct.returns_info,
@@ -73,7 +119,7 @@ const adaptProduct = (
 export const getProducts = async (
   filters?: ProductFilters,
   options?: ProductQueryOptions
-): Promise<any[]> => {
+): Promise<AdaptedProduct[]> => {
   try {
     let query = supabase
       .from('products')
@@ -156,13 +202,17 @@ export const getProducts = async (
     }
 
     // Adapt products to frontend format
-    return (data || []).map((product: any) =>
-      adaptProduct(
-        product,
-        (product as any).product_images || [],
-        product.product_videos?.[0] || null
+    return (data || []).map((product) => {
+      const typedProduct = product as unknown as Product & {
+        product_images?: { image_url: string; is_primary: boolean; display_order: number }[]
+        product_videos?: Partial<ProductVideo>[]
+      }
+      return adaptProduct(
+        typedProduct,
+        typedProduct.product_images || [],
+        typedProduct.product_videos?.[0] || null
       )
-    )
+    })
   } catch (error) {
     console.error('Error in getProducts:', error)
     return []
@@ -170,7 +220,7 @@ export const getProducts = async (
 }
 
 // Get only the authenticated seller's products (for seller dashboard)
-export const getSellerProducts = async (filters?: ProductFilters): Promise<any[]> => {
+export const getSellerProducts = async (filters?: ProductFilters): Promise<AdaptedProduct[]> => {
   try {
     // Get current user
     const { data: { user } } = await supabase.auth.getUser()
@@ -243,10 +293,10 @@ export const getSellerProducts = async (filters?: ProductFilters): Promise<any[]
     }
 
     // Get product images/videos separately from dedicated views/tables
-    const productIds = (data || []).map((p: any) => p.id)
-    
-    const productImagesMap: Record<string, any[]> = {}
-    const productVideosMap: Record<string, any | null> = {}
+    const productIds = (data || []).map((p) => (p as { id: string }).id)
+
+    const productImagesMap: Record<string, { image_url: string }[]> = {}
+    const productVideosMap: Record<string, Partial<ProductVideo> | null> = {}
     
     if (productIds.length > 0) {
       const [{ data: images, error: imagesError }, { data: videos, error: videosError }] =
@@ -260,11 +310,12 @@ export const getSellerProducts = async (filters?: ProductFilters): Promise<any[]
         ])
 
       if (!imagesError && images) {
-        images.forEach((img: any) => {
-          if (!productImagesMap[img.product_id]) {
-            productImagesMap[img.product_id] = []
+        images.forEach((img) => {
+          const typedImg = img as { product_id: string; image_url: string }
+          if (!productImagesMap[typedImg.product_id]) {
+            productImagesMap[typedImg.product_id] = []
           }
-          productImagesMap[img.product_id].push(img)
+          productImagesMap[typedImg.product_id].push(typedImg)
         })
       }
 
@@ -276,9 +327,10 @@ export const getSellerProducts = async (filters?: ProductFilters): Promise<any[]
     }
     
     // Adapt products to frontend format with their images & video
-    return (data || []).map((product: any) =>
-      adaptProduct(product, productImagesMap[product.id] || [], productVideosMap[product.id])
-    )
+    return (data || []).map((product) => {
+      const typedProduct = product as Product
+      return adaptProduct(typedProduct, productImagesMap[typedProduct.id] || [], productVideosMap[typedProduct.id])
+    })
   } catch (error) {
     console.error('Error in getSellerProducts:', error)
     return []
@@ -286,7 +338,7 @@ export const getSellerProducts = async (filters?: ProductFilters): Promise<any[]
 }
 
 // Get women's perfumes
-export const getWomenPerfumes = async (): Promise<any[]> => {
+export const getWomenPerfumes = async (): Promise<AdaptedProduct[]> => {
   return getProducts({
     product_category: 'perfume',
     product_type: 'Parfum Femme',
@@ -294,7 +346,7 @@ export const getWomenPerfumes = async (): Promise<any[]> => {
 }
 
 // Get men's perfumes
-export const getMenPerfumes = async (): Promise<any[]> => {
+export const getMenPerfumes = async (): Promise<AdaptedProduct[]> => {
   return getProducts({
     product_category: 'perfume',
     product_type: 'Parfum Homme',
@@ -302,14 +354,14 @@ export const getMenPerfumes = async (): Promise<any[]> => {
 }
 
 // Get winter clothes
-export const getWinterClothes = async (): Promise<any[]> => {
+export const getWinterClothes = async (): Promise<AdaptedProduct[]> => {
   return getProducts({
     product_category: 'clothing',
   })
 }
 
 // Get product by ID
-export const getProductById = async (id: string): Promise<any | null> => {
+export const getProductById = async (id: string): Promise<AdaptedProduct | null> => {
   try {
     const { data, error } = await supabase
       .from('products')
@@ -342,10 +394,15 @@ export const getProductById = async (id: string): Promise<any | null> => {
     // Increment viewers count
     await incrementViewersCount(id)
 
+    const typedData = data as unknown as Product & {
+      product_images?: { image_url: string }[]
+      product_videos?: Partial<ProductVideo>[]
+    }
+
     return adaptProduct(
-      data,
-      (data as any).product_images || [],
-      data.product_videos?.[0] || null
+      typedData,
+      typedData.product_images || [],
+      typedData.product_videos?.[0] || null
     )
   } catch (error) {
     console.error('Error in getProductById:', error)
@@ -357,7 +414,7 @@ export const getProductById = async (id: string): Promise<any | null> => {
 export const getProductByIdFromDb = getProductById
 
 // Get product by slug
-export const getProductBySlug = async (slug: string): Promise<any | null> => {
+export const getProductBySlug = async (slug: string): Promise<AdaptedProduct | null> => {
   try {
     const { data, error } = await supabase
       .from('products')
@@ -390,10 +447,15 @@ export const getProductBySlug = async (slug: string): Promise<any | null> => {
     // Increment viewers count
     await incrementViewersCount(data.id)
 
+    const typedData = data as unknown as Product & {
+      product_images?: { image_url: string }[]
+      product_videos?: Partial<ProductVideo>[]
+    }
+
     return adaptProduct(
-      data,
-      (data as any).product_images || [],
-      data.product_videos?.[0] || null
+      typedData,
+      typedData.product_images || [],
+      typedData.product_videos?.[0] || null
     )
   } catch (error) {
     console.error('Error in getProductBySlug:', error)
@@ -423,7 +485,7 @@ export const incrementViewersCount = async (productId: string): Promise<void> =>
 }
 
 // Search products
-export const searchProducts = async (query: string, filters?: ProductFilters): Promise<any[]> => {
+export const searchProducts = async (query: string, filters?: ProductFilters): Promise<AdaptedProduct[]> => {
   try {
     let dbQuery = supabase
       .from('products')
@@ -467,13 +529,17 @@ export const searchProducts = async (query: string, filters?: ProductFilters): P
       throw error
     }
 
-    return (data || []).map((product: any) =>
-      adaptProduct(
-        product,
-        (product as any).product_images || [],
-        product.product_videos?.[0] || null
+    return (data || []).map((product) => {
+      const typedProduct = product as unknown as Product & {
+        product_images?: { image_url: string }[]
+        product_videos?: Partial<ProductVideo>[]
+      }
+      return adaptProduct(
+        typedProduct,
+        typedProduct.product_images || [],
+        typedProduct.product_videos?.[0] || null
       )
-    )
+    })
   } catch (error) {
     console.error('Error in searchProducts:', error)
     return []
@@ -481,7 +547,7 @@ export const searchProducts = async (query: string, filters?: ProductFilters): P
 }
 
 // Sort products
-export const sortProducts = (products: any[], sortBy: SortOption): any[] => {
+export const sortProducts = (products: AdaptedProduct[], sortBy: SortOption): AdaptedProduct[] => {
   const sorted = [...products]
 
   switch (sortBy) {
@@ -628,7 +694,7 @@ export const getBrands = async (): Promise<string[]> => {
       return []
     }
 
-    const uniqueBrands = [...new Set(data?.map((p: any) => p.brand) || [])]
+    const uniqueBrands = [...new Set(data?.map((p) => (p as { brand: string }).brand) || [])]
     return uniqueBrands.filter((brand): brand is string => typeof brand === 'string')
   } catch (error) {
     console.error('Error in getBrands:', error)

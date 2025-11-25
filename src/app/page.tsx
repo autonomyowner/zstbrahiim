@@ -96,9 +96,9 @@ export default function HomePage(): JSX.Element {
         if (matchesCategory(p.category, filters.category)) {
           return true
         }
-        const dbProduct = p as any
-        if (dbProduct.product_category) {
-          return dbProduct.product_category === filters.category
+        // Check product_category for database products
+        if ('product_category' in p && p.product_category) {
+          return p.product_category === filters.category
         }
         return false
       })

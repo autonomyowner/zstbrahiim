@@ -20,8 +20,8 @@ import MyResponsesSection from '@/components/b2b/MyResponsesSection'
 
 export default function B2BMarketplacePage() {
   const router = useRouter()
-  const [user, setUser] = useState<any>(null)
-  const [userProfile, setUserProfile] = useState<any>(null)
+  const [user, setUser] = useState<import('@supabase/supabase-js').User | null>(null)
+  const [userProfile, setUserProfile] = useState<import('@/lib/supabase/types').UserProfile | null>(null)
   const [offers, setOffers] = useState<B2BOfferWithDetails[]>([])
   const [filteredOffers, setFilteredOffers] = useState<B2BOfferWithDetails[]>([])
   const [loading, setLoading] = useState(true)
@@ -44,10 +44,12 @@ export default function B2BMarketplacePage() {
 
   useEffect(() => {
     loadUserAndOffers()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   useEffect(() => {
     applyFiltersAndSort()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [offers, filters, sortBy])
 
   const loadUserAndOffers = async () => {
@@ -313,23 +315,25 @@ export default function B2BMarketplacePage() {
           </div>
 
           {/* User Info Card */}
-          <div className="bg-gray-50 rounded-lg p-4 inline-flex items-center gap-3">
-            <div className="w-10 h-10 bg-brand-primary rounded-full flex items-center justify-center">
-              <span className="text-gray-900 font-bold text-lg">
-                {userProfile.full_name?.charAt(0).toUpperCase() || 'U'}
-              </span>
-            </div>
-            <div>
-              <div className="font-semibold text-gray-900">{userProfile.full_name}</div>
-              <div className="text-sm text-gray-600">
-                {userProfile.seller_category === 'importateur'
-                  ? 'Importateur'
-                  : userProfile.seller_category === 'grossiste'
-                  ? 'Grossiste'
-                  : 'Fournisseur (Détaillant)'}
+          {userProfile && (
+            <div className="bg-gray-50 rounded-lg p-4 inline-flex items-center gap-3">
+              <div className="w-10 h-10 bg-brand-primary rounded-full flex items-center justify-center">
+                <span className="text-gray-900 font-bold text-lg">
+                  {userProfile.full_name?.charAt(0).toUpperCase() || 'U'}
+                </span>
+              </div>
+              <div>
+                <div className="font-semibold text-gray-900">{userProfile.full_name}</div>
+                <div className="text-sm text-gray-600">
+                  {userProfile.seller_category === 'importateur'
+                    ? 'Importateur'
+                    : userProfile.seller_category === 'grossiste'
+                    ? 'Grossiste'
+                    : 'Fournisseur (Détaillant)'}
+                </div>
               </div>
             </div>
-          </div>
+          )}
         </div>
       </div>
 
@@ -410,7 +414,7 @@ export default function B2BMarketplacePage() {
       </div>
 
       {/* Modals */}
-      {canCreateOffers() && (
+      {canCreateOffers() && userProfile?.seller_category && (userProfile.seller_category === 'importateur' || userProfile.seller_category === 'grossiste') && (
         <CreateOfferModal
           isOpen={showCreateModal}
           onClose={() => setShowCreateModal(false)}

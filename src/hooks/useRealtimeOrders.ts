@@ -51,14 +51,12 @@ export function useRealtimeOrders({
         .eq('status', 'pending')
 
       if (fetchError) {
-        console.error('Error fetching pending orders count:', fetchError)
         setError('Failed to fetch pending orders')
         return
       }
 
       setPendingCount(count || 0)
-    } catch (err) {
-      console.error('Error in fetchPendingCount:', err)
+    } catch {
       setError('An error occurred')
     } finally {
       setLoading(false)
@@ -89,8 +87,6 @@ export function useRealtimeOrders({
           filter: `seller_id=eq.${sellerId}`,
         },
         async (payload) => {
-          console.log('Real-time order change:', payload)
-
           // Recalculate pending count based on the event
           if (payload.eventType === 'INSERT') {
             const newOrder = payload.new as Order
@@ -118,10 +114,7 @@ export function useRealtimeOrders({
         }
       )
       .subscribe((status) => {
-        console.log('Real-time subscription status:', status)
-        if (status === 'SUBSCRIBED') {
-          console.log('Successfully subscribed to order changes')
-        } else if (status === 'CHANNEL_ERROR') {
+        if (status === 'CHANNEL_ERROR') {
           setError('Failed to subscribe to real-time updates')
         }
       })

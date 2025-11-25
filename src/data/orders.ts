@@ -3,7 +3,7 @@ export type PaymentStatus = 'pending' | 'paid' | 'failed' | 'refunded'
 export type SellerType = 'retailer' | 'importer' | 'wholesaler'
 
 export type OrderItem = {
-  productId: string
+  productId: string | null
   productName: string
   productImage: string
   quantity: number
@@ -16,7 +16,7 @@ export type Order = {
   orderNumber: string
   customer: {
     name: string
-    email: string
+    email: string | null
     phone: string
     address: string
     wilaya: string
@@ -27,9 +27,9 @@ export type Order = {
   paymentStatus: PaymentStatus
   createdAt: string
   updatedAt: string
-  deliveryDate?: string
-  trackingNumber?: string
-  notes?: string
+  deliveryDate?: string | null
+  trackingNumber?: string | null
+  notes?: string | null
 }
 
 // Mock orders data

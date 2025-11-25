@@ -18,7 +18,7 @@ type Service = {
   revisions: string
   languages: string[]
   responseTime: string
-  portfolio?: Array<{ image: string }>
+  portfolio?: Array<{ image?: string; imageUrl?: string; title?: string; description?: string; displayOrder?: number }>
 }
 
 type EditServiceModalProps = {
@@ -62,7 +62,7 @@ export function EditServiceModal({ isOpen, service, onClose, onSubmit }: EditSer
         revisions: service.revisions,
         languages: service.languages.join(', '),
         responseTime: service.responseTime,
-        portfolioImages: service.portfolio?.map(p => p.image) || [],
+        portfolioImages: service.portfolio?.map(p => p.image || p.imageUrl).filter((url): url is string => !!url) || [],
       })
     }
   }, [service])

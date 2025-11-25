@@ -1,20 +1,38 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import type { Product } from '@/data/products'
+import type { AdaptedProduct } from '@/lib/supabase/products'
+import { getCurrentUserProfile } from '@/lib/supabase/auth'
 import { CountdownTimer } from './CountdownTimer'
 import { QuantitySelector } from './QuantitySelector'
 import { Accordion } from './Accordion'
 import { CheckoutModal } from './CheckoutModal'
 
 type ProductDetailsProps = {
-  product: Product
+  product: Product | AdaptedProduct
 }
 
 export const ProductDetails = ({ product }: ProductDetailsProps): JSX.Element => {
   const [quantity, setQuantity] = useState(1)
   const [isWishlisted, setIsWishlisted] = useState(false)
   const [isCheckoutModalOpen, setIsCheckoutModalOpen] = useState(false)
+  const [maxQuantity, setMaxQuantity] = useState(10)
+
+  // Check if user is fournisseur or grossiste to allow higher quantities
+  useEffect(() => {
+    const checkUserProfile = async () => {
+      try {
+        const profile = await getCurrentUserProfile()
+        if (profile?.seller_category === 'fournisseur' || profile?.seller_category === 'grossiste') {
+          setMaxQuantity(1000) // Allow bulk orders for fournisseurs and grossistes
+        }
+      } catch {
+        // Keep default max of 10 for regular customers
+      }
+    }
+    checkUserProfile()
+  }, [])
 
   const handleBuyNow = (): void => {
     setIsCheckoutModalOpen(true)
@@ -22,7 +40,7 @@ export const ProductDetails = ({ product }: ProductDetailsProps): JSX.Element =>
 
   const handleWishlist = (): void => {
     setIsWishlisted(!isWishlisted)
-    // TODO: Implement wishlist functionality
+    // Note: Wishlist state is local only. Database persistence requires a wishlist table.
   }
 
   return (
@@ -108,12 +126,12 @@ export const ProductDetails = ({ product }: ProductDetailsProps): JSX.Element =>
         {/* Quantity Selector */}
         <div>
           <label className="block text-sm font-semibold text-kitchen-lux-dark-green-800 mb-2">
-            Quantité
+            Quantité {maxQuantity > 10 && <span className="text-xs font-normal text-kitchen-lux-dark-green-600">(max: {maxQuantity})</span>}
           </label>
           <QuantitySelector
             defaultValue={1}
             min={1}
-            max={10}
+            max={maxQuantity}
             onQuantityChange={setQuantity}
           />
         </div>

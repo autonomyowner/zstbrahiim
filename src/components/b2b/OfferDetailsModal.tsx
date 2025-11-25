@@ -39,12 +39,14 @@ export default function OfferDetailsModal({
     if (offer && offer.offer_type === 'auction' && isOpen) {
       loadBidHistory()
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [offer, isOpen])
 
   useEffect(() => {
     if (offer && isOpen && canRespond && !isOwner) {
       checkUserResponse()
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [offer, isOpen, canRespond, isOwner])
 
   const checkUserResponse = async () => {

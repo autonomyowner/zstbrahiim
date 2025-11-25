@@ -3,11 +3,12 @@
 import { useState } from 'react'
 import Image from 'next/image'
 import { type Product } from '@/data/products'
+import { type AdaptedProduct } from '@/lib/supabase/products'
 
 type ProductManagementProps = {
-  products: Product[]
+  products: (Product | AdaptedProduct)[]
   onAddProduct: () => void
-  onEditProduct: (product: Product) => void
+  onEditProduct: (product: Product | AdaptedProduct) => void
   onDeleteProduct: (productId: string) => void
 }
 

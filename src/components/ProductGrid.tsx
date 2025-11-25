@@ -8,6 +8,7 @@ import type { Product } from '@/data/products'
 type ProductGridProps = {
   products: Product[]
   displayMode: 'grid' | 'list'
+  showMinQuantity?: boolean
 }
 
 const formatPrice = (price: number) => `${price.toLocaleString()} DA`
@@ -21,9 +22,8 @@ const TrianglePlayIcon = ({ className = '' }: { className?: string }) => (
 )
 
 const PromoBadge = () => (
-  <span className="inline-flex items-center gap-1 rounded-full bg-brand-dark px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.3em] text-text-inverted">
+  <span className="inline-flex items-center rounded-full bg-brand-dark px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.3em] text-text-inverted">
     Promo
-    <span className="material-symbols-outlined text-sm">bolt</span>
   </span>
 )
 
@@ -71,7 +71,7 @@ const VideoToggleButton = ({
   </button>
 )
 
-export const ProductGrid = ({ products, displayMode }: ProductGridProps): JSX.Element => {
+export const ProductGrid = ({ products, displayMode, showMinQuantity = false }: ProductGridProps): JSX.Element => {
   const [activeVideoId, setActiveVideoId] = useState<string | null>(null)
 
   const handleVideoToggle = (productId: string, hasVideo: boolean) => {
@@ -83,6 +83,7 @@ export const ProductGrid = ({ products, displayMode }: ProductGridProps): JSX.El
     const hasVideo = Boolean(product.video?.url)
     const isVideoActive = activeVideoId === product.id
     const poster = product.video?.thumbnailUrl || product.image
+    const minQty = (product as any).minQuantity || 1
 
     const containerSize =
       variant === 'grid'
@@ -95,9 +96,15 @@ export const ProductGrid = ({ products, displayMode }: ProductGridProps): JSX.El
       >
         {product.isPromo && (
           <div className="absolute left-2 top-2 sm:left-3 sm:top-3 lg:left-4 lg:top-4 z-10">
-            <span className="inline-flex items-center gap-0.5 sm:gap-1 rounded-full bg-brand-dark px-2 py-0.5 sm:px-3 sm:py-1 text-[9px] sm:text-[11px] font-semibold uppercase tracking-[0.2em] sm:tracking-[0.3em] text-text-inverted shadow-lg">
+            <span className="inline-flex items-center rounded-full bg-brand-dark px-2 py-0.5 sm:px-3 sm:py-1 text-[9px] sm:text-[11px] font-semibold uppercase tracking-[0.2em] sm:tracking-[0.3em] text-text-inverted shadow-lg">
               Promo
-              <span className="material-symbols-outlined text-xs sm:text-sm">bolt</span>
+            </span>
+          </div>
+        )}
+        {showMinQuantity && minQty > 1 && (
+          <div className="absolute left-2 top-2 sm:left-3 sm:top-3 lg:left-4 lg:top-4 z-10" style={{ top: product.isPromo ? '2.5rem' : undefined }}>
+            <span className="inline-flex items-center rounded-full bg-amber-500 px-2 py-0.5 sm:px-3 sm:py-1 text-[9px] sm:text-[11px] font-semibold text-white shadow-lg">
+              Min: {minQty} unités
             </span>
           </div>
         )}

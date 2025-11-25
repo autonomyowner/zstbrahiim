@@ -68,6 +68,7 @@ export type Product = {
   updated_at: string
   seller_id?: string | null
   seller_category: SellerCategory | null
+  min_quantity: number
 }
 
 export type ProductImage = {

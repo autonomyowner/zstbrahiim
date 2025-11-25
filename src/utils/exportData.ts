@@ -1,5 +1,6 @@
 import { type Order, formatOrderDate, formatPrice } from '@/data/orders'
 import { type Product } from '@/data/products'
+import { type AdaptedProduct } from '@/lib/supabase/products'
 
 // Export Orders to CSV
 export function exportOrdersToCSV(orders: Order[]): void {
@@ -277,7 +278,7 @@ function downloadFile(content: string, filename: string, mimeType: string): void
 }
 
 // Export summary report
-export function exportSummaryReport(orders: Order[], products: Product[]): void {
+export function exportSummaryReport(orders: Order[], products: (Product | AdaptedProduct)[]): void {
   const totalOrders = orders.length
   const totalRevenue = orders.reduce((sum, order) => sum + order.total, 0)
   const averageOrderValue = totalRevenue / totalOrders
@@ -324,15 +325,16 @@ ZST - Bouzareah, Algérie
 }
 
 // Helper: Get top selling products
-function getTopProducts(orders: Order[], products: Product[], limit: number) {
+function getTopProducts(orders: Order[], products: (Product | AdaptedProduct)[], limit: number) {
   const productSales: Record<string, { name: string; quantity: number }> = {}
 
   orders.forEach((order) => {
     order.items.forEach((item) => {
-      if (!productSales[item.productId]) {
-        productSales[item.productId] = { name: item.productName, quantity: 0 }
+      const productId = item.productId || item.productName
+      if (!productSales[productId]) {
+        productSales[productId] = { name: item.productName, quantity: 0 }
       }
-      productSales[item.productId].quantity += item.quantity
+      productSales[productId].quantity += item.quantity
     })
   })
 

@@ -27,6 +27,7 @@ export default function ResponsesManagementSection({
 
   useEffect(() => {
     loadResponses()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [offerId, statusFilter, typeFilter])
 
   const loadResponses = async () => {

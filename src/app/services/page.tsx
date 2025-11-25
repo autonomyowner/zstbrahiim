@@ -201,7 +201,7 @@ export default function SellerPortalPage(): JSX.Element {
   const router = useRouter()
   const [activeTab, setActiveTab] = useState<TabType>('dashboard')
   const [orders, setOrders] = useState<Order[]>(mockOrders)
-  const [productsList, setProductsList] = useState<Product[]>([])
+  const [productsList, setProductsList] = useState<(Product | import('@/lib/supabase/products').AdaptedProduct)[]>([])
   const [loading, setLoading] = useState(true)
   const [authChecking, setAuthChecking] = useState(true)
   const [productError, setProductError] = useState<string | null>(null)
@@ -217,7 +217,7 @@ export default function SellerPortalPage(): JSX.Element {
   const [isAddProductModalOpen, setIsAddProductModalOpen] = useState(false)
   const [isEditProductModalOpen, setIsEditProductModalOpen] = useState(false)
   const [isOrderDetailsModalOpen, setIsOrderDetailsModalOpen] = useState(false)
-  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null)
+  const [selectedProduct, setSelectedProduct] = useState<Product | import('@/lib/supabase/products').AdaptedProduct | null>(null)
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null)
 
   // B2B states
@@ -404,7 +404,8 @@ export default function SellerPortalPage(): JSX.Element {
     return () => {
       supabase.removeChannel(channel)
     }
-  }, [authChecking, statsRange.start.getTime(), statsRange.end.getTime()])
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [authChecking, statsPreset])
 
   // Fetch B2B offers for importateurs and grossistes
   useEffect(() => {
@@ -516,6 +517,7 @@ export default function SellerPortalPage(): JSX.Element {
         images: [productData.image],
         seller_id: user.id,
         seller_category: sellerProfile?.seller_category ?? null,
+        min_quantity: 1,
       }
 
       const productId = await createProduct(productPayload)
@@ -548,7 +550,7 @@ export default function SellerPortalPage(): JSX.Element {
     }
   }
 
-  const handleEditProduct = (product: Product) => {
+  const handleEditProduct = (product: Product | import('@/lib/supabase/products').AdaptedProduct) => {
     setSelectedProduct(product)
     setIsEditProductModalOpen(true)
   }

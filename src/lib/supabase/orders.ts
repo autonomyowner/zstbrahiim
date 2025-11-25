@@ -108,8 +108,49 @@ const summarizeOrders = (
   )
 }
 
+// Adapted order type for frontend display
+export type AdaptedOrder = {
+  id: string
+  orderNumber: string
+  customer: {
+    name: string
+    email: string | null
+    phone: string
+    address: string
+    wilaya: string
+  }
+  items: Array<{
+    productId: string | null
+    productName: string
+    productImage: string
+    quantity: number
+    price: number
+    subtotal: number
+  }>
+  total: number
+  status: OrderStatus
+  paymentStatus: PaymentStatus
+  createdAt: string
+  updatedAt: string
+  deliveryDate: string | null
+  trackingNumber: string | null
+  notes: string | null
+}
+
+// Database order type with items
+type DbOrderWithItems = Order & {
+  order_items?: Array<{
+    product_id: string | null
+    product_name: string
+    product_image: string
+    quantity: number
+    price: number
+    subtotal: number
+  }>
+}
+
 // Adapter to convert database format to frontend format
-const adaptOrder = (dbOrder: any): any => {
+const adaptOrder = (dbOrder: DbOrderWithItems): AdaptedOrder => {
   return {
     id: dbOrder.id,
     orderNumber: dbOrder.order_number,
@@ -120,7 +161,7 @@ const adaptOrder = (dbOrder: any): any => {
       address: dbOrder.customer_address,
       wilaya: dbOrder.customer_wilaya,
     },
-    items: (dbOrder.order_items || []).map((item: any) => ({
+    items: (dbOrder.order_items || []).map((item) => ({
       productId: item.product_id,
       productName: item.product_name,
       productImage: item.product_image,
@@ -140,7 +181,7 @@ const adaptOrder = (dbOrder: any): any => {
 }
 
 // Get all orders (admin only or user's own orders)
-export const getOrders = async (): Promise<any[]> => {
+export const getOrders = async (): Promise<AdaptedOrder[]> => {
   try {
     const { data, error } = await supabase
       .from('orders')
@@ -162,7 +203,7 @@ export const getOrders = async (): Promise<any[]> => {
       throw error
     }
 
-    return (data || []).map(adaptOrder)
+    return (data || []).map((order) => adaptOrder(order as unknown as DbOrderWithItems))
   } catch (error) {
     console.error('Error in getOrders:', error)
     return []
@@ -170,7 +211,7 @@ export const getOrders = async (): Promise<any[]> => {
 }
 
 // Get orders by status
-export const getOrdersByStatus = async (status: OrderStatus): Promise<any[]> => {
+export const getOrdersByStatus = async (status: OrderStatus): Promise<AdaptedOrder[]> => {
   try {
     const { data, error } = await supabase
       .from('orders')
@@ -193,7 +234,7 @@ export const getOrdersByStatus = async (status: OrderStatus): Promise<any[]> => 
       throw error
     }
 
-    return (data || []).map(adaptOrder)
+    return (data || []).map((order) => adaptOrder(order as unknown as DbOrderWithItems))
   } catch (error) {
     console.error('Error in getOrdersByStatus:', error)
     return []
@@ -201,7 +242,7 @@ export const getOrdersByStatus = async (status: OrderStatus): Promise<any[]> => 
 }
 
 // Get order by ID
-export const getOrderById = async (id: string): Promise<any | null> => {
+export const getOrderById = async (id: string): Promise<AdaptedOrder | null> => {
   try {
     const { data, error } = await supabase
       .from('orders')
@@ -226,7 +267,7 @@ export const getOrderById = async (id: string): Promise<any | null> => {
 
     if (!data) return null
 
-    return adaptOrder(data)
+    return adaptOrder(data as unknown as DbOrderWithItems)
   } catch (error) {
     console.error('Error in getOrderById:', error)
     return null
@@ -234,7 +275,7 @@ export const getOrderById = async (id: string): Promise<any | null> => {
 }
 
 // Get order by order number
-export const getOrderByNumber = async (orderNumber: string): Promise<any | null> => {
+export const getOrderByNumber = async (orderNumber: string): Promise<AdaptedOrder | null> => {
   try {
     const { data, error } = await supabase
       .from('orders')
@@ -259,7 +300,7 @@ export const getOrderByNumber = async (orderNumber: string): Promise<any | null>
 
     if (!data) return null
 
-    return adaptOrder(data)
+    return adaptOrder(data as unknown as DbOrderWithItems)
   } catch (error) {
     console.error('Error in getOrderByNumber:', error)
     return null
@@ -439,7 +480,7 @@ export const createOrderFromCheckout = async (orderData: {
 }
 
 // Get orders for a specific seller
-export const getOrdersForSeller = async (sellerId: string): Promise<any[]> => {
+export const getOrdersForSeller = async (sellerId: string): Promise<AdaptedOrder[]> => {
   try {
     const { data, error } = await supabase
       .from('orders')
@@ -462,7 +503,7 @@ export const getOrdersForSeller = async (sellerId: string): Promise<any[]> => {
       throw error
     }
 
-    return (data || []).map(adaptOrder)
+    return (data || []).map((order) => adaptOrder(order as unknown as DbOrderWithItems))
   } catch (error) {
     console.error('Error in getOrdersForSeller:', error)
     return []
@@ -470,7 +511,7 @@ export const getOrdersForSeller = async (sellerId: string): Promise<any[]> => {
 }
 
 // Get orders for a specific customer (user)
-export const getOrdersForCustomer = async (userId: string): Promise<any[]> => {
+export const getOrdersForCustomer = async (userId: string): Promise<AdaptedOrder[]> => {
   try {
     const { data, error } = await supabase
       .from('orders')
@@ -493,7 +534,7 @@ export const getOrdersForCustomer = async (userId: string): Promise<any[]> => {
       throw error
     }
 
-    return (data || []).map(adaptOrder)
+    return (data || []).map((order) => adaptOrder(order as unknown as DbOrderWithItems))
   } catch (error) {
     console.error('Error in getOrdersForCustomer:', error)
     return []
@@ -505,7 +546,12 @@ export const updateOrderStatus = async (
   updateData: UpdateOrderStatusRequest
 ): Promise<boolean> => {
   try {
-    const updateFields: any = {
+    const updateFields: {
+      status: OrderStatus
+      tracking_number?: string
+      delivery_date?: string
+      notes?: string
+    } = {
       status: updateData.status,
     }
 
@@ -578,8 +624,20 @@ export const deleteOrder = async (orderId: string): Promise<boolean> => {
   }
 }
 
+// Seller stats type
+export type SellerStatsResult = {
+  totalOrders: number
+  pendingOrders: number
+  processingOrders: number
+  completedOrders: number
+  totalRevenue: number
+  monthlyRevenue: number
+  totalProducts: number
+  lowStockProducts: number
+}
+
 // Get seller statistics
-export const getSellerStats = async (): Promise<any> => {
+export const getSellerStats = async (): Promise<SellerStatsResult> => {
   try {
     // Get stats from view
     const { data: statsData, error: statsError } = await supabase
