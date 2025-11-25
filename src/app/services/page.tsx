@@ -33,6 +33,7 @@ import { getSellerStatistics } from '@/lib/supabase/b2b-offers'
 import CreateOfferModal from '@/components/b2b/CreateOfferModal'
 import OfferCard from '@/components/b2b/OfferCard'
 import OfferDetailsModal from '@/components/b2b/OfferDetailsModal'
+import { useRealtimeOrders } from '@/hooks/useRealtimeOrders'
 
 type TabType = 'dashboard' | 'orders' | 'products' | 'analytics' | 'b2b'
 
@@ -231,6 +232,12 @@ export default function SellerPortalPage(): JSX.Element {
   const [statusFilter, setStatusFilter] = useState<OrderStatus | 'all'>('all')
   const [paymentFilter, setPaymentFilter] = useState<PaymentStatus | 'all'>('all')
 
+  // Real-time orders hook
+  const { pendingCount: realtimePendingCount } = useRealtimeOrders({
+    sellerId: sellerProfile?.id || null,
+    enabled: !authChecking && sellerProfile?.role === 'seller',
+  })
+
   // Check authentication and seller role
   useEffect(() => {
     const checkAuth = async () => {
@@ -299,6 +306,33 @@ export default function SellerPortalPage(): JSX.Element {
       }
     }
     fetchOrders()
+
+    // Set up real-time subscription for order changes
+    const channel = supabase
+      .channel('seller-orders-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'orders',
+        },
+        async (payload) => {
+          console.log('Order change detected, refreshing orders...', payload)
+          // Refetch orders when any change occurs
+          const { data: { user } } = await supabase.auth.getUser()
+          if (user) {
+            const sellerOrders = await getOrdersForSeller(user.id)
+            setOrders(sellerOrders)
+          }
+        }
+      )
+      .subscribe()
+
+    // Cleanup subscription
+    return () => {
+      supabase.removeChannel(channel)
+    }
   }, [authChecking])
 
   // Fetch dashboard stats
@@ -333,6 +367,43 @@ export default function SellerPortalPage(): JSX.Element {
     }
 
     fetchStats()
+
+    // Set up real-time subscription to refresh stats on order changes
+    const channel = supabase
+      .channel('seller-stats-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'orders',
+        },
+        async (payload) => {
+          console.log('Order change detected, refreshing stats...', payload)
+          // Refetch stats when order changes occur
+          const {
+            data: { user },
+          } = await supabase.auth.getUser()
+          if (user) {
+            try {
+              const stats = await getSellerDashboardStats({
+                sellerId: user.id,
+                startDate: statsRange.start.toISOString(),
+                endDate: statsRange.end.toISOString(),
+              })
+              setDashboardStats(stats)
+            } catch (error) {
+              console.error('Error refreshing stats:', error)
+            }
+          }
+        }
+      )
+      .subscribe()
+
+    // Cleanup subscription
+    return () => {
+      supabase.removeChannel(channel)
+    }
   }, [authChecking, statsRange.start.getTime(), statsRange.end.getTime()])
 
   // Fetch B2B offers for importateurs and grossistes

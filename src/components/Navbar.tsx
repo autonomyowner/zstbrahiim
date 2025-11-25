@@ -9,6 +9,7 @@ import {
   onAuthStateChange,
 } from '@/lib/supabase/auth'
 import type { UserProfile } from '@/lib/supabase/types'
+import { useRealtimeOrders } from '@/hooks/useRealtimeOrders'
 
 type NavItem = {
   label: string
@@ -42,6 +43,12 @@ export const Navbar = (): JSX.Element => {
   const [loading, setLoading] = useState<boolean>(true)
   const pathname = usePathname()
   const router = useRouter()
+
+  // Real-time orders for sellers
+  const { pendingCount } = useRealtimeOrders({
+    sellerId: user?.id || null,
+    enabled: user?.role === 'seller',
+  })
 
   useEffect(() => {
     const handleScroll = (): void => {
@@ -318,9 +325,14 @@ export const Navbar = (): JSX.Element => {
             <div className="hidden md:flex items-center gap-3 text-sm font-medium">
               <Link
                 href="/services"
-                className="inline-flex items-center gap-2 rounded-full border border-white/20 px-4 py-2.5 text-sm font-bold text-white hover:border-brand-primary hover:bg-white/10 transition-all shadow-sm hover:shadow-card-sm"
+                className="relative inline-flex items-center gap-2 rounded-full border border-white/20 px-4 py-2.5 text-sm font-bold text-white hover:border-brand-primary hover:bg-white/10 transition-all shadow-sm hover:shadow-card-sm"
               >
                 Dashboard
+                {user?.role === 'seller' && pendingCount > 0 && (
+                  <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-600 text-[10px] font-bold text-white shadow-md">
+                    {pendingCount > 99 ? '99+' : pendingCount}
+                  </span>
+                )}
               </Link>
               {renderAuthSection('desktop')}
             </div>
@@ -343,9 +355,14 @@ export const Navbar = (): JSX.Element => {
             <div className="flex flex-col gap-3 text-sm">
               <Link
                 href="/services"
-                className="inline-flex items-center gap-2 rounded-xl border border-white/20 bg-white/10 px-4 py-3 font-bold text-white hover:border-brand-primary hover:bg-white/20 transition-all shadow-sm"
+                className="relative inline-flex items-center gap-2 rounded-xl border border-white/20 bg-white/10 px-4 py-3 font-bold text-white hover:border-brand-primary hover:bg-white/20 transition-all shadow-sm"
               >
                 Dashboard
+                {user?.role === 'seller' && pendingCount > 0 && (
+                  <span className="absolute -top-1 -right-1 flex h-5 w-5 items-center justify-center rounded-full bg-red-600 text-[10px] font-bold text-white shadow-md">
+                    {pendingCount > 99 ? '99+' : pendingCount}
+                  </span>
+                )}
               </Link>
             </div>
             {renderAuthSection('mobile')}
