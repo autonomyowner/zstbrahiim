@@ -69,11 +69,11 @@ export const Footer = (): JSX.Element => {
         <div className="mt-12 border-t border-white/10 pt-6 flex flex-col gap-4 md:flex-row md:items-center md:justify-between text-sm text-white/60">
           <p>© {new Date().getFullYear()} ZST ecom. All rights reserved.</p>
           <div className="flex flex-wrap items-center gap-4">
-            <Link href="/#privacy" className="hover:text-brand-primary">
-              Privacy
+            <Link href="/privacy-policy" className="hover:text-brand-primary">
+              Privacy Policy
             </Link>
-            <Link href="/#terms" className="hover:text-brand-primary">
-              Terms
+            <Link href="/terms-of-service" className="hover:text-brand-primary">
+              Terms of Service
             </Link>
           </div>
         </div>
