@@ -8,6 +8,12 @@ type AccordionProps = {
   defaultOpen?: boolean
 }
 
+const ChevronDownIcon = ({ className = '' }: { className?: string }) => (
+  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}>
+    <path d="M6 9l6 6 6-6" />
+  </svg>
+)
+
 export const Accordion = ({
   title,
   children,
@@ -16,37 +22,32 @@ export const Accordion = ({
   const [isOpen, setIsOpen] = useState(defaultOpen)
 
   return (
-    <div className="border-b border-kitchen-lux-dark-green-200">
+    <div className="border-b border-brand-border/60">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full flex items-center justify-between py-4 text-left"
+        className="group w-full flex items-center justify-between py-4 sm:py-5 text-left transition-colors duration-200 hover:bg-brand-surface-muted/30"
         type="button"
+        aria-expanded={isOpen}
       >
-        <span className="text-sm font-semibold uppercase tracking-[0.15em] text-kitchen-lux-dark-green-800">
+        <span className="text-sm font-semibold uppercase tracking-[0.15em] text-text-primary group-hover:text-brand-primaryDark transition-colors">
           {title}
         </span>
-        <svg
-          className={`w-5 h-5 text-kitchen-lux-dark-green-600 transition-transform duration-200 ${
-            isOpen ? 'rotate-180' : ''
-          }`}
-          fill="none"
-          stroke="currentColor"
-          viewBox="0 0 24 24"
-        >
-          <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth={2}
-            d="M19 9l-7 7-7-7"
+        <div className={`w-8 h-8 flex items-center justify-center rounded-full transition-all duration-300 ${
+          isOpen ? 'bg-brand-primary/10' : 'bg-brand-surface-muted group-hover:bg-brand-primary/10'
+        }`}>
+          <ChevronDownIcon
+            className={`w-4 h-4 transition-all duration-300 ${
+              isOpen ? 'rotate-180 text-brand-primaryDark' : 'text-text-muted group-hover:text-brand-primaryDark'
+            }`}
           />
-        </svg>
+        </div>
       </button>
       <div
-        className={`overflow-hidden transition-all duration-300 ${
-          isOpen ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
+        className={`overflow-hidden transition-all duration-300 ease-out ${
+          isOpen ? 'max-h-[500px] opacity-100' : 'max-h-0 opacity-0'
         }`}
       >
-        <div className="pb-4 text-sm text-kitchen-lux-dark-green-700 leading-relaxed">
+        <div className="pb-5 sm:pb-6">
           {children}
         </div>
       </div>

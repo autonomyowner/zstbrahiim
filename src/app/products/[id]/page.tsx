@@ -1,4 +1,5 @@
 import { notFound } from 'next/navigation'
+import Link from 'next/link'
 import { getProductById, type Product } from '@/data/products'
 import { type AdaptedProduct } from '@/lib/supabase/products'
 import { supabaseAdmin } from '@/lib/supabase/server'
@@ -115,26 +116,52 @@ export default async function ProductPage({ params }: ProductPageProps): Promise
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-brand-light to-brand-cardMuted px-4 py-24 sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-7xl">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
-          {/* Left Column - Product Gallery */}
-          <div>
-            <ProductGallery
-              images={product.images}
-              productName={product.name}
-              video={product.video?.url && product.video?.thumbnailUrl && product.video?.durationSeconds && product.video?.fileSizeBytes ? {
-                url: product.video.url,
-                thumbnailUrl: product.video.thumbnailUrl,
-                durationSeconds: product.video.durationSeconds,
-                fileSizeBytes: product.video.fileSizeBytes,
-              } : undefined}
-            />
-          </div>
+    <div className="min-h-screen bg-gradient-to-br from-brand-light via-white to-brand-cardMuted">
+      {/* Subtle decorative elements */}
+      <div className="fixed inset-0 pointer-events-none overflow-hidden">
+        <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-brand-primary/[0.03] rounded-full blur-3xl transform translate-x-1/2 -translate-y-1/2" />
+        <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-brand-primary/[0.02] rounded-full blur-3xl transform -translate-x-1/2 translate-y-1/2" />
+      </div>
 
-          {/* Right Column - Product Details */}
-          <div>
-            <ProductDetails product={product} />
+      <div className="relative px-4 py-20 sm:py-24 sm:px-6 lg:px-8">
+        <div className="mx-auto max-w-7xl">
+          {/* Breadcrumb */}
+          <nav className="mb-6 sm:mb-8 animate-fade-in">
+            <ol className="flex items-center gap-2 text-sm text-text-muted">
+              <li>
+                <Link href="/" className="hover:text-brand-primaryDark transition-colors">Accueil</Link>
+              </li>
+              <li className="text-brand-border">/</li>
+              <li>
+                <Link href="/" className="hover:text-brand-primaryDark transition-colors">Produits</Link>
+              </li>
+              <li className="text-brand-border">/</li>
+              <li className="text-text-secondary font-medium truncate max-w-[200px]">{product.name}</li>
+            </ol>
+          </nav>
+
+          {/* Main Content */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 xl:gap-16">
+            {/* Left Column - Product Gallery */}
+            <div className="lg:sticky lg:top-24 lg:self-start animate-slide-up">
+              <ProductGallery
+                images={product.images}
+                productName={product.name}
+                video={product.video?.url && product.video?.thumbnailUrl && product.video?.durationSeconds && product.video?.fileSizeBytes ? {
+                  url: product.video.url,
+                  thumbnailUrl: product.video.thumbnailUrl,
+                  durationSeconds: product.video.durationSeconds,
+                  fileSizeBytes: product.video.fileSizeBytes,
+                } : undefined}
+              />
+            </div>
+
+            {/* Right Column - Product Details */}
+            <div className="animate-slide-up" style={{ animationDelay: '0.1s' }}>
+              <div className="lg:pl-4 xl:pl-8">
+                <ProductDetails product={product} />
+              </div>
+            </div>
           </div>
         </div>
       </div>

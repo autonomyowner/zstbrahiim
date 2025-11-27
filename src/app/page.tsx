@@ -288,22 +288,13 @@ export default function HomePage(): JSX.Element {
 
           {/* Trending Section */}
           <div className="rounded-2xl sm:rounded-3xl border border-brand-border/50 bg-white p-5 sm:p-7 shadow-card-sm transition-shadow duration-300 hover:shadow-card-md">
-            <div className="flex items-center justify-between gap-3 sm:gap-4 mb-5 sm:mb-6">
-              <div className="min-w-0 flex-1">
-                <p className="section-label">
-                  Trending
-                </p>
-                <h2 className="heading-elegant text-xl sm:text-2xl lg:text-3xl text-text-primary mt-1">
-                  Produits à la une
-                </h2>
-              </div>
-              <Link
-                href="/products"
-                className="text-xs sm:text-sm font-semibold text-text-secondary hover:text-brand-primaryDark transition-colors whitespace-nowrap group"
-              >
-                Voir tout
-                <span className="inline-block transition-transform duration-200 group-hover:translate-x-1 ml-1">→</span>
-              </Link>
+            <div className="mb-5 sm:mb-6">
+              <p className="section-label">
+                Trending
+              </p>
+              <h2 className="heading-elegant text-xl sm:text-2xl lg:text-3xl text-text-primary mt-1">
+                Produits à la une
+              </h2>
             </div>
 
             <div className="flex gap-3 sm:gap-4 overflow-x-auto pb-3 scrollbar-hide -mx-1 px-1">
