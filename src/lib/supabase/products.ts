@@ -15,6 +15,35 @@ import { deleteProductVideo } from './productVideos'
 
 type ProductQueryOptions = {
   sellerCategories?: SellerCategory[]
+  limit?: number
+  offset?: number
+}
+
+export type PaginatedProducts = {
+  products: AdaptedProduct[]
+  total: number
+  hasMore: boolean
+}
+
+// Simple in-memory cache for products (5 minute TTL)
+const CACHE_TTL = 5 * 60 * 1000
+const productCache = new Map<string, { data: AdaptedProduct[]; timestamp: number }>()
+
+const getCacheKey = (filters?: ProductFilters, options?: ProductQueryOptions): string => {
+  return JSON.stringify({ filters, options })
+}
+
+const getFromCache = (key: string): AdaptedProduct[] | null => {
+  const cached = productCache.get(key)
+  if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
+    return cached.data
+  }
+  productCache.delete(key)
+  return null
+}
+
+const setCache = (key: string, data: AdaptedProduct[]): void => {
+  productCache.set(key, { data, timestamp: Date.now() })
 }
 
 // Adapted product type for frontend display (camelCase)
@@ -120,6 +149,13 @@ export const getProducts = async (
   filters?: ProductFilters,
   options?: ProductQueryOptions
 ): Promise<AdaptedProduct[]> => {
+  // Check cache first
+  const cacheKey = getCacheKey(filters, options)
+  const cached = getFromCache(cacheKey)
+  if (cached) {
+    return cached
+  }
+
   try {
     let query = supabase
       .from('products')
@@ -194,6 +230,11 @@ export const getProducts = async (
       query = query.in('seller_category', options.sellerCategories)
     }
 
+    // Apply pagination
+    const limit = options?.limit || 50
+    const offset = options?.offset || 0
+    query = query.range(offset, offset + limit - 1)
+
     const { data, error } = await query
 
     if (error) {
@@ -202,7 +243,7 @@ export const getProducts = async (
     }
 
     // Adapt products to frontend format
-    return (data || []).map((product) => {
+    const adaptedProducts = (data || []).map((product) => {
       const typedProduct = product as unknown as Product & {
         product_images?: { image_url: string; is_primary: boolean; display_order: number }[]
         product_videos?: Partial<ProductVideo>[]
@@ -213,6 +254,11 @@ export const getProducts = async (
         typedProduct.product_videos?.[0] || null
       )
     })
+
+    // Cache the results
+    setCache(cacheKey, adaptedProducts)
+
+    return adaptedProducts
   } catch (error) {
     console.error('Error in getProducts:', error)
     return []
