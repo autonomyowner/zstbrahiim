@@ -674,6 +674,7 @@ export type FilterState = {
   productTypes: ProductType[]
   needs: ProductNeed[]
   category: string // Format: 'categoryId' or 'categoryId-subcategoryIndex'
+  searchQuery: string
 }
 
 // Marketplace category mappings to product categories

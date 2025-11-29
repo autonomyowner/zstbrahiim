@@ -42,6 +42,12 @@ const RefreshIcon = () => (
   </svg>
 )
 
+const SearchIcon = () => (
+  <svg viewBox="0 0 24 24" className="w-4 h-4" fill="currentColor">
+    <path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0016 9.5 6.5 6.5 0 109.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+  </svg>
+)
+
 export const ShopFilters = ({
   filters,
   onFiltersChange,
@@ -109,10 +115,26 @@ export const ShopFilters = ({
     { value: 'out-of-stock', label: `Épuisé` },
   ]
 
-  const hasActiveFilters = filters.category !== '' || filters.availability !== 'all' || filters.priceRange.min > 0 || filters.priceRange.max < 900000
+  const hasActiveFilters = filters.category !== '' || filters.availability !== 'all' || filters.priceRange.min > 0 || filters.priceRange.max < 900000 || filters.searchQuery !== ''
 
   return (
     <section className="rounded-2xl sm:rounded-3xl border border-brand-border/50 bg-white p-4 sm:p-5 shadow-card-sm transition-shadow duration-300 hover:shadow-card-md">
+      {/* Search bar */}
+      <div className="mb-4 sm:mb-5">
+        <div className="relative">
+          <div className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-text-muted">
+            <SearchIcon />
+          </div>
+          <input
+            type="text"
+            placeholder="Rechercher un produit..."
+            value={filters.searchQuery}
+            onChange={(e) => updateFilter('searchQuery', e.target.value)}
+            className="w-full rounded-full border border-brand-border bg-brand-surface-muted pl-10 pr-4 py-2.5 text-sm text-text-primary placeholder:text-text-muted/60 transition-all duration-200 focus:border-brand-primary focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-primary/20"
+          />
+        </div>
+      </div>
+
       {/* Availability filters */}
       <div className="flex flex-wrap items-center gap-2">
         {availabilityOptions.map((option) => (

@@ -22,6 +22,7 @@ const createDefaultFilters = (): FilterState => ({
   productTypes: [],
   needs: [],
   category: '',
+  searchQuery: '',
 })
 
 // Custom SVG icons to avoid material symbols
@@ -82,7 +83,6 @@ export default function HomePage(): JSX.Element {
   const [isLoadingMore, setIsLoadingMore] = useState(false)
   const [hasMoreProducts, setHasMoreProducts] = useState(true)
   const [filters, setFilters] = useState<FilterState>(() => createDefaultFilters())
-  const [searchQuery, setSearchQuery] = useState('')
   const [activeTrendingVideoId, setActiveTrendingVideoId] = useState<string | null>(null)
 
   // Fetch initial products from database
@@ -195,8 +195,8 @@ export default function HomePage(): JSX.Element {
     }
 
     // Search filter
-    if (searchQuery.trim()) {
-      const query = searchQuery.toLowerCase()
+    if (filters.searchQuery.trim()) {
+      const query = filters.searchQuery.toLowerCase()
       result = result.filter((p) => {
         const fields = [p.name, p.brand, p.category, p.productType]
         return fields.some((field) => field?.toLowerCase().includes(query))
@@ -204,7 +204,7 @@ export default function HomePage(): JSX.Element {
     }
 
     return result
-  }, [filters, allProducts, searchQuery])
+  }, [filters, allProducts])
 
   // Sort products
   const sortedProducts = useMemo(() => {

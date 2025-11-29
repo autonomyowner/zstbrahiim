@@ -47,7 +47,7 @@ export const HeroSection = ({ stats }: HeroSectionProps): JSX.Element => {
               Algerian suppliers.
             </h1>
             <p className="text-sm sm:text-base text-white/60 max-w-md leading-relaxed">
-              Discover premium perfumes, fashion, and wholesale goods from verified local sellers across Algeria.
+              Discover premium products from verified local sellers across Algeria.
             </p>
           </div>
 
