@@ -67,23 +67,19 @@ export function VideoUpload({
           upsert: false,
         })
 
-      if (uploadError) {
-        console.error('Upload error:', uploadError)
-        throw uploadError
-      }
+      if (uploadError) throw uploadError
 
       // Get public URL
       const {
         data: { publicUrl },
       } = supabase.storage.from('products').getPublicUrl(filePath)
 
-      console.log('Video uploaded successfully:', publicUrl)
       setVideoUrl(publicUrl)
       onVideoUploaded(publicUrl)
       setUploadProgress(100)
-    } catch (err: any) {
-      console.error('Error uploading video:', err)
-      setError(err.message || 'Erreur lors du téléchargement de la vidéo.')
+    } catch (err: unknown) {
+      const errorMessage = err instanceof Error ? err.message : 'Erreur lors du téléchargement de la vidéo.'
+      setError(errorMessage)
       setVideoUrl(currentVideoUrl || null)
     } finally {
       setIsUploading(false)

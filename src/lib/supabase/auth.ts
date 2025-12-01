@@ -83,7 +83,6 @@ const retryWithBackoff = async <T>(
 
       // Wait before retrying with exponential backoff
       const delay = initialDelay * Math.pow(2, attempt)
-      console.log(`Retry attempt ${attempt + 1} after ${delay}ms...`)
       await new Promise(resolve => setTimeout(resolve, delay))
     }
   }
@@ -123,7 +122,6 @@ export const signUp = async (
     })
 
     if (error) {
-      console.error('Error signing up:', error)
       const userFriendlyError = formatAuthError(error)
       return { user: null, error, userFriendlyError }
     }
@@ -137,8 +135,8 @@ export const signUp = async (
             .update({ seller_category: sellerCategory || 'fournisseur' })
             .eq('id', userId)
         })
-      } catch (profileError) {
-        console.error('Error assigning seller category:', profileError)
+      } catch {
+        // Profile update failed silently - non-critical error
       }
     }
 
@@ -146,8 +144,7 @@ export const signUp = async (
     // No need to manually insert into user_profiles
 
     return { user: data.user, error: null }
-  } catch (error: any) {
-    console.error('Error in signUp:', error)
+  } catch (error: unknown) {
     const userFriendlyError = formatAuthError(error)
     return { user: null, error, userFriendlyError }
   }
@@ -168,32 +165,23 @@ export const signIn = async (
     })
 
     if (error) {
-      console.error('Error signing in:', error)
       const userFriendlyError = formatAuthError(error)
       return { user: null, error, userFriendlyError }
     }
 
     return { user: data.user, error: null }
-  } catch (error: any) {
-    console.error('Error in signIn:', error)
+  } catch (error: unknown) {
     const userFriendlyError = formatAuthError(error)
     return { user: null, error, userFriendlyError }
   }
 }
 
 // Sign out
-export const signOut = async (): Promise<{ error: any }> => {
+export const signOut = async (): Promise<{ error: unknown }> => {
   try {
     const { error } = await supabase.auth.signOut()
-
-    if (error) {
-      console.error('Error signing out:', error)
-      return { error }
-    }
-
-    return { error: null }
+    return { error: error || null }
   } catch (error) {
-    console.error('Error in signOut:', error)
     return { error }
   }
 }
@@ -206,14 +194,9 @@ export const getCurrentUser = async () => {
       error,
     } = await supabase.auth.getUser()
 
-    if (error) {
-      console.error('Error getting current user:', error)
-      return null
-    }
-
+    if (error) return null
     return user
-  } catch (error) {
-    console.error('Error in getCurrentUser:', error)
+  } catch {
     return null
   }
 }
@@ -222,7 +205,6 @@ export const getCurrentUser = async () => {
 export const getCurrentUserProfile = async (): Promise<UserProfile | null> => {
   try {
     const user = await getCurrentUser()
-
     if (!user) return null
 
     const { data, error } = await supabase
@@ -231,14 +213,9 @@ export const getCurrentUserProfile = async (): Promise<UserProfile | null> => {
       .eq('id', user.id)
       .single()
 
-    if (error) {
-      console.error('Error getting user profile:', error)
-      return null
-    }
-
+    if (error) return null
     return data
-  } catch (error) {
-    console.error('Error in getCurrentUserProfile:', error)
+  } catch {
     return null
   }
 }
@@ -249,25 +226,16 @@ export const updateUserProfile = async (
 ): Promise<boolean> => {
   try {
     const user = await getCurrentUser()
-
-    if (!user) {
-      console.error('No user logged in')
-      return false
-    }
+    if (!user) return false
 
     const { error } = await supabase
       .from('user_profiles')
       .update(updates)
       .eq('id', user.id)
 
-    if (error) {
-      console.error('Error updating user profile:', error)
-      throw error
-    }
-
+    if (error) throw error
     return true
-  } catch (error) {
-    console.error('Error in updateUserProfile:', error)
+  } catch {
     return false
   }
 }
@@ -284,39 +252,25 @@ const getSiteUrl = () => {
 }
 
 // Reset password
-export const resetPassword = async (email: string): Promise<{ error: any }> => {
+export const resetPassword = async (email: string): Promise<{ error: unknown }> => {
   try {
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
       redirectTo: `${getSiteUrl()}/reset-password`,
     })
-
-    if (error) {
-      console.error('Error resetting password:', error)
-      return { error }
-    }
-
-    return { error: null }
+    return { error: error || null }
   } catch (error) {
-    console.error('Error in resetPassword:', error)
     return { error }
   }
 }
 
 // Update password
-export const updatePassword = async (newPassword: string): Promise<{ error: any }> => {
+export const updatePassword = async (newPassword: string): Promise<{ error: unknown }> => {
   try {
     const { error } = await supabase.auth.updateUser({
       password: newPassword,
     })
-
-    if (error) {
-      console.error('Error updating password:', error)
-      return { error }
-    }
-
-    return { error: null }
+    return { error: error || null }
   } catch (error) {
-    console.error('Error in updatePassword:', error)
     return { error }
   }
 }
@@ -332,8 +286,7 @@ export const hasRole = async (role: UserRole): Promise<boolean> => {
   try {
     const profile = await getCurrentUserProfile()
     return profile?.role === role
-  } catch (error) {
-    console.error('Error checking user role:', error)
+  } catch {
     return false
   }
 }
@@ -371,14 +324,9 @@ export const getUserById = async (userId: string): Promise<UserProfile | null> =
       .eq('id', userId)
       .single()
 
-    if (error) {
-      console.error('Error getting user by ID:', error)
-      return null
-    }
-
+    if (error) return null
     return data
-  } catch (error) {
-    console.error('Error in getUserById:', error)
+  } catch {
     return null
   }
 }
@@ -391,14 +339,9 @@ export const getAllUsers = async (): Promise<UserProfile[]> => {
       .select('*')
       .order('created_at', { ascending: false })
 
-    if (error) {
-      console.error('Error getting all users:', error)
-      throw error
-    }
-
+    if (error) throw error
     return data || []
-  } catch (error) {
-    console.error('Error in getAllUsers:', error)
+  } catch {
     return []
   }
 }
@@ -408,15 +351,9 @@ export const deleteUserAccount = async (userId: string): Promise<boolean> => {
   try {
     // This will cascade delete the profile due to foreign key constraint
     const { error } = await supabase.auth.admin.deleteUser(userId)
-
-    if (error) {
-      console.error('Error deleting user account:', error)
-      throw error
-    }
-
+    if (error) throw error
     return true
-  } catch (error) {
-    console.error('Error in deleteUserAccount:', error)
+  } catch {
     return false
   }
 }

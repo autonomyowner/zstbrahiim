@@ -39,10 +39,7 @@ export const getCurrentUser = async () => {
     error,
   } = await supabase.auth.getUser()
 
-  if (error) {
-    console.error('Error getting current user:', error)
-    return null
-  }
+  if (error) return null
 
   return user
 }
@@ -56,10 +53,7 @@ export const isAuthenticated = async (): Promise<boolean> => {
 // Helper function to sign out
 export const signOut = async () => {
   const { error } = await supabase.auth.signOut()
-  if (error) {
-    console.error('Error signing out:', error)
-    throw error
-  }
+  if (error) throw error
 }
 
 // Helper function to get storage public URL
@@ -82,10 +76,7 @@ export const uploadFile = async (
     upsert: false,
   })
 
-  if (error) {
-    console.error('Error uploading file:', error)
-    throw error
-  }
+  if (error) throw error
 
   return getStoragePublicUrl(bucket, data.path)
 }
@@ -94,10 +85,7 @@ export const uploadFile = async (
 export const deleteFile = async (bucket: string, path: string): Promise<void> => {
   const { error } = await supabase.storage.from(bucket).remove([path])
 
-  if (error) {
-    console.error('Error deleting file:', error)
-    throw error
-  }
+  if (error) throw error
 }
 
 // Export the client as default

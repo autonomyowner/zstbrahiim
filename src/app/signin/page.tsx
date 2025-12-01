@@ -32,8 +32,7 @@ export default function SignInPage() {
         router.push('/')
         router.refresh()
       }
-    } catch (err) {
-      console.error('Sign in error:', err)
+    } catch {
       setError('Unable to connect to the server. Please check your internet connection and try again.')
       setLoading(false)
     }

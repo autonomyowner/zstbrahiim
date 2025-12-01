@@ -237,10 +237,7 @@ export const getProducts = async (
 
     const { data, error } = await query
 
-    if (error) {
-      console.error('Error fetching products:', error)
-      throw error
-    }
+    if (error) throw error
 
     // Adapt products to frontend format
     const adaptedProducts = (data || []).map((product) => {
@@ -259,8 +256,7 @@ export const getProducts = async (
     setCache(cacheKey, adaptedProducts)
 
     return adaptedProducts
-  } catch (error) {
-    console.error('Error in getProducts:', error)
+  } catch {
     return []
   }
 }
@@ -271,10 +267,7 @@ export const getSellerProducts = async (filters?: ProductFilters): Promise<Adapt
     // Get current user
     const { data: { user } } = await supabase.auth.getUser()
     
-    if (!user) {
-      console.error('No authenticated user found')
-      return []
-    }
+    if (!user) return []
 
     // Query from seller_products_view which automatically filters by seller_id
     let query = supabase
@@ -333,10 +326,7 @@ export const getSellerProducts = async (filters?: ProductFilters): Promise<Adapt
 
     const { data, error } = await query
 
-    if (error) {
-      console.error('Error fetching seller products:', error)
-      throw error
-    }
+    if (error) throw error
 
     // Get product images/videos separately from dedicated views/tables
     const productIds = (data || []).map((p) => (p as { id: string }).id)
@@ -377,8 +367,7 @@ export const getSellerProducts = async (filters?: ProductFilters): Promise<Adapt
       const typedProduct = product as Product
       return adaptProduct(typedProduct, productImagesMap[typedProduct.id] || [], productVideosMap[typedProduct.id])
     })
-  } catch (error) {
-    console.error('Error in getSellerProducts:', error)
+  } catch {
     return []
   }
 }
@@ -430,10 +419,7 @@ export const getProductById = async (id: string): Promise<AdaptedProduct | null>
       .eq('id', id)
       .single()
 
-    if (error) {
-      console.error('Error fetching product by ID:', error)
-      return null
-    }
+    if (error) return null
 
     if (!data) return null
 
@@ -450,8 +436,7 @@ export const getProductById = async (id: string): Promise<AdaptedProduct | null>
       typedData.product_images || [],
       typedData.product_videos?.[0] || null
     )
-  } catch (error) {
-    console.error('Error in getProductById:', error)
+  } catch {
     return null
   }
 }
@@ -483,10 +468,7 @@ export const getProductBySlug = async (slug: string): Promise<AdaptedProduct | n
       .eq('slug', slug)
       .single()
 
-    if (error) {
-      console.error('Error fetching product by slug:', error)
-      return null
-    }
+    if (error) return null
 
     if (!data) return null
 
@@ -503,8 +485,7 @@ export const getProductBySlug = async (slug: string): Promise<AdaptedProduct | n
       typedData.product_images || [],
       typedData.product_videos?.[0] || null
     )
-  } catch (error) {
-    console.error('Error in getProductBySlug:', error)
+  } catch {
     return null
   }
 }
@@ -524,9 +505,8 @@ export const incrementViewersCount = async (productId: string): Promise<void> =>
         .update({ viewers_count: product.viewers_count + 1 })
         .eq('id', productId)
     }
-  } catch (error) {
+  } catch {
     // Silent fail - not critical
-    console.error('Error incrementing viewers count:', error)
   }
 }
 
@@ -570,10 +550,7 @@ export const searchProducts = async (query: string, filters?: ProductFilters): P
 
     const { data, error } = await dbQuery
 
-    if (error) {
-      console.error('Error searching products:', error)
-      throw error
-    }
+    if (error) throw error
 
     return (data || []).map((product) => {
       const typedProduct = product as unknown as Product & {
@@ -586,8 +563,7 @@ export const searchProducts = async (query: string, filters?: ProductFilters): P
         typedProduct.product_videos?.[0] || null
       )
     })
-  } catch (error) {
-    console.error('Error in searchProducts:', error)
+  } catch {
     return []
   }
 }
@@ -629,10 +605,7 @@ export const createProduct = async (productData: CreateProductRequest): Promise<
       .select()
       .single()
 
-    if (productError) {
-      console.error('Error creating product:', productError)
-      throw productError
-    }
+    if (productError) throw productError
 
     // Insert images
     if (images && images.length > 0) {
@@ -648,7 +621,6 @@ export const createProduct = async (productData: CreateProductRequest): Promise<
         .insert(imageRecords)
 
       if (imagesError) {
-        console.error('Error creating product images:', imagesError)
         // Rollback product creation
         await supabase.from('products').delete().eq('id', product.id)
         throw imagesError
@@ -656,8 +628,7 @@ export const createProduct = async (productData: CreateProductRequest): Promise<
     }
 
     return product.id
-  } catch (error) {
-    console.error('Error in createProduct:', error)
+  } catch {
     return null
   }
 }
@@ -673,10 +644,7 @@ export const updateProduct = async (updateData: UpdateProductRequest): Promise<b
       .update(productFields)
       .eq('id', id)
 
-    if (productError) {
-      console.error('Error updating product:', productError)
-      throw productError
-    }
+    if (productError) throw productError
 
     // Update images if provided
     if (images && images.length > 0) {
@@ -695,15 +663,11 @@ export const updateProduct = async (updateData: UpdateProductRequest): Promise<b
         .from('product_images')
         .insert(imageRecords)
 
-      if (imagesError) {
-        console.error('Error updating product images:', imagesError)
-        throw imagesError
-      }
+      if (imagesError) throw imagesError
     }
 
     return true
-  } catch (error) {
-    console.error('Error in updateProduct:', error)
+  } catch {
     return false
   }
 }
@@ -715,14 +679,9 @@ export const deleteProduct = async (productId: string): Promise<boolean> => {
 
     const { error } = await supabase.from('products').delete().eq('id', productId)
 
-    if (error) {
-      console.error('Error deleting product:', error)
-      throw error
-    }
-
+    if (error) throw error
     return true
-  } catch (error) {
-    console.error('Error in deleteProduct:', error)
+  } catch {
     return false
   }
 }
@@ -735,15 +694,11 @@ export const getBrands = async (): Promise<string[]> => {
       .select('brand')
       .order('brand')
 
-    if (error) {
-      console.error('Error fetching brands:', error)
-      return []
-    }
+    if (error) return []
 
     const uniqueBrands = [...new Set(data?.map((p) => (p as { brand: string }).brand) || [])]
     return uniqueBrands.filter((brand): brand is string => typeof brand === 'string')
-  } catch (error) {
-    console.error('Error in getBrands:', error)
+  } catch {
     return []
   }
 }

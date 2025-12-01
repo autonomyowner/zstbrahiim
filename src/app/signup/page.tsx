@@ -80,8 +80,7 @@ export default function SignUpPage() {
           }, 2000)
         }
       }
-    } catch (err) {
-      console.error('Signup error:', err)
+    } catch {
       setError('Unable to connect to the server. Please check your internet connection and try again.')
       setLoading(false)
     }

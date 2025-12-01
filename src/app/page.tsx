@@ -102,10 +102,8 @@ export default function HomePage(): JSX.Element {
         )
         setDatabaseProducts(filtered)
         setHasMoreProducts(filtered.length >= PRODUCTS_PER_PAGE)
-      } catch (error) {
-        if (!controller.signal.aborted) {
-          console.error('Error fetching database products:', error)
-        }
+      } catch {
+        // Silently handle fetch errors
       } finally {
         if (!controller.signal.aborted) {
           setIsLoadingProducts(false)
@@ -137,8 +135,8 @@ export default function HomePage(): JSX.Element {
       }
 
       setDatabaseProducts((prev) => [...prev, ...filtered])
-    } catch (error) {
-      console.error('Error loading more products:', error)
+    } catch {
+      // Silently handle load more errors
     } finally {
       setIsLoadingMore(false)
     }
