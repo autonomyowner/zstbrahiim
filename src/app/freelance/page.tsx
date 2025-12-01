@@ -220,10 +220,8 @@ export default function FreelancePage() {
         if (!controller.signal.aborted) {
           setDatabaseServices(services as FreelanceService[])
         }
-      } catch (error) {
-        if (!controller.signal.aborted) {
-          console.error('Error fetching database services:', error)
-        }
+      } catch {
+        // Silently handle fetch errors
       } finally {
         if (!controller.signal.aborted) {
           setIsLoadingServices(false)
@@ -529,7 +527,7 @@ export default function FreelancePage() {
                 Rejoignez notre plateforme et connectez-vous avec des clients qui recherchent vos compétences.
               </p>
               <Link
-                href="/register?role=freelancer"
+                href="/signup"
                 className="inline-flex items-center gap-2 px-8 py-4 rounded-xl bg-brand-primary text-brand-text font-bold transition-all duration-300 hover:bg-brand-primary-light hover:shadow-xl hover:shadow-brand-primary/25"
               >
                 Devenir prestataire
