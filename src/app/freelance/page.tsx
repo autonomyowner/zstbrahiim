@@ -39,9 +39,6 @@ const ServiceCardSkeleton = () => (
 // Service Card Component
 const ServiceCard = ({ service, index }: { service: FreelanceService; index: number }) => {
   const formatPrice = (price: number) => {
-    if (price >= 1000) {
-      return `${(price / 1000).toFixed(price % 1000 === 0 ? 0 : 1)}K`
-    }
     return price.toLocaleString()
   }
 
