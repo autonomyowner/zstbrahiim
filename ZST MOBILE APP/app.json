@@ -1,0 +1,68 @@
+{
+  "name": "ZST",
+  "slug": "zst",
+  "scheme": "zst",
+  "version": "1.0.0",
+  "orientation": "portrait",
+  "userInterfaceStyle": "automatic",
+  "icon": "./assets/images/app-icon-all.png",
+  "newArchEnabled": true,
+  "jsEngine": "hermes",
+  "assetBundlePatterns": [
+    "**/*"
+  ],
+  "android": {
+    "icon": "./assets/images/app-icon-android-legacy.png",
+    "package": "com.zst",
+    "adaptiveIcon": {
+      "foregroundImage": "./assets/images/app-icon-android-adaptive-foreground.png",
+      "backgroundImage": "./assets/images/app-icon-android-adaptive-background.png"
+    },
+    "allowBackup": false
+  },
+  "ios": {
+    "icon": "./assets/images/app-icon-ios.png",
+    "supportsTablet": true,
+    "bundleIdentifier": "com.zst"
+  },
+  "web": {
+    "favicon": "./assets/images/app-icon-web-favicon.png",
+    "bundler": "metro"
+  },
+  "plugins": [
+    "expo-localization",
+    "expo-font",
+    [
+      "expo-splash-screen",
+      {
+        "image": "./assets/images/app-icon-android-adaptive-foreground.png",
+        "imageWidth": 300,
+        "resizeMode": "contain",
+        "backgroundColor": "#000000"
+      }
+    ],
+    "expo-build-properties",
+    "expo-router",
+    [
+      "expo-image-picker",
+      {
+        "photosPermission": "L'application a besoin d'accéder à vos photos pour ajouter des images de produits.",
+        "cameraPermission": "L'application a besoin d'accéder à votre caméra pour prendre des photos de produits."
+      }
+    ],
+    "expo-web-browser"
+  ],
+  "experiments": {
+    "tsconfigPaths": true,
+    "typedRoutes": true
+  },
+  "extra": {
+    "ignite": {
+      "version": "11.3.2"
+    },
+    "router": {},
+    "eas": {
+      "projectId": "97c7d6f2-200d-4534-87ff-eacd62e6ce75"
+    }
+  }
+}
