@@ -339,7 +339,7 @@ export const Navbar = (): JSX.Element => {
             {/* Right section */}
             <div className="hidden md:flex items-center gap-3">
               <Link
-                href="/services"
+                href={user?.role === 'freelancer' ? '/freelancer-dashboard' : '/services'}
                 className="relative inline-flex items-center gap-2 rounded-lg border border-[#C9A227]/30 bg-[#C9A227]/5 px-4 py-2.5 text-sm font-semibold text-white transition-all duration-200 hover:border-[#C9A227]/50 hover:bg-[#C9A227]/10 focus:outline-none focus:ring-2 focus:ring-[#C9A227]/30"
               >
                 Dashboard
@@ -371,7 +371,7 @@ export const Navbar = (): JSX.Element => {
             {renderNavLinks('column')}
             <div className="h-px bg-[#C9A227]/20 my-2" />
             <Link
-              href="/services"
+              href={user?.role === 'freelancer' ? '/freelancer-dashboard' : '/services'}
               className="relative inline-flex items-center gap-2 rounded-lg border border-[#C9A227]/30 bg-[#C9A227]/5 px-4 py-3 font-semibold text-white transition-all duration-200 hover:border-[#C9A227]/50 hover:bg-[#C9A227]/10"
             >
               Dashboard
