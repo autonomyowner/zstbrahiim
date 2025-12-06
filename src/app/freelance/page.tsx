@@ -36,8 +36,10 @@ const ServiceCardSkeleton = () => (
   </div>
 )
 
-// Service Card Component
-const ServiceCard = ({ service, index }: { service: FreelanceService; index: number }) => {
+// Service Card Component - Extended type to include videoUrl from database
+type ServiceWithVideo = FreelanceService & { videoUrl?: string }
+
+const ServiceCard = ({ service, index }: { service: ServiceWithVideo; index: number }) => {
   const formatPrice = (price: number) => {
     return price.toLocaleString()
   }
@@ -58,13 +60,39 @@ const ServiceCard = ({ service, index }: { service: FreelanceService; index: num
       style={{ animationDelay: `${Math.min(index * 0.05, 0.4)}s` }}
     >
       <div className="relative bg-white rounded-2xl overflow-hidden border border-brand-border/50 transition-all duration-500 hover:border-brand-primary/30 hover:shadow-xl hover:-translate-y-1 animate-slide-up h-full">
+        {/* Video Preview */}
+        {service.videoUrl && (
+          <div className="relative aspect-video bg-brand-text overflow-hidden">
+            <video
+              src={service.videoUrl}
+              className="w-full h-full object-cover"
+              muted
+              playsInline
+              preload="metadata"
+              onMouseOver={(e) => (e.target as HTMLVideoElement).play()}
+              onMouseOut={(e) => {
+                const video = e.target as HTMLVideoElement
+                video.pause()
+                video.currentTime = 0
+              }}
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+            <div className="absolute bottom-3 left-3 flex items-center gap-1.5 text-white text-xs font-medium opacity-80">
+              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M6.3 2.841A1.5 1.5 0 004 4.11V15.89a1.5 1.5 0 002.3 1.269l9.344-5.89a1.5 1.5 0 000-2.538L6.3 2.84z" />
+              </svg>
+              Vidéo
+            </div>
+          </div>
+        )}
+
         {/* Hover gradient overlay */}
-        <div className="absolute inset-0 bg-gradient-to-br from-brand-primary/[0.02] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+        <div className="absolute inset-0 bg-gradient-to-br from-brand-primary/[0.02] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
 
         {/* Featured badge */}
         {service.featured && (
-          <div className="absolute top-4 right-4 z-10">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-brand-primary/10 border border-brand-primary/20 text-[10px] font-bold uppercase tracking-wider text-brand-primary">
+          <div className={`absolute ${service.videoUrl ? 'top-4' : 'top-4'} right-4 z-10`}>
+            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-brand-primary/10 border border-brand-primary/20 text-[10px] font-bold uppercase tracking-wider text-brand-primary backdrop-blur-sm">
               Featured
             </span>
           </div>
@@ -205,7 +233,7 @@ export default function FreelancePage() {
   const [selectedExperience, setSelectedExperience] = useState<ExperienceLevel | 'all'>('all')
   const [selectedAvailability, setSelectedAvailability] = useState<'all' | 'available' | 'busy'>('all')
   const [searchQuery, setSearchQuery] = useState('')
-  const [databaseServices, setDatabaseServices] = useState<FreelanceService[]>([])
+  const [databaseServices, setDatabaseServices] = useState<ServiceWithVideo[]>([])
   const [isLoadingServices, setIsLoadingServices] = useState(true)
   const [visibleCount, setVisibleCount] = useState(SERVICES_PER_PAGE)
 
@@ -218,7 +246,7 @@ export default function FreelancePage() {
         setIsLoadingServices(true)
         const services = await getFreelanceServices()
         if (!controller.signal.aborted) {
-          setDatabaseServices(services as FreelanceService[])
+          setDatabaseServices(services as ServiceWithVideo[])
         }
       } catch {
         // Silently handle fetch errors
@@ -234,7 +262,7 @@ export default function FreelancePage() {
   }, [])
 
   // Combine and memoize all services
-  const allServices = useMemo(() => {
+  const allServices = useMemo((): ServiceWithVideo[] => {
     return [...freelanceServices, ...databaseServices]
   }, [databaseServices])
 

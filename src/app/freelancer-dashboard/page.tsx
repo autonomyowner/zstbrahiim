@@ -130,6 +130,7 @@ export default function FreelancerDashboardPage() {
         featured: false,
         verified: false,
         top_rated: false,
+        video_url: serviceData.videoUrl || null,
         portfolio: serviceData.portfolioImages.map((url, index) => ({
           title: `Work ${index + 1}`,
           description: '',
@@ -174,6 +175,7 @@ export default function FreelancerDashboardPage() {
         revisions: serviceData.revisions,
         languages: serviceData.languages.split(',').map(s => s.trim()).filter(s => s),
         response_time: serviceData.responseTime,
+        video_url: serviceData.videoUrl || null,
       }
 
       const updated = await updateService(updatePayload)

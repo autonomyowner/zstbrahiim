@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { ImageUpload } from '@/components/ImageUpload'
+import { VideoUpload } from '@/components/VideoUpload'
 import { type ServiceFormData } from './AddServiceModal'
 
 type Service = {
@@ -18,6 +19,7 @@ type Service = {
   revisions: string
   languages: string[]
   responseTime: string
+  videoUrl?: string
   portfolio?: Array<{ image?: string; imageUrl?: string; title?: string; description?: string; displayOrder?: number }>
 }
 
@@ -43,6 +45,7 @@ export function EditServiceModal({ isOpen, service, onClose, onSubmit }: EditSer
     languages: 'Français, Arabe',
     responseTime: '2 heures',
     portfolioImages: [],
+    videoUrl: '',
   })
 
   const [errors, setErrors] = useState<Record<string, string>>({})
@@ -63,6 +66,7 @@ export function EditServiceModal({ isOpen, service, onClose, onSubmit }: EditSer
         languages: service.languages.join(', '),
         responseTime: service.responseTime,
         portfolioImages: service.portfolio?.map(p => p.image || p.imageUrl).filter((url): url is string => !!url) || [],
+        videoUrl: service.videoUrl || '',
       })
     }
   }, [service])
@@ -163,6 +167,20 @@ export function EditServiceModal({ isOpen, service, onClose, onSubmit }: EditSer
                 rows={6}
                 className="w-full px-4 py-2 border border-kitchen-lux-dark-green-300 rounded-lg"
               />
+            </div>
+
+            {/* Video Upload */}
+            <div className="md:col-span-2">
+              <VideoUpload
+                onVideoUploaded={(url) => updateField('videoUrl', url)}
+                currentVideoUrl={formData.videoUrl}
+                label="Vidéo de présentation du service (optionnel)"
+                required={false}
+                bucketPath="service-videos"
+              />
+              <p className="text-xs text-kitchen-lux-dark-green-600 mt-2">
+                Ajoutez ou modifiez la vidéo pour montrer votre travail
+              </p>
             </div>
           </div>
 
