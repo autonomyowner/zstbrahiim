@@ -517,7 +517,7 @@ export default function FreelancePage() {
                 <div className="flex justify-center mt-12">
                   <button
                     onClick={loadMore}
-                    className="px-8 py-3.5 rounded-xl bg-brand-text text-white font-semibold transition-all duration-300 hover:bg-brand-text/90 hover:shadow-lg"
+                    className="px-8 py-3.5 rounded-xl bg-brand-primary text-brand-text font-semibold transition-all duration-300 hover:bg-brand-primary-dark hover:shadow-lg border border-brand-primary"
                   >
                     Voir plus ({filteredServices.length - visibleCount} restants)
                   </button>
