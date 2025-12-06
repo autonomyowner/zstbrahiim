@@ -7,7 +7,6 @@ import { HeroSection } from '@/components/HeroSection'
 import { ProductGrid, ProductGridSkeleton } from '@/components/ProductGrid'
 import { ShopFilters } from '@/components/ShopFilters'
 import {
-  womenPerfumes,
   type FilterState,
   type SortOption,
   matchesCategory,
@@ -142,9 +141,9 @@ export default function HomePage(): JSX.Element {
     }
   }
 
-  // Combine all products (static perfumes + winter clothes + database products)
+  // All products from database only
   const allProducts = useMemo(() => {
-    return [...womenPerfumes, ...databaseProducts]
+    return databaseProducts
   }, [databaseProducts])
 
   // Filter products
