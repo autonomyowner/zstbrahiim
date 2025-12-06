@@ -542,29 +542,6 @@ export default function FreelancePage() {
             </div>
           )}
 
-          {/* CTA Section */}
-          <div className="mt-20 relative overflow-hidden rounded-3xl bg-brand-text p-8 sm:p-12 lg:p-16">
-            {/* Background decoration */}
-            <div className="absolute top-0 right-0 w-96 h-96 bg-brand-primary/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
-
-            <div className="relative text-center">
-              <h2 className="font-display text-3xl sm:text-4xl font-bold text-white mb-4">
-                Vous êtes freelance ?
-              </h2>
-              <p className="text-lg text-white/70 mb-8 max-w-xl mx-auto">
-                Rejoignez notre plateforme et connectez-vous avec des clients qui recherchent vos compétences.
-              </p>
-              <Link
-                href="/signup"
-                className="inline-flex items-center gap-2 px-8 py-4 rounded-xl bg-brand-primary text-brand-text font-bold transition-all duration-300 hover:bg-brand-primary-light hover:shadow-xl hover:shadow-brand-primary/25"
-              >
-                Devenir prestataire
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 8l4 4m0 0l-4 4m4-4H3" />
-                </svg>
-              </Link>
-            </div>
-          </div>
         </div>
       </section>
     </div>
