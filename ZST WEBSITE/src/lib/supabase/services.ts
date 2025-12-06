@@ -11,11 +11,18 @@ import type {
 
 // Adapter to convert database format to frontend format
 const adaptService = (dbService: any): any => {
+  // Get provider name: prefer provider_name, fallback to full_name, then 'Unknown'
+  const providerName =
+    dbService.user_profiles?.provider_name ||
+    dbService.user_profiles?.full_name ||
+    dbService.provider_name ||
+    'Unknown'
+
   return {
     id: dbService.id,
     slug: dbService.slug,
     providerId: dbService.provider_id, // Add provider_id for filtering
-    providerName: dbService.user_profiles?.provider_name || dbService.provider_name || 'Unknown',
+    providerName: providerName,
     providerAvatar: dbService.user_profiles?.provider_avatar || dbService.provider_avatar || '',
     serviceTitle: dbService.service_title,
     category: dbService.category,
@@ -53,6 +60,7 @@ export const getFreelanceServices = async (filters?: ServiceFilters): Promise<an
       .select(`
         *,
         user_profiles!provider_id (
+          full_name,
           provider_name,
           provider_avatar,
           bio
@@ -139,6 +147,7 @@ export const getServiceById = async (id: string): Promise<any | null> => {
       .select(`
         *,
         user_profiles!provider_id (
+          full_name,
           provider_name,
           provider_avatar,
           bio
@@ -175,6 +184,7 @@ export const getServiceBySlug = async (slug: string): Promise<any | null> => {
       .select(`
         *,
         user_profiles!provider_id (
+          full_name,
           provider_name,
           provider_avatar,
           bio
@@ -211,6 +221,7 @@ export const searchServices = async (query: string, filters?: ServiceFilters): P
       .select(`
         *,
         user_profiles!provider_id (
+          full_name,
           provider_name,
           provider_avatar,
           bio

@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo, useCallback } from 'react'
 import Link from 'next/link'
-import { freelanceServices, type ServiceCategory, type ExperienceLevel, type FreelanceService } from '@/data/freelance-services'
+import { type ServiceCategory, type ExperienceLevel, type FreelanceService } from '@/data/freelance-services'
 import { getFreelanceServices } from '@/lib/supabase/services'
 
 const SERVICES_PER_PAGE = 9
@@ -86,9 +86,9 @@ const ServiceCard = ({ service, index }: { service: FreelanceService; index: num
               )}
             </div>
             <div className="flex-1 min-w-0">
-              <h3 className="font-semibold text-brand-text truncate">{service.providerName}</h3>
+              <h3 className="font-semibold text-text-primary truncate">{service.providerName}</h3>
               <div className="flex items-center gap-2 mt-1">
-                <span className="text-xs text-brand-text-muted">{service.experienceLevel}</span>
+                <span className="text-xs text-text-muted">{service.experienceLevel}</span>
                 {service.topRated && (
                   <span className="text-[10px] font-bold uppercase tracking-wider text-brand-primary bg-brand-primary/10 px-2 py-0.5 rounded">
                     Top
@@ -99,12 +99,12 @@ const ServiceCard = ({ service, index }: { service: FreelanceService; index: num
           </div>
 
           {/* Service Title */}
-          <h4 className="font-display text-lg font-semibold text-brand-text leading-snug mb-3 line-clamp-2 group-hover:text-brand-primary-dark transition-colors duration-300">
+          <h4 className="font-display text-lg font-semibold text-text-primary leading-snug mb-3 line-clamp-2 group-hover:text-brand-primary transition-colors duration-300">
             {service.serviceTitle}
           </h4>
 
           {/* Short Description */}
-          <p className="text-sm text-brand-text-muted leading-relaxed mb-4 line-clamp-2">
+          <p className="text-sm text-text-muted leading-relaxed mb-4 line-clamp-2">
             {service.shortDescription}
           </p>
 
@@ -113,40 +113,40 @@ const ServiceCard = ({ service, index }: { service: FreelanceService; index: num
             {service.skills.slice(0, 3).map((skill) => (
               <span
                 key={skill}
-                className="text-[11px] font-medium bg-brand-surface-muted text-brand-text-secondary px-2.5 py-1 rounded-full border border-brand-border/50"
+                className="text-[11px] font-medium bg-brand-surface-muted text-text-secondary px-2.5 py-1 rounded-full border border-brand-border/50"
               >
                 {skill}
               </span>
             ))}
             {service.skills.length > 3 && (
-              <span className="text-[11px] font-medium text-brand-text-muted px-2 py-1">
+              <span className="text-[11px] font-medium text-text-muted px-2 py-1">
                 +{service.skills.length - 3}
               </span>
             )}
           </div>
 
           {/* Stats Row */}
-          <div className="flex items-center gap-4 text-xs text-brand-text-muted mb-5">
+          <div className="flex items-center gap-4 text-xs text-text-muted mb-5">
             <div className="flex items-center gap-1">
               <span className="text-brand-primary font-bold">{service.rating}</span>
               <svg className="w-3.5 h-3.5 text-brand-primary" fill="currentColor" viewBox="0 0 20 20">
                 <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
               </svg>
-              <span className="text-brand-text-muted">({service.reviewsCount})</span>
+              <span className="text-text-muted">({service.reviewsCount})</span>
             </div>
             <span className="w-1 h-1 rounded-full bg-brand-border" />
-            <span>{service.completedProjects} projets</span>
+            <span className="text-text-secondary">{service.completedProjects} projets</span>
           </div>
 
           {/* Footer */}
           <div className="pt-4 border-t border-brand-border/50 flex items-center justify-between">
             <div>
-              <span className="text-[10px] uppercase tracking-wider text-brand-text-muted block">
+              <span className="text-[10px] uppercase tracking-wider text-text-muted block">
                 {getPriceLabel()}
               </span>
-              <span className="text-xl font-bold text-brand-text">
+              <span className="text-xl font-bold text-text-primary">
                 {formatPrice(service.price)}
-                <span className="text-sm font-normal text-brand-text-muted ml-1">DA</span>
+                <span className="text-sm font-normal text-text-muted ml-1">DA</span>
               </span>
             </div>
             <div
@@ -155,7 +155,7 @@ const ServiceCard = ({ service, index }: { service: FreelanceService; index: num
                   ? 'bg-accent-success/10 text-accent-success'
                   : service.availability === 'busy'
                   ? 'bg-accent-warning/10 text-accent-warning'
-                  : 'bg-brand-surface-muted text-brand-text-muted'
+                  : 'bg-brand-surface-muted text-text-muted'
               }`}
             >
               {service.availability === 'available'
@@ -188,12 +188,12 @@ const CategoryPill = ({
     className={`relative px-4 py-2 rounded-full text-sm font-medium transition-all duration-300 whitespace-nowrap ${
       isActive
         ? 'bg-brand-primary text-white shadow-lg shadow-brand-primary/25'
-        : 'bg-white text-brand-text-secondary hover:bg-brand-surface-muted border border-brand-border/50 hover:border-brand-primary/30'
+        : 'bg-white text-text-secondary hover:bg-brand-surface-muted border border-brand-border/50 hover:border-brand-primary/30'
     }`}
   >
     {label}
     {count !== undefined && count > 0 && (
-      <span className={`ml-1.5 text-[10px] ${isActive ? 'text-white/80' : 'text-brand-text-muted'}`}>
+      <span className={`ml-1.5 text-[10px] ${isActive ? 'text-white/80' : 'text-text-muted'}`}>
         ({count})
       </span>
     )}
@@ -233,9 +233,9 @@ export default function FreelancePage() {
     return () => controller.abort()
   }, [])
 
-  // Combine and memoize all services
+  // Use only database services (no more static data mixing)
   const allServices = useMemo(() => {
-    return [...freelanceServices, ...databaseServices]
+    return databaseServices
   }, [databaseServices])
 
   // Memoized category counts
@@ -267,10 +267,10 @@ export default function FreelancePage() {
     })
   }, [allServices, selectedCategory, selectedExperience, selectedAvailability, searchQuery])
 
-  // Featured services
+  // Featured services (from database)
   const featuredServices = useMemo(() => {
-    return freelanceServices.filter(s => s.featured).slice(0, 3)
-  }, [])
+    return databaseServices.filter(s => s.featured).slice(0, 3)
+  }, [databaseServices])
 
   // Visible services for pagination
   const visibleServices = useMemo(() => {
@@ -326,11 +326,11 @@ export default function FreelancePage() {
             <span className="inline-block px-4 py-1.5 rounded-full bg-brand-primary/10 border border-brand-primary/20 text-xs font-bold uppercase tracking-widest text-brand-primary mb-6">
               Marketplace des Talents
             </span>
-            <h1 className="font-display text-4xl sm:text-5xl lg:text-6xl font-bold text-brand-text leading-tight mb-6">
+            <h1 className="font-display text-4xl sm:text-5xl lg:text-6xl font-bold text-text-primary leading-tight mb-6">
               Trouvez le freelance
               <span className="block text-brand-primary">parfait</span>
             </h1>
-            <p className="text-lg text-brand-text-muted max-w-2xl mx-auto leading-relaxed">
+            <p className="text-lg text-text-muted max-w-2xl mx-auto leading-relaxed">
               Développeurs, designers, vidéastes et experts qualifiés prêts à transformer vos idées en réalité.
             </p>
           </div>
@@ -340,7 +340,7 @@ export default function FreelancePage() {
             <div className="relative group">
               <div className="absolute -inset-0.5 bg-gradient-to-r from-brand-primary/20 to-brand-primary-light/20 rounded-2xl blur opacity-0 group-hover:opacity-100 transition duration-500" />
               <div className="relative flex items-center bg-white rounded-2xl shadow-lg border border-brand-border/50 overflow-hidden">
-                <svg className="w-5 h-5 text-brand-text-muted ml-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-5 h-5 text-text-muted ml-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                 </svg>
                 <input
@@ -348,12 +348,12 @@ export default function FreelancePage() {
                   placeholder="Rechercher un service, compétence ou prestataire..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="flex-1 px-4 py-4 text-brand-text placeholder-brand-text-muted bg-transparent focus:outline-none"
+                  className="flex-1 px-4 py-4 text-text-primary placeholder-text-muted bg-transparent focus:outline-none"
                 />
                 {searchQuery && (
                   <button
                     onClick={() => setSearchQuery('')}
-                    className="p-2 mr-2 text-brand-text-muted hover:text-brand-text transition-colors"
+                    className="p-2 mr-2 text-text-muted hover:text-text-primary transition-colors"
                   >
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -372,8 +372,8 @@ export default function FreelancePage() {
               { value: stats.avgRating, label: 'Note moyenne' },
             ].map((stat, i) => (
               <div key={i} className="text-center">
-                <div className="text-2xl sm:text-3xl font-bold text-brand-text">{stat.value}</div>
-                <div className="text-xs sm:text-sm text-brand-text-muted mt-1">{stat.label}</div>
+                <div className="text-2xl sm:text-3xl font-bold text-text-primary">{stat.value}</div>
+                <div className="text-xs sm:text-sm text-text-muted mt-1">{stat.label}</div>
               </div>
             ))}
           </div>
@@ -388,10 +388,10 @@ export default function FreelancePage() {
             <div className="mb-16">
               <div className="flex items-center justify-between mb-8">
                 <div>
-                  <h2 className="font-display text-2xl sm:text-3xl font-bold text-brand-text">
+                  <h2 className="font-display text-2xl sm:text-3xl font-bold text-text-primary">
                     Recommandés
                   </h2>
-                  <p className="text-brand-text-muted mt-1">Les meilleurs talents de la plateforme</p>
+                  <p className="text-text-muted mt-1">Les meilleurs talents de la plateforme</p>
                 </div>
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -405,10 +405,10 @@ export default function FreelancePage() {
           {/* Filters */}
           <div className="mb-8">
             <div className="flex items-center justify-between mb-6">
-              <h2 className="font-display text-2xl sm:text-3xl font-bold text-brand-text">
+              <h2 className="font-display text-2xl sm:text-3xl font-bold text-text-primary">
                 {searchQuery ? `Résultats pour "${searchQuery}"` : 'Tous les services'}
               </h2>
-              <span className="text-sm text-brand-text-muted">
+              <span className="text-sm text-text-muted">
                 {filteredServices.length} service{filteredServices.length !== 1 ? 's' : ''}
               </span>
             </div>
@@ -437,7 +437,7 @@ export default function FreelancePage() {
                   setSelectedExperience(e.target.value as ExperienceLevel | 'all')
                   setVisibleCount(SERVICES_PER_PAGE)
                 }}
-                className="px-4 py-2 rounded-xl bg-white border border-brand-border/50 text-sm text-brand-text-secondary focus:outline-none focus:border-brand-primary/50 transition-colors"
+                className="px-4 py-2 rounded-xl bg-white border border-brand-border/50 text-sm text-text-secondary focus:outline-none focus:border-brand-primary/50 transition-colors"
               >
                 <option value="all">Tous niveaux</option>
                 <option value="Débutant">Débutant</option>
@@ -451,7 +451,7 @@ export default function FreelancePage() {
                   setSelectedAvailability(e.target.value as 'all' | 'available' | 'busy')
                   setVisibleCount(SERVICES_PER_PAGE)
                 }}
-                className="px-4 py-2 rounded-xl bg-white border border-brand-border/50 text-sm text-brand-text-secondary focus:outline-none focus:border-brand-primary/50 transition-colors"
+                className="px-4 py-2 rounded-xl bg-white border border-brand-border/50 text-sm text-text-secondary focus:outline-none focus:border-brand-primary/50 transition-colors"
               >
                 <option value="all">Disponibilité</option>
                 <option value="available">Disponible</option>
@@ -489,7 +489,7 @@ export default function FreelancePage() {
                 <div className="flex justify-center mt-12">
                   <button
                     onClick={loadMore}
-                    className="px-8 py-3.5 rounded-xl bg-brand-text text-white font-semibold transition-all duration-300 hover:bg-brand-text/90 hover:shadow-lg"
+                    className="px-8 py-3.5 rounded-xl bg-text-primary text-white font-semibold transition-all duration-300 hover:bg-text-primary/90 hover:shadow-lg"
                   >
                     Voir plus ({filteredServices.length - visibleCount} restants)
                   </button>
@@ -499,15 +499,15 @@ export default function FreelancePage() {
           ) : (
             <div className="text-center py-20">
               <div className="w-20 h-20 mx-auto mb-6 rounded-2xl bg-brand-surface-muted flex items-center justify-center">
-                <svg className="w-10 h-10 text-brand-text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-10 h-10 text-text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                 </svg>
               </div>
-              <h3 className="text-xl font-semibold text-brand-text mb-2">Aucun service trouvé</h3>
-              <p className="text-brand-text-muted mb-6">Essayez de modifier vos filtres ou votre recherche</p>
+              <h3 className="text-xl font-semibold text-text-primary mb-2">Aucun service trouvé</h3>
+              <p className="text-text-muted mb-6">Essayez de modifier vos filtres ou votre recherche</p>
               <button
                 onClick={resetFilters}
-                className="px-6 py-3 rounded-xl bg-brand-primary text-white font-semibold transition-all duration-300 hover:bg-brand-primary-dark hover:shadow-lg"
+                className="px-6 py-3 rounded-xl bg-brand-primary text-white font-semibold transition-all duration-300 hover:bg-brand-primary/90 hover:shadow-lg"
               >
                 Réinitialiser les filtres
               </button>
@@ -515,7 +515,7 @@ export default function FreelancePage() {
           )}
 
           {/* CTA Section */}
-          <div className="mt-20 relative overflow-hidden rounded-3xl bg-brand-text p-8 sm:p-12 lg:p-16">
+          <div className="mt-20 relative overflow-hidden rounded-3xl bg-neutral-900 p-8 sm:p-12 lg:p-16">
             {/* Background decoration */}
             <div className="absolute top-0 right-0 w-96 h-96 bg-brand-primary/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2" />
 
@@ -528,7 +528,7 @@ export default function FreelancePage() {
               </p>
               <Link
                 href="/signup"
-                className="inline-flex items-center gap-2 px-8 py-4 rounded-xl bg-brand-primary text-brand-text font-bold transition-all duration-300 hover:bg-brand-primary-light hover:shadow-xl hover:shadow-brand-primary/25"
+                className="inline-flex items-center gap-2 px-8 py-4 rounded-xl bg-brand-primary text-neutral-900 font-bold transition-all duration-300 hover:bg-brand-primaryLight hover:shadow-xl hover:shadow-brand-primary/25"
               >
                 Devenir prestataire
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
