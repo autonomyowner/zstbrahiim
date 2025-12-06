@@ -334,7 +334,7 @@ export default function ServiceDetailPage() {
 
                 <button
                   onClick={handleContactProvider}
-                  className="w-full bg-kitchen-lux-dark-green-600 text-white py-4 rounded-lg font-bold text-lg hover:bg-kitchen-lux-dark-green-700 transition-colors shadow-lg hover:shadow-xl mb-3"
+                  className="w-full bg-brand-primary text-brand-text py-4 rounded-lg font-bold text-lg hover:bg-brand-primary-dark transition-colors shadow-lg hover:shadow-xl mb-3"
                 >
                   Contacter le prestataire
                 </button>
