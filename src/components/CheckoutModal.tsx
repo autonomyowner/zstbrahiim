@@ -189,14 +189,14 @@ export const CheckoutModal = ({
     >
       <div className="relative w-full max-w-2xl max-h-[90vh] overflow-y-auto bg-white rounded-lg shadow-xl mx-4">
         {/* Header */}
-        <div className="sticky top-0 bg-gradient-to-r from-kitchen-lux-dark-green-600 to-kitchen-lux-dark-green-700 text-white p-6 rounded-t-lg">
+        <div className="sticky top-0 bg-gradient-to-r from-brand-dark to-brand-darkMuted text-white p-6 rounded-t-lg">
           <div className="flex items-center justify-between">
-            <h2 className="text-2xl font-elegant font-semibold">
+            <h2 className="text-2xl font-elegant font-semibold text-brand-primary">
               Informations de Commande
             </h2>
             <button
               onClick={onClose}
-              className="text-white hover:text-gray-200 transition-colors"
+              className="text-white hover:text-brand-primary transition-colors"
               type="button"
               aria-label="Fermer"
             >
@@ -220,11 +220,11 @@ export const CheckoutModal = ({
         {/* Form */}
         <form onSubmit={handleSubmit} className="p-6 space-y-6">
           {/* Product Summary */}
-          <div className="bg-kitchen-lux-dark-green-50 p-4 rounded-lg border border-kitchen-lux-dark-green-200">
-            <h3 className="font-semibold text-kitchen-lux-dark-green-800 mb-2">
+          <div className="bg-brand-primarySoft p-4 rounded-lg border border-brand-border">
+            <h3 className="font-semibold text-text-primary mb-2">
               Résumé de la commande
             </h3>
-            <div className="space-y-1 text-sm text-kitchen-lux-dark-green-700">
+            <div className="space-y-1 text-sm text-text-secondary">
               <p>
                 <span className="font-medium">Produit:</span> {product.name}
               </p>
@@ -233,7 +233,7 @@ export const CheckoutModal = ({
               </p>
               <p>
                 <span className="font-medium">Prix total:</span>{' '}
-                <span className="text-lg font-bold text-kitchen-lux-dark-green-800">
+                <span className="text-lg font-bold text-brand-primary">
                   {(product.price * quantity).toLocaleString()} DA
                 </span>
               </p>
@@ -244,9 +244,9 @@ export const CheckoutModal = ({
           <div>
             <label
               htmlFor="name"
-              className="block text-sm font-semibold text-kitchen-lux-dark-green-800 mb-2"
+              className="block text-sm font-semibold text-text-primary mb-2"
             >
-              Nom complet <span className="text-red-500">*</span>
+              Nom complet <span className="text-accent-error">*</span>
             </label>
             <input
               type="text"
@@ -254,13 +254,13 @@ export const CheckoutModal = ({
               name="name"
               value={formData.name}
               onChange={handleInputChange}
-              className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-kitchen-lux-dark-green-500 ${
-                errors.name ? 'border-red-500' : 'border-kitchen-lux-dark-green-300'
+              className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-primary ${
+                errors.name ? 'border-accent-error' : 'border-brand-border'
               }`}
               placeholder="Votre nom complet"
             />
             {errors.name && (
-              <p className="mt-1 text-sm text-red-500">{errors.name}</p>
+              <p className="mt-1 text-sm text-accent-error">{errors.name}</p>
             )}
           </div>
 
@@ -268,9 +268,9 @@ export const CheckoutModal = ({
           <div>
             <label
               htmlFor="email"
-              className="block text-sm font-semibold text-kitchen-lux-dark-green-800 mb-2"
+              className="block text-sm font-semibold text-text-primary mb-2"
             >
-              Email <span className="text-red-500">*</span>
+              Email <span className="text-accent-error">*</span>
             </label>
             <input
               type="email"
@@ -278,13 +278,13 @@ export const CheckoutModal = ({
               name="email"
               value={formData.email}
               onChange={handleInputChange}
-              className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-kitchen-lux-dark-green-500 ${
-                errors.email ? 'border-red-500' : 'border-kitchen-lux-dark-green-300'
+              className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-primary ${
+                errors.email ? 'border-accent-error' : 'border-brand-border'
               }`}
               placeholder="votre.email@exemple.com"
             />
             {errors.email && (
-              <p className="mt-1 text-sm text-red-500">{errors.email}</p>
+              <p className="mt-1 text-sm text-accent-error">{errors.email}</p>
             )}
           </div>
 
@@ -292,9 +292,9 @@ export const CheckoutModal = ({
           <div>
             <label
               htmlFor="phone"
-              className="block text-sm font-semibold text-kitchen-lux-dark-green-800 mb-2"
+              className="block text-sm font-semibold text-text-primary mb-2"
             >
-              Numéro de téléphone <span className="text-red-500">*</span>
+              Numéro de téléphone <span className="text-accent-error">*</span>
             </label>
             <input
               type="tel"
@@ -302,13 +302,13 @@ export const CheckoutModal = ({
               name="phone"
               value={formData.phone}
               onChange={handleInputChange}
-              className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-kitchen-lux-dark-green-500 ${
-                errors.phone ? 'border-red-500' : 'border-kitchen-lux-dark-green-300'
+              className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-primary ${
+                errors.phone ? 'border-accent-error' : 'border-brand-border'
               }`}
               placeholder="+213 673 73 45 78 ou 0673 73 45 78"
             />
             {errors.phone && (
-              <p className="mt-1 text-sm text-red-500">{errors.phone}</p>
+              <p className="mt-1 text-sm text-accent-error">{errors.phone}</p>
             )}
           </div>
 
@@ -316,17 +316,17 @@ export const CheckoutModal = ({
           <div>
             <label
               htmlFor="willaya"
-              className="block text-sm font-semibold text-kitchen-lux-dark-green-800 mb-2"
+              className="block text-sm font-semibold text-text-primary mb-2"
             >
-              Wilaya <span className="text-red-500">*</span>
+              Wilaya <span className="text-accent-error">*</span>
             </label>
             <select
               id="willaya"
               name="willaya"
               value={formData.willaya}
               onChange={handleInputChange}
-              className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-kitchen-lux-dark-green-500 ${
-                errors.willaya ? 'border-red-500' : 'border-kitchen-lux-dark-green-300'
+              className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-primary ${
+                errors.willaya ? 'border-accent-error' : 'border-brand-border'
               }`}
             >
               <option value="">Sélectionnez une wilaya</option>
@@ -337,7 +337,7 @@ export const CheckoutModal = ({
               ))}
             </select>
             {errors.willaya && (
-              <p className="mt-1 text-sm text-red-500">{errors.willaya}</p>
+              <p className="mt-1 text-sm text-accent-error">{errors.willaya}</p>
             )}
           </div>
 
@@ -345,9 +345,9 @@ export const CheckoutModal = ({
           <div>
             <label
               htmlFor="baladia"
-              className="block text-sm font-semibold text-kitchen-lux-dark-green-800 mb-2"
+              className="block text-sm font-semibold text-text-primary mb-2"
             >
-              Baladia (Commune) <span className="text-red-500">*</span>
+              Baladia (Commune) <span className="text-accent-error">*</span>
             </label>
             <input
               type="text"
@@ -355,27 +355,27 @@ export const CheckoutModal = ({
               name="baladia"
               value={formData.baladia}
               onChange={handleInputChange}
-              className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-kitchen-lux-dark-green-500 ${
-                errors.baladia ? 'border-red-500' : 'border-kitchen-lux-dark-green-300'
+              className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-primary ${
+                errors.baladia ? 'border-accent-error' : 'border-brand-border'
               }`}
               placeholder="Nom de votre commune"
             />
             {errors.baladia && (
-              <p className="mt-1 text-sm text-red-500">{errors.baladia}</p>
+              <p className="mt-1 text-sm text-accent-error">{errors.baladia}</p>
             )}
           </div>
 
           {/* Delivery Type */}
           <div>
-            <label className="block text-sm font-semibold text-kitchen-lux-dark-green-800 mb-3">
-              Type de livraison <span className="text-red-500">*</span>
+            <label className="block text-sm font-semibold text-text-primary mb-3">
+              Type de livraison <span className="text-accent-error">*</span>
             </label>
             <div className="grid grid-cols-2 gap-4">
               <label
                 className={`flex items-center p-4 border-2 rounded-lg cursor-pointer transition-colors ${
                   formData.deliveryType === 'house'
-                    ? 'border-kitchen-lux-dark-green-600 bg-kitchen-lux-dark-green-50'
-                    : 'border-kitchen-lux-dark-green-300 hover:border-kitchen-lux-dark-green-400'
+                    ? 'border-brand-primary bg-brand-primarySoft'
+                    : 'border-brand-border hover:border-brand-primary/50'
                 }`}
               >
                 <input
@@ -384,13 +384,13 @@ export const CheckoutModal = ({
                   value="house"
                   checked={formData.deliveryType === 'house'}
                   onChange={handleInputChange}
-                  className="mr-3"
+                  className="mr-3 accent-brand-primary"
                 />
                 <div>
-                  <div className="font-semibold text-kitchen-lux-dark-green-800">
+                  <div className="font-semibold text-text-primary">
                     À domicile
                   </div>
-                  <div className="text-sm text-kitchen-lux-dark-green-600">
+                  <div className="text-sm text-text-secondary">
                     Livraison à votre adresse
                   </div>
                 </div>
@@ -398,8 +398,8 @@ export const CheckoutModal = ({
               <label
                 className={`flex items-center p-4 border-2 rounded-lg cursor-pointer transition-colors ${
                   formData.deliveryType === 'office'
-                    ? 'border-kitchen-lux-dark-green-600 bg-kitchen-lux-dark-green-50'
-                    : 'border-kitchen-lux-dark-green-300 hover:border-kitchen-lux-dark-green-400'
+                    ? 'border-brand-primary bg-brand-primarySoft'
+                    : 'border-brand-border hover:border-brand-primary/50'
                 }`}
               >
                 <input
@@ -408,13 +408,13 @@ export const CheckoutModal = ({
                   value="office"
                   checked={formData.deliveryType === 'office'}
                   onChange={handleInputChange}
-                  className="mr-3"
+                  className="mr-3 accent-brand-primary"
                 />
                 <div>
-                  <div className="font-semibold text-kitchen-lux-dark-green-800">
+                  <div className="font-semibold text-text-primary">
                     Au bureau
                   </div>
-                  <div className="text-sm text-kitchen-lux-dark-green-600">
+                  <div className="text-sm text-text-secondary">
                     Livraison au lieu de travail
                   </div>
                 </div>
@@ -426,9 +426,9 @@ export const CheckoutModal = ({
           <div>
             <label
               htmlFor="address"
-              className="block text-sm font-semibold text-kitchen-lux-dark-green-800 mb-2"
+              className="block text-sm font-semibold text-text-primary mb-2"
             >
-              Adresse complète <span className="text-red-500">*</span>
+              Adresse complète <span className="text-accent-error">*</span>
             </label>
             <textarea
               id="address"
@@ -436,13 +436,13 @@ export const CheckoutModal = ({
               value={formData.address}
               onChange={handleInputChange}
               rows={3}
-              className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-kitchen-lux-dark-green-500 ${
-                errors.address ? 'border-red-500' : 'border-kitchen-lux-dark-green-300'
+              className={`w-full px-4 py-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-brand-primary ${
+                errors.address ? 'border-accent-error' : 'border-brand-border'
               }`}
               placeholder="Rue, numéro, quartier, etc."
             />
             {errors.address && (
-              <p className="mt-1 text-sm text-red-500">{errors.address}</p>
+              <p className="mt-1 text-sm text-accent-error">{errors.address}</p>
             )}
           </div>
 
@@ -466,14 +466,14 @@ export const CheckoutModal = ({
               type="button"
               onClick={onClose}
               disabled={isSubmitting}
-              className="flex-1 px-6 py-3 border-2 border-kitchen-lux-dark-green-300 text-kitchen-lux-dark-green-800 rounded-lg font-semibold hover:bg-kitchen-lux-dark-green-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex-1 px-6 py-3 border-2 border-brand-border text-text-primary rounded-lg font-semibold hover:bg-brand-surface-muted transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Annuler
             </button>
             <button
               type="submit"
               disabled={isSubmitting || orderSuccess}
-              className="flex-1 px-6 py-3 bg-kitchen-lux-dark-green-600 text-white rounded-lg font-semibold hover:bg-kitchen-lux-dark-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex-1 px-6 py-3 bg-brand-dark text-brand-primary rounded-lg font-semibold hover:bg-brand-darkMuted transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {isSubmitting ? 'Création...' : orderSuccess ? 'Commande créée!' : 'Confirmer la commande'}
             </button>
