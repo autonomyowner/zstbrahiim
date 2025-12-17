@@ -702,6 +702,122 @@ Idéal pour startups, entreprises et créateurs de contenu qui veulent se démar
     languages: ['Français', 'Arabe'],
     availability: 'available',
     verified: true
+  },
+  {
+    id: 'fs-11',
+    slug: 'architecture-systeme-developpement-fullstack',
+    providerName: 'Azeddine Zellag',
+    providerAvatar: '/avatars/avatar-11.jpg',
+    serviceTitle: 'Architecture système et développement Full Stack - Solutions sur mesure',
+    category: 'Développement Web',
+    experienceLevel: 'Expert',
+    rating: 5.0,
+    reviewsCount: 5,
+    completedProjects: 5,
+    responseTime: '30 minutes',
+    price: 120000,
+    priceType: 'starting-at',
+    description: `Architecte système et développeur Full Stack Expert avec plus de 10 ans d'expérience dans la conception et le développement de solutions logicielles complexes et évolutives. Je transforme vos défis techniques en systèmes robustes et performants.
+
+**Expertise en Architecture Système:**
+- Conception d'architectures microservices et distribuées
+- Architecture cloud-native (AWS, Azure, Google Cloud)
+- Design patterns et principes SOLID
+- Architecture scalable et haute disponibilité
+- Optimisation des performances et coûts infrastructure
+- Sécurité système et DevSecOps
+- Migration legacy vers architecture moderne
+- Documentation technique complète
+
+**Développement Full Stack:**
+- Frontend moderne: React, Next.js, TypeScript, Vue.js
+- Backend robuste: Node.js, Python, Go, Java
+- Bases de données: PostgreSQL, MongoDB, Redis, Supabase
+- API Design: REST, GraphQL, WebSocket, gRPC
+- DevOps: Docker, Kubernetes, CI/CD, Infrastructure as Code
+- Cloud: AWS, GCP, Azure, Vercel, Netlify
+- Testing: Jest, Cypress, Playwright, TDD/BDD
+- Real-time: WebRTC, Socket.io, Server-Sent Events
+
+**Services proposés:**
+- Audit et refonte d'architecture existante
+- Conception de solutions techniques sur mesure
+- Développement d'applications web complexes
+- Plateforme e-commerce multi-vendor
+- Solutions SaaS B2B et B2C
+- APIs et intégrations tierces
+- Systèmes de paiement sécurisés
+- Applications temps réel et collaborative
+- Formation et mentorat technique
+- Consulting technique et code review
+
+**Méthodologie de travail:**
+1. Analyse approfondie des besoins métier et techniques
+2. Conception de l'architecture avec documentation détaillée
+3. Validation technique et revue des choix technologiques
+4. Développement itératif avec livraisons régulières
+5. Tests automatisés et assurance qualité
+6. Déploiement et monitoring production
+7. Support et maintenance continue
+8. Transfert de compétences à votre équipe
+
+**Projets réalisés:**
+- Architecture et développement de plateforme marketplace multi-vendor
+- Systèmes de gestion d'entreprise (ERP, CRM)
+- Applications fintech avec paiement sécurisé
+- Plateformes d'apprentissage en ligne (LMS)
+- Solutions IoT et dashboards temps réel
+- Applications mobile native et cross-platform
+
+**Stack technique maîtrisé:**
+- **Frontend**: React, Next.js, TypeScript, Tailwind CSS, Redux, Zustand
+- **Backend**: Node.js, Express, NestJS, Python, FastAPI, Django
+- **Database**: PostgreSQL, MongoDB, Redis, Supabase, Firebase
+- **Cloud**: AWS (EC2, S3, Lambda, RDS), Docker, Kubernetes
+- **Tools**: Git, GitHub Actions, Jenkins, Terraform, Ansible
+
+**Garanties:**
+- Code propre et maintenable (Clean Code)
+- Documentation technique complète
+- Tests unitaires et d'intégration
+- Performance optimale
+- Sécurité renforcée (OWASP)
+- Scalabilité garantie
+- Support post-livraison
+- Respect des délais et du budget
+
+Je travaille en français, arabe et anglais. Disponible pour missions courtes et projets long terme. Déplacement possible en Algérie et à l'international.`,
+    shortDescription: 'Architecture système & Full Stack Expert - React, Next.js, Node.js, Cloud, Microservices, Solutions évolutives',
+    skills: ['React', 'Next.js', 'TypeScript', 'Node.js', 'System Architecture', 'PostgreSQL', 'AWS', 'Docker', 'Microservices', 'DevOps', 'Python', 'API Design', 'Cloud Native', 'Supabase'],
+    portfolio: [
+      {
+        title: 'Plateforme Marketplace ZST',
+        image: '/portfolio/fullstack-1.jpg',
+        description: 'Architecture et développement complet d\'une plateforme marketplace multi-vendor avec système de commandes, paiement et gestion vendeurs'
+      },
+      {
+        title: 'Solution SaaS Enterprise',
+        image: '/portfolio/fullstack-2.jpg',
+        description: 'Architecture microservices pour plateforme SaaS B2B avec +100K utilisateurs, système de facturation et analytics'
+      },
+      {
+        title: 'Application Fintech',
+        image: '/portfolio/fullstack-3.jpg',
+        description: 'Système de paiement sécurisé avec architecture cloud-native, haute disponibilité et conformité bancaire'
+      },
+      {
+        title: 'Plateforme E-learning',
+        image: '/portfolio/fullstack-4.jpg',
+        description: 'LMS complet avec streaming vidéo, système de quiz, certificats et dashboard analytics'
+      }
+    ],
+    deliveryTime: 'Sur mesure',
+    revisions: 'unlimited',
+    languages: ['Français', 'Arabe', 'Anglais'],
+    availability: 'available',
+    featured: true,
+    verified: true,
+    topRated: true
   }
 ]
 
