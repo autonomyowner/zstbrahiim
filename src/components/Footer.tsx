@@ -46,7 +46,7 @@ export const Footer = (): JSX.Element => {
               </div>
             </Link>
             <p className="text-sm text-white/40 max-w-sm leading-relaxed">
-              Delivering curated selections of perfumes, apparel, and wholesale goods across all 58 wilayas of Algeria.
+              Marketplace B2C & B2B complete pour l'achat et vente de tous produits, avec services freelance, a travers les 58 wilayas d'Algerie.
             </p>
 
             {/* Trust badges */}

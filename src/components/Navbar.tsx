@@ -33,6 +33,7 @@ const topNav: NavItem[] = [
   { label: 'Shopping', href: '/' },
   { label: 'Business', href: '/services' },
   { label: 'Freelance', href: '/freelance' },
+  { label: 'App Mobile', href: '/app' },
 ]
 
 // SVG Icons
