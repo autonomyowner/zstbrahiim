@@ -286,34 +286,6 @@ export default function SignUpPage() {
             </button>
           </form>
 
-          {/* Divider */}
-          <div className="relative my-8">
-            <div className="absolute inset-0 flex items-center">
-              <div className="w-full border-t border-brand-border"></div>
-            </div>
-            <div className="relative flex justify-center text-xs">
-              <span className="px-4 bg-white text-text-muted uppercase tracking-[0.2em]">
-                Or continue with
-              </span>
-            </div>
-          </div>
-
-          {/* Social Sign Up */}
-          <div className="grid grid-cols-2 gap-4">
-            <button
-              type="button"
-              className="flex items-center justify-center gap-2 px-4 py-3 border border-brand-border rounded-xl hover:bg-neutral-50 hover:border-brand-dark transition-all shadow-sm"
-            >
-              <span className="text-sm font-semibold text-text-primary">Google</span>
-            </button>
-            <button
-              type="button"
-              className="flex items-center justify-center gap-2 px-4 py-3 border border-brand-border rounded-xl hover:bg-neutral-50 hover:border-brand-dark transition-all shadow-sm"
-            >
-              <span className="text-sm font-semibold text-text-primary">Facebook</span>
-            </button>
-          </div>
-
           {/* Sign In Link */}
           <p className="mt-8 text-center text-sm text-text-muted">
             Already have an account?{' '}
