@@ -153,7 +153,7 @@ Je travaille en français, arabe et anglais. Disponible pour missions courtes et
     deliveryTime: 'Sur mesure',
     revisions: 'unlimited',
     languages: ['Français', 'Arabe', 'Anglais'],
-    availability: 'available',
+    availability: 'unavailable',
     featured: true,
     verified: true,
     topRated: true
