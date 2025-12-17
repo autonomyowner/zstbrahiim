@@ -12,21 +12,22 @@ export default function ServiceDetailPage() {
   const slug = params?.slug as string
   const [service, setService] = useState<any>(null)
   const [loading, setLoading] = useState(true)
+  const [showSuccessMessage, setShowSuccessMessage] = useState(false)
 
   useEffect(() => {
     const fetchService = async () => {
       // Try static services first
       let foundService = freelanceServices.find(s => s.slug === slug)
-      
+
       // If not found, try database
       if (!foundService) {
         foundService = await getServiceBySlug(slug)
       }
-      
+
       setService(foundService)
       setLoading(false)
     }
-    
+
     fetchService()
   }, [slug])
 
@@ -80,9 +81,18 @@ export default function ServiceDetailPage() {
   }
 
   const handleContactProvider = () => {
-    const message = `Bonjour ${service.providerName}, je suis intéressé(e) par votre service: "${service.serviceTitle}". Pouvez-vous me donner plus d'informations?`
-    const whatsappUrl = `https://wa.me/213797339451?text=${encodeURIComponent(message)}`
-    window.open(whatsappUrl, '_blank')
+    // Only Azeddine Zellag's card (fs-11) opens WhatsApp
+    if (service.id === 'fs-11') {
+      const message = `Bonjour ${service.providerName}, je suis intéressé(e) par votre service: "${service.serviceTitle}". Pouvez-vous me donner plus d'informations?`
+      const whatsappUrl = `https://wa.me/213797339451?text=${encodeURIComponent(message)}`
+      window.open(whatsappUrl, '_blank')
+    } else {
+      // All other cards show success message
+      setShowSuccessMessage(true)
+      setTimeout(() => {
+        setShowSuccessMessage(false)
+      }, 3000)
+    }
   }
 
   return (
@@ -338,6 +348,12 @@ export default function ServiceDetailPage() {
                 >
                   Contacter le prestataire
                 </button>
+
+                {showSuccessMessage && (
+                  <div className="bg-kitchen-lux-dark-green-100 border border-kitchen-lux-dark-green-300 text-kitchen-lux-dark-green-800 px-4 py-3 rounded-lg mb-3 text-center font-medium">
+                    Message envoyé avec succès!
+                  </div>
+                )}
 
                 <Link
                   href="/freelance"
