@@ -13,15 +13,13 @@ type ShopFiltersProps = {
   }
 }
 
+// Marketplace categories synced with mobile app
 const marketplaceCategories = [
-  { id: '', label: 'Toutes les annonces' },
+  { id: '', label: 'Tous' },
   ...productCategoryOptions.map((category) => ({
     id: category,
     label: category,
   })),
-  { id: 'winter', label: 'Winter drop' },
-  { id: 'services', label: 'Services & B2B' },
-  { id: 'freelance', label: 'Freelancers' },
 ]
 
 const ChevronLeftIcon = () => (

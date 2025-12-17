@@ -91,16 +91,17 @@ export default function HomePage(): JSX.Element {
     const fetchDatabaseProducts = async () => {
       try {
         setIsLoadingProducts(true)
-        const products = await getProducts(undefined, { limit: PRODUCTS_PER_PAGE, offset: 0 })
+        // Filter at database level for fournisseur products only
+        const products = await getProducts(undefined, {
+          limit: PRODUCTS_PER_PAGE,
+          offset: 0,
+          sellerCategories: ['fournisseur'],
+        })
 
         if (controller.signal.aborted) return
 
-        const filtered = (products as Product[]).filter(
-          (product) =>
-            product.sellerCategory !== 'importateur' && product.sellerCategory !== 'grossiste'
-        )
-        setDatabaseProducts(filtered)
-        setHasMoreProducts(filtered.length >= PRODUCTS_PER_PAGE)
+        setDatabaseProducts(products as Product[])
+        setHasMoreProducts(products.length >= PRODUCTS_PER_PAGE)
       } catch {
         // Silently handle fetch errors
       } finally {
@@ -122,18 +123,18 @@ export default function HomePage(): JSX.Element {
     try {
       setIsLoadingMore(true)
       const offset = databaseProducts.length
-      const products = await getProducts(undefined, { limit: PRODUCTS_PER_PAGE, offset })
+      // Filter at database level for fournisseur products only
+      const products = await getProducts(undefined, {
+        limit: PRODUCTS_PER_PAGE,
+        offset,
+        sellerCategories: ['fournisseur'],
+      })
 
-      const filtered = (products as Product[]).filter(
-        (product) =>
-          product.sellerCategory !== 'importateur' && product.sellerCategory !== 'grossiste'
-      )
-
-      if (filtered.length < PRODUCTS_PER_PAGE) {
+      if (products.length < PRODUCTS_PER_PAGE) {
         setHasMoreProducts(false)
       }
 
-      setDatabaseProducts((prev) => [...prev, ...filtered])
+      setDatabaseProducts((prev) => [...prev, ...(products as Product[])])
     } catch {
       // Silently handle load more errors
     } finally {

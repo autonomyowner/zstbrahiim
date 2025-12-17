@@ -17,19 +17,15 @@ export type ProductVideoAsset = {
   fileSizeBytes: number
 }
 
+// Categories synced with mobile app (DashboardScreen.tsx)
 export const productCategoryOptions = [
-  'Téléphones & Accessoires',
-  'Informatique',
-  'Électroménager & Électronique',
-  'Automobiles & Véhicules',
-  'Pièces détachées',
-  'Meubles & Maison',
-  'Matériaux & Équipement',
-  'Vêtements & Mode',
-  'Santé & Beauté',
-  'Loisirs & Divertissements',
-  'Parfums',
+  'Automobiles',
+  'Telephones',
   'Accessoires',
+  'Vetements',
+  'Electronique',
+  'Maison',
+  'Beaute',
 ]
 
 export type Product = {
@@ -677,33 +673,26 @@ export type FilterState = {
   searchQuery: string
 }
 
-// Marketplace category mappings to product categories
+// Marketplace category mappings - maps new simple categories to legacy database category names
+// This allows filtering to work even if database has old French category names
 export const categoryMappings: Record<string, string[]> = {
-  // Main categories
-  'electronics': ['Électronique', 'Technologie', 'Informatique', 'Téléphones', 'Ordinateurs', 'Électroménager'],
-  'transportation': ['Automobiles', 'Véhicules', 'Pièces', 'Auto'],
-  'home': ['Maison', 'Jardin', 'Meubles', 'Équipement', 'Matériaux'],
-  'personal': ['Vêtements', 'Mode', 'Santé', 'Beauté', 'Parfum'],
-  'lifestyle': ['Loisirs', 'Divertissements', 'Sport', 'Jeux'],
-
-  // Subcategories - specific matching
-  'electronics-0': ['Téléphones', 'Accessoires', 'Mobile', 'Phone'],
-  'electronics-1': ['Informatique', 'Ordinateurs', 'PC', 'Laptop'],
-  'electronics-2': ['Électroménager', 'Électronique', 'Appliance'],
-  'transportation-0': ['Automobiles', 'Véhicules', 'Voiture', 'Car'],
-  'transportation-1': ['Pièces détachées', 'Pièces', 'Parts'],
-  'home-0': ['Meubles', 'Maison', 'Furniture', 'Home'],
-  'home-1': ['Matériaux', 'Équipement', 'Material', 'Equipment'],
-  'personal-0': ['Vêtements', 'Mode', 'Clothes', 'Fashion', 'Clothing'],
-  'personal-1': ['Santé', 'Beauté', 'Health', 'Beauty', 'Parfum', 'Cosmétique'],
-  'lifestyle-0': ['Loisirs', 'Divertissements', 'Entertainment', 'Leisure'],
-  'lifestyle-1': ['Sport', 'Fitness', 'Sports'],
+  'Automobiles': ['Automobiles', 'Véhicules', 'Automobiles & Véhicules', 'Auto', 'Voiture', 'Car'],
+  'Telephones': ['Téléphones', 'Téléphones & Accessoires', 'Mobile', 'Phone', 'Smartphone'],
+  'Accessoires': ['Accessoires', 'Téléphones & Accessoires', 'Accessories'],
+  'Vetements': ['Vêtements', 'Vêtements & Mode', 'Mode', 'Clothes', 'Fashion', 'Clothing'],
+  'Electronique': ['Électronique', 'Électroménager', 'Électroménager & Électronique', 'Informatique', 'Technologie', 'Electronics'],
+  'Maison': ['Maison', 'Meubles & Maison', 'Meubles', 'Matériaux & Équipement', 'Home', 'Furniture'],
+  'Beaute': ['Beauté', 'Santé & Beauté', 'Santé', 'Parfums', 'Beauty', 'Health', 'Cosmétique', 'Parfum'],
 }
 
 // Helper function to check if a product matches a category filter
 export function matchesCategory(productCategory: string, filterCategoryId: string): boolean {
   if (!filterCategoryId) return true // No filter applied
 
+  // Direct exact match first (for products already using new category names)
+  if (productCategory === filterCategoryId) return true
+
+  // Then check keyword mappings (for products with old category names)
   const categoryKeywords = categoryMappings[filterCategoryId] || []
   return categoryKeywords.some(keyword =>
     productCategory.toLowerCase().includes(keyword.toLowerCase())
