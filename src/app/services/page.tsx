@@ -800,15 +800,73 @@ export default function SellerPortalPage(): JSX.Element {
 
       {/* Toast Messages */}
       {(successMessage || productError) && (
-        <div className="fixed top-16 md:top-20 left-4 right-4 md:left-1/2 md:right-auto md:-translate-x-1/2 z-50 animate-fade-in">
+        <div className="fixed top-16 md:top-20 left-4 right-4 md:left-auto md:right-4 md:max-w-md z-50 animate-slide-in-top">
           <div className={`
-            rounded-xl px-4 py-3 shadow-card-md
+            relative overflow-hidden rounded-lg shadow-2xl backdrop-blur-sm
             ${successMessage
-              ? 'bg-emerald-600 text-white'
-              : 'bg-red-600 text-white'
+              ? 'bg-gradient-to-br from-gray-900/95 via-gray-800/95 to-gray-900/95 border border-brand-primary/30'
+              : 'bg-gradient-to-br from-red-900/95 via-red-800/95 to-red-900/95 border border-red-500/30'
             }
           `}>
-            <p className="text-sm font-semibold">{successMessage || productError}</p>
+            {/* Decorative top border */}
+            <div className={`h-1 w-full ${successMessage ? 'bg-gradient-to-r from-transparent via-brand-primary to-transparent' : 'bg-gradient-to-r from-transparent via-red-500 to-transparent'}`} />
+
+            <div className="flex items-start gap-4 p-4">
+              {/* Icon */}
+              <div className={`
+                flex-shrink-0 w-10 h-10 rounded-full flex items-center justify-center
+                ${successMessage
+                  ? 'bg-brand-primary/20 ring-2 ring-brand-primary/40'
+                  : 'bg-red-500/20 ring-2 ring-red-500/40'
+                }
+              `}>
+                {successMessage ? (
+                  <svg className="w-6 h-6 text-brand-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M5 13l4 4L19 7" />
+                  </svg>
+                ) : (
+                  <svg className="w-6 h-6 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                )}
+              </div>
+
+              {/* Message Content */}
+              <div className="flex-1 pt-0.5">
+                <p className={`
+                  text-xs font-semibold uppercase tracking-wider mb-1
+                  ${successMessage ? 'text-brand-primary' : 'text-red-400'}
+                `}>
+                  {successMessage ? 'Succès' : 'Erreur'}
+                </p>
+                <p className="text-sm text-white font-medium leading-relaxed">
+                  {successMessage || productError}
+                </p>
+              </div>
+
+              {/* Close button */}
+              <button
+                onClick={() => {
+                  setSuccessMessage(null)
+                  setProductError(null)
+                }}
+                className={`
+                  flex-shrink-0 p-1 rounded-lg transition-colors
+                  ${successMessage
+                    ? 'hover:bg-brand-primary/10 text-gray-400 hover:text-brand-primary'
+                    : 'hover:bg-red-500/10 text-gray-400 hover:text-red-400'
+                  }
+                `}
+              >
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+
+            {/* Decorative corner accents */}
+            <div className={`absolute top-0 left-0 w-20 h-20 opacity-10 ${successMessage ? 'bg-brand-primary' : 'bg-red-500'} rounded-full blur-2xl -translate-x-10 -translate-y-10`} />
+            <div className={`absolute bottom-0 right-0 w-20 h-20 opacity-10 ${successMessage ? 'bg-brand-primary' : 'bg-red-500'} rounded-full blur-2xl translate-x-10 translate-y-10`} />
           </div>
         </div>
       )}

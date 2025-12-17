@@ -20,11 +20,22 @@ module.exports = {
           '0%, 100%': { boxShadow: '0 0 20px rgba(212, 175, 55, 0.15)' },
           '50%': { boxShadow: '0 0 30px rgba(212, 175, 55, 0.25)' },
         },
+        'slide-in-top': {
+          '0%': {
+            transform: 'translateY(-100%)',
+            opacity: '0',
+          },
+          '100%': {
+            transform: 'translateY(0)',
+            opacity: '1',
+          },
+        },
       },
       animation: {
         'hero-scroll': 'hero-scroll 18s linear infinite',
         'float': 'float 4s ease-in-out infinite',
         'glow-pulse': 'glow-pulse 3s ease-in-out infinite',
+        'slide-in-top': 'slide-in-top 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards',
       },
       colors: {
         // Luxe Gold & Super Black color system
