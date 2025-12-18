@@ -2,7 +2,7 @@
 
 import Image from 'next/image'
 
-const APK_URL = 'https://github.com/autonomyowner/opesmenuapp-zst/releases/download/v1.0.0/app-release.apk'
+const APK_URL = 'https://github.com/autonomyowner/mobilisad/releases/download/v1.0.0/zst.apk'
 const QR_CODE_URL = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(APK_URL)}`
 
 // Custom SVG icons
