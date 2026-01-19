@@ -1,0 +1,42 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pm2 list:*)",
+      "Bash(ls:*)",
+      "Bash(sudo -u postgres psql:*)",
+      "Bash(PGPASSWORD=tjdKc33CP7PEmhqchNmc psql:*)",
+      "Bash(pm2 delete:*)",
+      "Bash(pm2 flush:*)",
+      "Bash(pm2 start:*)",
+      "Bash(pm2 logs:*)",
+      "Bash(npm run build:*)",
+      "Bash(pm2 restart:*)",
+      "Bash(curl:*)",
+      "Bash(ln:*)",
+      "Bash(nginx -t:*)",
+      "Bash(systemctl reload:*)",
+      "Bash(systemctl status:*)",
+      "Bash(pm2 startup:*)",
+      "Bash(pm2 save:*)",
+      "Bash(systemctl is-active:*)",
+      "Bash(npm run migration:run:*)",
+      "Bash(NODE_ENV=production npx typeorm-ts-node-commonjs:*)",
+      "Bash(grep:*)",
+      "Bash(pm2 status:*)",
+      "Bash(redis-cli:*)",
+      "Bash(redis-cli CONFIG GET:*)",
+      "Bash(pm2 monit:*)",
+      "Bash(apt-get install:*)",
+      "Bash(ab:*)",
+      "Bash(find:*)",
+      "Bash(cat:*)",
+      "Bash(NODE_ENV=production npx typeorm:*)",
+      "Bash(source .env)",
+      "Bash(PGPASSWORD=\"$DATABASE_PASSWORD\" psql:*)",
+      "Bash(PGPASSWORD=\"zst_secure_password_2024\" psql:*)",
+      "Bash(node:*)",
+      "Bash(pm2 env:*)",
+      "Bash(pm2 show:*)"
+    ]
+  }
+}
