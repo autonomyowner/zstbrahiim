@@ -30,6 +30,10 @@ yarn-error.log*
 
 # OpenNext / Cloudflare
 .open-next/
+.wrangler/
+wrangler.toml
+bundle-worker.mjs
+nul
 
 # TypeScript
 *.tsbuildinfo
