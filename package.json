@@ -9,8 +9,8 @@
     "start": "next start",
     "lint": "next lint",
     "build:cloudflare": "npx @opennextjs/cloudflare build",
-    "deploy": "npm run build:cloudflare && npx wrangler pages deploy",
-    "preview": "npm run build:cloudflare && npx wrangler pages dev",
+    "deploy": "npx opennextjs-cloudflare build && npx opennextjs-cloudflare deploy",
+    "preview": "npm run build:cloudflare && npx wrangler dev",
     "convex:dev": "npx convex dev",
     "convex:deploy": "npx convex deploy"
   },
