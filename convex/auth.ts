@@ -15,8 +15,9 @@ export const createAuth = (ctx: GenericCtx<DataModel>) => {
     baseURL: siteUrl,
     database: authComponent.adapter(ctx),
     trustedOrigins: [
-      "https://www.zst.xyz",
-      "https://zst.xyz",
+      "https://www.aitridi.com",
+      "https://aitridi.com",
+      "https://zst-aitridi.pages.dev",
       "http://localhost:3000",
     ],
     emailAndPassword: {
