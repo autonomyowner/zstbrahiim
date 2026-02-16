@@ -2,12 +2,14 @@
 
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
-import { signUp } from '@/lib/supabase/auth'
-import type { SellerCategory, UserRole } from '@/lib/supabase/types'
+import { authClient } from '@/lib/auth-client'
+import { useMutation } from 'convex/react'
+import { api } from '../../../convex/_generated/api'
+
+type UserRole = 'customer' | 'seller' | 'freelancer'
+type SellerCategory = 'fournisseur' | 'importateur' | 'grossiste'
 
 export default function SignUpPage() {
-  const router = useRouter()
   const [fullName, setFullName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -17,6 +19,8 @@ export default function SignUpPage() {
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
   const [loading, setLoading] = useState(false)
+
+  const createProfile = useMutation(api.users.createProfile)
 
   useEffect(() => {
     if (userType !== 'seller') {
@@ -29,14 +33,12 @@ export default function SignUpPage() {
     setError(null)
     setLoading(true)
 
-    // Validate passwords match
     if (password !== confirmPassword) {
       setError('Passwords do not match!')
       setLoading(false)
       return
     }
 
-    // Validate password length
     if (password.length < 8) {
       setError('Password must be at least 8 characters long')
       setLoading(false)
@@ -44,42 +46,30 @@ export default function SignUpPage() {
     }
 
     try {
-      const selectedSellerCategory = userType === 'seller' ? sellerCategory : undefined
-      const { user, error: signUpError, userFriendlyError } = await signUp(
+      const { error: signUpError } = await authClient.signUp.email({
         email,
         password,
-        fullName,
-        undefined, // phone is optional
-        userType,
-        selectedSellerCategory
-      )
+        name: fullName,
+      })
 
       if (signUpError) {
-        // Use the user-friendly error message from the auth helper
-        setError(userFriendlyError || 'Failed to sign up. Please try again.')
+        setError(signUpError.message || 'Failed to sign up. Please try again.')
         setLoading(false)
         return
       }
 
-      if (user) {
-        setSuccess(true)
-        // Check if email confirmation is required
-        const confirmationRequired = user.identities?.length === 0
+      // Create user profile in Convex
+      await createProfile({
+        email,
+        fullName,
+        role: userType,
+        sellerCategory: userType === 'seller' ? sellerCategory : undefined,
+      })
 
-        if (confirmationRequired) {
-          // User needs to verify email
-          setError(null)
-          setTimeout(() => {
-            router.push('/signin')
-          }, 3000)
-        } else {
-          // User is auto-confirmed and can login immediately
-          setTimeout(() => {
-            router.push('/')
-            router.refresh()
-          }, 2000)
-        }
-      }
+      setSuccess(true)
+      setTimeout(() => {
+        window.location.href = '/'
+      }, 2000)
     } catch {
       setError('Unable to connect to the server. Please check your internet connection and try again.')
       setLoading(false)
@@ -87,24 +77,24 @@ export default function SignUpPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-neutral-50 via-white to-brand-light px-4 py-12 relative overflow-hidden">
-      {/* Background decorative elements */}
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_bottom_left,_var(--tw-gradient-stops))] from-brand-primary/10 via-transparent to-transparent"></div>
-      <div className="absolute top-0 left-0 w-96 h-96 bg-brand-primary/5 rounded-full blur-3xl"></div>
-      <div className="absolute bottom-0 right-0 w-96 h-96 bg-brand-dark/5 rounded-full blur-3xl"></div>
-      
-      <div className="w-full max-w-md relative z-10">
-        <div className="bg-white/95 backdrop-blur-sm rounded-3xl shadow-card-lg border border-brand-border/50 p-8 md:p-10">
+    <div className="min-h-screen bg-white md:bg-gradient-to-br md:from-neutral-50 md:via-white md:to-brand-light md:flex md:items-center md:justify-center px-0 md:px-4 py-0 md:py-12 relative overflow-hidden">
+      {/* Background decorative elements - desktop only */}
+      <div className="hidden md:block absolute inset-0 bg-[radial-gradient(circle_at_bottom_left,_var(--tw-gradient-stops))] from-brand-primary/10 via-transparent to-transparent"></div>
+      <div className="hidden md:block absolute top-0 left-0 w-96 h-96 bg-brand-primary/5 rounded-full blur-3xl"></div>
+      <div className="hidden md:block absolute bottom-0 right-0 w-96 h-96 bg-brand-dark/5 rounded-full blur-3xl"></div>
+
+      <div className="w-full max-w-md relative z-10 mx-auto">
+        <div className="bg-white md:bg-white/95 md:backdrop-blur-sm md:rounded-3xl md:shadow-card-lg md:border md:border-brand-border/50 px-5 pt-6 pb-28 md:p-10">
           {/* Logo */}
-          <div className="flex justify-center mb-6">
-            <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-brand-dark text-brand-primary text-3xl font-black shadow-card-sm">
+          <div className="flex justify-center mb-4 md:mb-6">
+            <div className="flex h-14 w-14 md:h-16 md:w-16 items-center justify-center rounded-2xl bg-brand-dark text-brand-primary text-2xl md:text-3xl font-black shadow-card-sm">
               Z
             </div>
           </div>
-          
+
           {/* Title */}
-          <div className="text-center mb-8">
-            <h1 className="text-3xl md:text-4xl font-black text-text-primary mb-2 tracking-tight">
+          <div className="text-center mb-6 md:mb-8">
+            <h1 className="text-2xl md:text-4xl font-black text-text-primary mb-2 tracking-tight">
               Create Account
             </h1>
             <p className="text-text-muted text-sm">
@@ -128,7 +118,7 @@ export default function SignUpPage() {
           )}
 
           {/* Form */}
-          <form onSubmit={handleSubmit} className="space-y-5">
+          <form onSubmit={handleSubmit} className="space-y-4 md:space-y-5">
             <div>
               <label
                 htmlFor="fullName"
@@ -142,7 +132,7 @@ export default function SignUpPage() {
                 value={fullName}
                 onChange={(e) => setFullName(e.target.value)}
                 required
-                className="w-full px-4 py-3.5 border border-brand-border rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-primary/40 focus:border-brand-primary transition-all bg-white text-text-primary placeholder:text-text-muted"
+                className="w-full px-4 py-4 md:py-3.5 border border-brand-border rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-primary/40 focus:border-brand-primary transition-all bg-white text-text-primary placeholder:text-text-muted text-base"
                 placeholder="John Doe"
               />
             </div>
@@ -159,7 +149,7 @@ export default function SignUpPage() {
                 value={userType}
                 onChange={(e) => setUserType(e.target.value as UserRole)}
                 required
-                className="w-full px-4 py-3.5 border border-brand-border rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-primary/40 focus:border-brand-primary transition-all bg-white text-text-primary"
+                className="w-full px-4 py-4 md:py-3.5 border border-brand-border rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-primary/40 focus:border-brand-primary transition-all bg-white text-text-primary text-base min-h-[48px]"
               >
                 <option value="customer">Client - Acheter des produits</option>
                 <option value="seller">Vendeur - Vendre des produits</option>
@@ -183,7 +173,7 @@ export default function SignUpPage() {
                   value={sellerCategory}
                   onChange={(e) => setSellerCategory(e.target.value as SellerCategory)}
                   required
-                  className="w-full px-4 py-3.5 border border-brand-border rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-primary/40 focus:border-brand-primary transition-all bg-white text-text-primary"
+                  className="w-full px-4 py-4 md:py-3.5 border border-brand-border rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-primary/40 focus:border-brand-primary transition-all bg-white text-text-primary text-base min-h-[48px]"
                 >
                   <option value="fournisseur">Fournisseur (vend aux clients)</option>
                   <option value="grossiste">Grossiste (vend aux fournisseurs)</option>
@@ -208,7 +198,7 @@ export default function SignUpPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="w-full px-4 py-3.5 border border-brand-border rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-primary/40 focus:border-brand-primary transition-all bg-white text-text-primary placeholder:text-text-muted"
+                className="w-full px-4 py-4 md:py-3.5 border border-brand-border rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-primary/40 focus:border-brand-primary transition-all bg-white text-text-primary placeholder:text-text-muted text-base"
                 placeholder="you@example.com"
               />
             </div>
@@ -228,7 +218,7 @@ export default function SignUpPage() {
                   onChange={(e) => setPassword(e.target.value)}
                   required
                   minLength={8}
-                  className="w-full px-4 py-3.5 border border-brand-border rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-primary/40 focus:border-brand-primary transition-all bg-white text-text-primary placeholder:text-text-muted"
+                  className="w-full px-4 py-4 md:py-3.5 border border-brand-border rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-primary/40 focus:border-brand-primary transition-all bg-white text-text-primary placeholder:text-text-muted text-base"
                   placeholder="At least 8 characters"
                 />
               </div>
@@ -247,17 +237,17 @@ export default function SignUpPage() {
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   required
                   minLength={8}
-                  className="w-full px-4 py-3.5 border border-brand-border rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-primary/40 focus:border-brand-primary transition-all bg-white text-text-primary placeholder:text-text-muted"
+                  className="w-full px-4 py-4 md:py-3.5 border border-brand-border rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-primary/40 focus:border-brand-primary transition-all bg-white text-text-primary placeholder:text-text-muted text-base"
                   placeholder="Re-enter password"
                 />
               </div>
             </div>
 
-            <div className="flex items-start">
+            <div className="flex items-start min-h-[44px]">
               <input
                 type="checkbox"
                 required
-                className="w-4 h-4 mt-1 text-brand-primary border-brand-border rounded focus:ring-brand-primary/40 cursor-pointer"
+                className="w-5 h-5 md:w-4 md:h-4 mt-0.5 text-brand-primary border-brand-border rounded focus:ring-brand-primary/40 cursor-pointer"
               />
               <label className="ml-3 text-sm text-text-muted">
                 I agree to the{' '}
@@ -277,17 +267,31 @@ export default function SignUpPage() {
               </label>
             </div>
 
-            <button
-              type="submit"
-              disabled={loading || success}
-              className="w-full bg-brand-dark hover:bg-black text-brand-primary py-3.5 rounded-xl font-bold transition-all duration-200 shadow-card-sm hover:shadow-card-md disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-[1.02]"
-            >
-              {loading ? 'Creating Account...' : success ? 'Success!' : 'Sign Up'}
-            </button>
+            {/* Sign In Link - above button on mobile */}
+            <p className="text-center text-sm text-text-muted md:hidden">
+              Already have an account?{' '}
+              <Link
+                href="/signin"
+                className="font-bold text-brand-dark hover:text-text-primary transition-colors"
+              >
+                Sign in
+              </Link>
+            </p>
+
+            {/* Submit button - sticky on mobile */}
+            <div className="fixed bottom-0 left-0 right-0 p-4 bg-white border-t border-brand-border/30 md:static md:p-0 md:border-0 z-20">
+              <button
+                type="submit"
+                disabled={loading || success}
+                className="w-full bg-brand-dark hover:bg-black text-brand-primary py-4 md:py-3.5 rounded-xl font-bold transition-all duration-200 shadow-card-sm hover:shadow-card-md disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-[1.02] min-h-[48px]"
+              >
+                {loading ? 'Creating Account...' : success ? 'Success!' : 'Sign Up'}
+              </button>
+            </div>
           </form>
 
-          {/* Sign In Link */}
-          <p className="mt-8 text-center text-sm text-text-muted">
+          {/* Sign In Link - desktop */}
+          <p className="mt-8 text-center text-sm text-text-muted hidden md:block">
             Already have an account?{' '}
             <Link
               href="/signin"

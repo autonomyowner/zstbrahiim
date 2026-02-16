@@ -2,14 +2,11 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
-import { usePathname, useRouter } from 'next/navigation'
-import {
-  getCurrentUserProfile,
-  signOut as authSignOut,
-  onAuthStateChange,
-} from '@/lib/supabase/auth'
-import type { UserProfile } from '@/lib/supabase/types'
-import { useRealtimeOrders } from '@/hooks/useRealtimeOrders'
+import { usePathname } from 'next/navigation'
+import { useCurrentUser } from '@/hooks/useCurrentUser'
+import { useQuery } from 'convex/react'
+import { api } from '../../convex/_generated/api'
+import { authClient } from '@/lib/auth-client'
 
 type NavItem = {
   label: string
@@ -59,16 +56,15 @@ export const Navbar = (): JSX.Element => {
   const [isScrolled, setIsScrolled] = useState<boolean>(false)
   const [mobileOpen, setMobileOpen] = useState<boolean>(false)
   const [openDropdown, setOpenDropdown] = useState<string | null>(null)
-  const [user, setUser] = useState<UserProfile | null>(null)
-  const [loading, setLoading] = useState<boolean>(true)
   const pathname = usePathname()
-  const router = useRouter()
 
-  // Real-time orders for sellers
-  const { pendingCount } = useRealtimeOrders({
-    sellerId: user?.id || null,
-    enabled: user?.role === 'seller',
-  })
+  const { user, isLoading: loading } = useCurrentUser()
+
+  // Real-time pending order count for sellers (reactive via Convex)
+  const pendingCount = useQuery(
+    api.orders.getPendingOrderCount,
+    user?.role === 'seller' && user?._id ? { sellerId: user._id } : 'skip'
+  ) ?? 0
 
   useEffect(() => {
     const handleScroll = (): void => {
@@ -84,50 +80,12 @@ export const Navbar = (): JSX.Element => {
     setMobileOpen(false)
   }, [pathname])
 
-  // Authentication state management
-  useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const profile = await getCurrentUserProfile()
-        setUser(profile)
-      } catch (error) {
-        console.error('Error fetching user:', error)
-        setUser(null)
-      } finally {
-        setLoading(false)
-      }
-    }
-
-    fetchUser()
-
-    const {
-      data: { subscription },
-    } = onAuthStateChange(async (authUser) => {
-      if (authUser) {
-        const profile = await getCurrentUserProfile()
-        setUser(profile)
-      } else {
-        setUser(null)
-      }
-    })
-
-    return () => {
-      subscription?.unsubscribe()
-    }
-  }, [])
-
   const handleSignOut = async () => {
     try {
-      const { error } = await authSignOut()
-      if (error) {
-        console.error('Error signing out:', error)
-        return
-      }
-      setUser(null)
-      router.push('/')
-      router.refresh()
+      await authClient.signOut()
+      window.location.href = '/'
     } catch (error) {
-      console.error('Error in handleSignOut:', error)
+      console.error('Error signing out:', error)
     }
   }
 
@@ -150,14 +108,14 @@ export const Navbar = (): JSX.Element => {
             className="group flex items-center gap-3 rounded-xl border border-[#C9A227]/30 bg-[#C9A227]/10 px-4 py-2.5 text-sm font-medium text-white transition-all duration-200 hover:border-[#C9A227]/60 hover:bg-[#C9A227]/20"
           >
             <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-[#C9A227] text-black font-bold text-sm transition-transform duration-200 group-hover:scale-105">
-              {user.full_name?.charAt(0)?.toUpperCase() || 'Z'}
+              {user.fullName?.charAt(0)?.toUpperCase() || 'Z'}
             </div>
             <div className="text-left">
               <p className="text-[10px] uppercase tracking-[0.2em] text-[#C9A227]/70 font-semibold">
                 Account
               </p>
               <p className="text-sm font-semibold text-white">
-                {user.full_name || 'My profile'}
+                {user.fullName || 'My profile'}
               </p>
             </div>
           </Link>
@@ -202,7 +160,6 @@ export const Navbar = (): JSX.Element => {
           const isDropdownActive = item.dropdown.some((subItem) => pathname === subItem.href)
 
           if (orientation === 'column') {
-            // Mobile: render as expandable section
             return (
               <div key={item.label} className="flex flex-col">
                 <button
@@ -239,7 +196,6 @@ export const Navbar = (): JSX.Element => {
             )
           }
 
-          // Desktop: render as hover dropdown
           return (
             <div
               key={item.label}
@@ -258,7 +214,6 @@ export const Navbar = (): JSX.Element => {
               </button>
               {openDropdown === item.label && (
                 <div className="absolute top-full left-0 mt-2 py-2 bg-[#0A0908] border border-[#C9A227]/20 rounded-xl shadow-2xl min-w-[180px] z-50 animate-scale-in">
-                  {/* Gold accent line at top */}
                   <div className="absolute top-0 left-4 right-4 h-[2px] bg-gradient-to-r from-transparent via-[#C9A227] to-transparent" />
                   {item.dropdown.map((subItem) => (
                     <Link
@@ -299,8 +254,8 @@ export const Navbar = (): JSX.Element => {
 
   return (
     <header className="sticky top-0 z-40">
-      {/* Top bar - Gold gradient */}
-      <div className="bg-gradient-to-r from-[#9A7B1A] via-[#C9A227] to-[#E8C547]">
+      {/* Top bar - Gold gradient - hidden on mobile */}
+      <div className="hidden md:block bg-gradient-to-r from-[#9A7B1A] via-[#C9A227] to-[#E8C547]">
         <div className="mx-auto flex max-w-6xl items-center justify-between px-4 sm:px-6 lg:px-8 py-2 text-[10px] sm:text-xs font-semibold uppercase tracking-[0.15em] sm:tracking-[0.2em]">
           <div className="flex items-center gap-3 sm:gap-5 text-black/90">
             {topNav.map((item) => (
@@ -322,12 +277,12 @@ export const Navbar = (): JSX.Element => {
 
       {/* Main nav - Super Black */}
       <div
-        className={`border-b border-[#C9A227]/10 bg-black transition-all duration-300 ${
-          isScrolled ? 'shadow-[0_4px_30px_rgba(201,162,39,0.1)]' : ''
+        className={`border-b border-white/[0.04] bg-black transition-all duration-300 ${
+          isScrolled ? 'shadow-[0_2px_20px_rgba(0,0,0,0.3)]' : ''
         }`}
       >
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-          <div className="flex h-16 md:h-18 items-center justify-between gap-4">
+          <div className="flex h-12 md:h-16 items-center justify-between gap-4">
             {/* Logo */}
             <Link href="/" className="flex items-center group">
               <span className="text-2xl sm:text-3xl font-bold tracking-tight text-[#C9A227] transition-all duration-200 group-hover:text-[#E8C547]">
@@ -355,7 +310,7 @@ export const Navbar = (): JSX.Element => {
 
             {/* Mobile menu button */}
             <button
-              className="inline-flex h-11 w-11 items-center justify-center rounded-lg border border-[#C9A227]/30 bg-[#C9A227]/5 text-[#C9A227] transition-all duration-200 hover:border-[#C9A227]/50 hover:bg-[#C9A227]/10 md:hidden focus:outline-none focus:ring-2 focus:ring-[#C9A227]/30"
+              className="inline-flex h-10 w-10 items-center justify-center rounded-lg text-white/60 transition-all duration-200 hover:text-white active:bg-white/5 md:hidden focus:outline-none"
               onClick={() => setMobileOpen((prev) => !prev)}
               aria-label="Toggle navigation menu"
             >
@@ -365,25 +320,23 @@ export const Navbar = (): JSX.Element => {
         </div>
       </div>
 
-      {/* Mobile menu - Super Black */}
+      {/* Mobile menu */}
       {mobileOpen && (
-        <div className="md:hidden border-b border-[#C9A227]/10 bg-black shadow-2xl animate-slide-down">
-          <div className="mx-auto max-w-6xl px-4 py-6 sm:px-6 lg:px-8 flex flex-col gap-4">
+        <div className="md:hidden border-b border-white/[0.04] bg-black animate-slide-down">
+          <div className="mx-auto max-w-6xl px-5 py-4 flex flex-col gap-2">
             {renderNavLinks('column')}
-            <div className="h-px bg-[#C9A227]/20 my-2" />
+            <div className="h-px bg-white/[0.06] my-2" />
             <Link
               href={user?.role === 'freelancer' ? '/freelancer-dashboard' : '/services'}
-              className="relative inline-flex items-center gap-2 rounded-lg border border-[#C9A227]/30 bg-[#C9A227]/5 px-4 py-3 font-semibold text-white transition-all duration-200 hover:border-[#C9A227]/50 hover:bg-[#C9A227]/10"
+              className="relative inline-flex items-center gap-2 rounded-xl bg-[#C9A227]/10 px-4 py-3 text-sm font-semibold text-[#C9A227] transition-all duration-200 hover:bg-[#C9A227]/15"
             >
               Dashboard
               {user?.role === 'seller' && pendingCount > 0 && (
-                <span className="absolute -top-1.5 -right-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-red-600 text-[10px] font-bold text-white shadow-lg">
+                <span className="flex h-5 min-w-[20px] items-center justify-center rounded-full bg-red-600 px-1.5 text-[10px] font-bold text-white">
                   {pendingCount > 99 ? '99+' : pendingCount}
                 </span>
               )}
             </Link>
-            <div className="h-px bg-[#C9A227]/20 my-2" />
-            {renderAuthSection('mobile')}
           </div>
         </div>
       )}

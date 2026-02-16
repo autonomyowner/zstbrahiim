@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import type { B2BOfferType } from '@/lib/supabase/types'
+type B2BOfferType = 'negotiable' | 'auction'
 
 interface OfferFiltersProps {
   onFilterChange: (filters: {

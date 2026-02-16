@@ -483,3 +483,24 @@ html {
   font-weight: 600;
   letter-spacing: -0.02em;
 }
+
+/* Bottom sheet animation */
+@keyframes slide-up-sheet {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+.animate-slide-up-sheet {
+  animation: slide-up-sheet 0.3s var(--ease-out-expo) forwards;
+}
+
+/* Touch target improvements */
+@media (max-width: 767px) {
+  button, a, [role="button"] {
+    touch-action: manipulation;
+  }
+}

@@ -1,13 +1,33 @@
 'use client'
 
-import { useState, useEffect } from 'react'
-import type { B2BResponseWithDetails, B2BResponseStatus, B2BResponseType } from '@/lib/supabase/types'
-import {
-  getOfferResponses,
-  acceptNegotiation,
-  rejectResponse,
-} from '@/lib/supabase/b2b-responses'
+import { useState } from 'react'
+import { useQuery, useMutation } from 'convex/react'
+import { api } from '../../../convex/_generated/api'
+import type { Id } from '../../../convex/_generated/dataModel'
 import ResponseCard from './ResponseCard'
+
+type B2BResponseStatus = 'pending' | 'accepted' | 'rejected' | 'outbid' | 'withdrawn'
+type B2BResponseType = 'bid' | 'negotiation'
+type B2BResponseWithDetails = {
+  id: string
+  offer_id: string
+  buyer_id: string
+  response_type: B2BResponseType
+  status: B2BResponseStatus
+  amount: number
+  quantity: number
+  message: string | null
+  created_at: string
+  updated_at: string
+  offer_title: string
+  seller_id: string
+  offer_type: 'negotiable' | 'auction'
+  offer_status: string
+  buyer_name: string
+  buyer_category: string
+  seller_name: string
+  seller_category: string
+}
 
 type ResponsesManagementSectionProps = {
   offerId: string
@@ -18,47 +38,27 @@ export default function ResponsesManagementSection({
   offerId,
   offerTitle,
 }: ResponsesManagementSectionProps) {
-  const [responses, setResponses] = useState<B2BResponseWithDetails[]>([])
-  const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [actionLoading, setActionLoading] = useState<string | null>(null)
   const [statusFilter, setStatusFilter] = useState<B2BResponseStatus | 'all'>('all')
   const [typeFilter, setTypeFilter] = useState<B2BResponseType | 'all'>('all')
 
-  useEffect(() => {
-    loadResponses()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [offerId, statusFilter, typeFilter])
+  const responsesData = useQuery(api.b2bResponses.getOfferResponses, {
+    offerId: offerId as Id<"b2bOffers">,
+    status: statusFilter !== 'all' ? statusFilter : undefined,
+    responseType: typeFilter !== 'all' ? typeFilter : undefined,
+  })
+  const responses = (responsesData ?? []) as any as B2BResponseWithDetails[]
+  const loading = responsesData === undefined
 
-  const loadResponses = async () => {
-    try {
-      setLoading(true)
-      setError(null)
-
-      const filters: any = {}
-      if (statusFilter !== 'all') {
-        filters.status = statusFilter
-      }
-      if (typeFilter !== 'all') {
-        filters.responseType = typeFilter
-      }
-
-      const data = await getOfferResponses(offerId, filters)
-      setResponses(data)
-    } catch (err: any) {
-      console.error('Error loading responses:', err)
-      setError(err.message || 'Erreur lors du chargement des réponses')
-    } finally {
-      setLoading(false)
-    }
-  }
+  const acceptNegotiationMutation = useMutation(api.b2bResponses.acceptNegotiation)
+  const rejectResponseMutation = useMutation(api.b2bResponses.rejectResponse)
 
   const handleAccept = async (responseId: string) => {
     try {
       setActionLoading(responseId)
       setError(null)
-      await acceptNegotiation(responseId)
-      await loadResponses() // Reload to show updated status
+      await acceptNegotiationMutation({ responseId: responseId as Id<"b2bOfferResponses"> })
     } catch (err: any) {
       console.error('Error accepting response:', err)
       setError(err.message || 'Erreur lors de l\'acceptation')
@@ -75,8 +75,7 @@ export default function ResponsesManagementSection({
     try {
       setActionLoading(responseId)
       setError(null)
-      await rejectResponse(responseId)
-      await loadResponses() // Reload to show updated status
+      await rejectResponseMutation({ responseId: responseId as Id<"b2bOfferResponses"> })
     } catch (err: any) {
       console.error('Error rejecting response:', err)
       setError(err.message || 'Erreur lors du refus')

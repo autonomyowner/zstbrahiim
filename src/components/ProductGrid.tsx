@@ -69,23 +69,19 @@ const VideoToggleButton = ({
 
 // Loading skeleton component
 const ProductSkeleton = () => (
-  <div className="relative aspect-[3/4] sm:aspect-[4/5] lg:aspect-[9/16] overflow-hidden rounded-2xl sm:rounded-3xl border border-brand-border/40 bg-brand-surface-muted">
+  <div className="relative aspect-[3/5] sm:aspect-[4/5] lg:aspect-[9/16] overflow-hidden rounded-2xl sm:rounded-3xl bg-neutral-100">
     <div className="absolute inset-0 skeleton" />
-    <div className="absolute inset-x-0 bottom-0 p-3 sm:p-4">
-      <div className="rounded-xl sm:rounded-2xl bg-white/90 p-3 sm:p-4 space-y-2.5">
-        <div className="skeleton h-3 w-16 rounded-md" />
-        <div className="skeleton h-4 w-3/4 rounded-md" />
-        <div className="flex justify-between items-center pt-1">
-          <div className="skeleton h-5 w-20 rounded-md" />
-          <div className="skeleton h-8 w-8 rounded-full" />
-        </div>
-      </div>
+    <div className="absolute inset-x-0 bottom-0 p-3 sm:p-4 space-y-2">
+      <div className="skeleton h-2.5 w-14 rounded" />
+      <div className="skeleton h-4 w-3/4 rounded" />
+      <div className="skeleton h-3.5 w-1/2 rounded" />
+      <div className="skeleton h-5 w-20 rounded mt-1" />
     </div>
   </div>
 )
 
 export const ProductGridSkeleton = ({ count = 8 }: { count?: number }) => (
-  <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 lg:gap-5 xl:grid-cols-4">
+  <div className="grid grid-cols-2 gap-2.5 sm:gap-3.5 md:grid-cols-3 lg:gap-4 xl:grid-cols-4">
     {Array.from({ length: count }).map((_, i) => (
       <ProductSkeleton key={i} />
     ))}
@@ -138,28 +134,31 @@ export const ProductGrid = ({ products, displayMode, showMinQuantity = false, is
     const minQty = (product as any).minQuantity || 1
 
     const containerSize = variant === 'grid' ? 'w-full' : 'w-full lg:max-w-[420px]'
+    const hasDiscount = product.originalPrice && product.originalPrice > product.price
+    const discountPct = hasDiscount ? Math.round(((product.originalPrice! - product.price) / product.originalPrice!) * 100) : 0
 
     return (
       <div
-        className={`relative aspect-[3/4] sm:aspect-[4/5] lg:aspect-[9/16] overflow-hidden rounded-2xl sm:rounded-3xl border border-brand-border/40 bg-neutral-950/90 ${containerSize} transition-all duration-300`}
+        className={`relative aspect-[3/5] sm:aspect-[4/5] lg:aspect-[9/16] overflow-hidden rounded-2xl sm:rounded-3xl bg-neutral-950 ${containerSize} transition-all duration-300 ring-1 ring-black/5 group-hover:ring-brand-primary/20`}
       >
-        {/* Promo badge */}
-        {product.isPromo && (
-          <div className="absolute left-2 top-2 sm:left-3 sm:top-3 z-10">
-            <span className="badge badge-dark text-[9px] sm:text-[10px] tracking-[0.2em]">
-              PROMO
+        {/* Top badges row */}
+        <div className="absolute left-2 top-2 sm:left-3 sm:top-3 z-10 flex flex-wrap gap-1.5">
+          {product.isPromo && (
+            <span className="inline-flex items-center rounded-md bg-brand-primary px-2 py-0.5 text-[9px] sm:text-[10px] font-bold text-brand-dark tracking-wide shadow-sm">
+              -{discountPct}%
             </span>
-          </div>
-        )}
-
-        {/* Min quantity badge */}
-        {showMinQuantity && minQty > 1 && (
-          <div className="absolute left-2 sm:left-3 z-10" style={{ top: product.isPromo ? '2.75rem' : '0.5rem' }}>
-            <span className="badge badge-warning text-[9px] sm:text-[10px]">
-              Min: {minQty} unités
+          )}
+          {showMinQuantity && minQty > 1 && (
+            <span className="inline-flex items-center rounded-md bg-amber-400 px-2 py-0.5 text-[9px] sm:text-[10px] font-bold text-amber-900 tracking-wide shadow-sm">
+              Min {minQty}
             </span>
-          </div>
-        )}
+          )}
+          {product.isNew && (
+            <span className="inline-flex items-center rounded-md bg-white/90 backdrop-blur-sm px-2 py-0.5 text-[9px] sm:text-[10px] font-bold text-text-primary tracking-wide shadow-sm">
+              NEW
+            </span>
+          )}
+        </div>
 
         {/* Video toggle button */}
         {hasVideo && (
@@ -193,7 +192,7 @@ export const ProductGrid = ({ products, displayMode, showMinQuantity = false, is
               src={product.image}
               alt={product.name}
               fill
-              className="object-cover transition-transform duration-500 ease-out-expo group-hover:scale-105"
+              className="object-cover transition-transform duration-700 ease-out group-hover:scale-[1.04]"
               sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
               priority={index < 4}
               loading={index < 4 ? 'eager' : 'lazy'}
@@ -201,45 +200,31 @@ export const ProductGrid = ({ products, displayMode, showMinQuantity = false, is
           </div>
         )}
 
-        {/* Gradient overlay */}
-        <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent h-2/5" />
+        {/* Gradient overlay - stronger for text readability */}
+        <div className="pointer-events-none absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/90 via-black/50 to-transparent h-3/5" />
 
-        {/* Product info card */}
-        <div className="absolute inset-x-0 bottom-0 p-2 sm:p-3 lg:p-4">
-          {/* Category badge */}
-          <div className="mb-1.5 sm:mb-2">
-            <span className="inline-block rounded-lg bg-white/95 backdrop-blur-sm px-2 py-0.5 sm:px-2.5 sm:py-1 text-[8px] sm:text-[9px] font-bold uppercase tracking-[0.2em] text-brand-dark shadow-subtle">
-              {product.category}
-            </span>
-          </div>
+        {/* Product info - directly on the gradient, no card */}
+        <div className="absolute inset-x-0 bottom-0 p-3 sm:p-4">
+          <p className="text-[9px] sm:text-[10px] font-semibold uppercase tracking-[0.15em] text-white/50 mb-1">
+            {product.category}
+          </p>
+          <h3 className="text-sm sm:text-base font-bold text-white line-clamp-2 leading-snug">
+            {product.name}
+          </h3>
 
-          {/* Info panel */}
-          <div className="rounded-xl sm:rounded-2xl bg-white/90 backdrop-blur-md p-2.5 sm:p-3.5 shadow-card-sm transition-all duration-300 group-hover:bg-white/95 group-hover:shadow-card-md">
-            <div className="flex items-start justify-between gap-2">
-              <div className="flex-1 min-w-0">
-                <h3 className="text-xs sm:text-sm lg:text-base font-bold text-text-primary line-clamp-1 leading-tight">
-                  {product.name}
-                </h3>
-                <p className="mt-0.5 text-[8px] sm:text-[9px] text-text-muted line-clamp-1 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                  {product.description}
-                </p>
-              </div>
-
-              {/* Price */}
-              <div className="flex flex-col items-end flex-shrink-0">
-                <span className="price text-sm sm:text-base lg:text-lg font-bold text-text-primary whitespace-nowrap">
-                  {formatPrice(product.price)}
-                  <span className="text-[8px] sm:text-[9px] font-medium text-text-muted ml-0.5">DA</span>
+          <div className="mt-2 flex items-end justify-between gap-2">
+            <div>
+              <span className="text-base sm:text-lg font-bold text-white tabular-nums">
+                {formatPrice(product.price)}
+                <span className="text-[10px] sm:text-xs font-medium text-white/50 ml-0.5">DA</span>
+              </span>
+              {hasDiscount && (
+                <span className="block text-[10px] sm:text-xs text-white/40 line-through tabular-nums">
+                  {formatPrice(product.originalPrice!)} DA
                 </span>
-                {product.originalPrice && product.originalPrice > product.price && (
-                  <span className="price-strike text-[8px] sm:text-[9px] whitespace-nowrap">
-                    {formatPrice(product.originalPrice)} DA
-                  </span>
-                )}
-              </div>
+              )}
             </div>
 
-            {/* Video action button */}
             {hasVideo && (
               <button
                 type="button"
@@ -248,20 +233,15 @@ export const ProductGrid = ({ products, displayMode, showMinQuantity = false, is
                   event.stopPropagation()
                   handleVideoToggle(product.id, hasVideo)
                 }}
-                className="pointer-events-auto mt-2 w-full flex items-center justify-center gap-1.5 rounded-lg bg-brand-dark px-3 py-1.5 sm:py-2 text-brand-primary shadow-subtle transition-all duration-200 hover:shadow-card-sm hover:translate-y-[-1px] active:translate-y-0"
+                className="pointer-events-auto flex items-center gap-1 rounded-full bg-white/15 backdrop-blur-sm px-2.5 py-1.5 text-white transition-all duration-200 hover:bg-white/25 active:scale-95"
                 aria-label={isVideoActive ? 'Voir la photo' : 'Regarder la vidéo'}
               >
                 {isVideoActive ? (
-                  <>
-                    <ImageIcon className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
-                    <span className="text-[9px] sm:text-[10px] font-semibold uppercase tracking-wider">Photo</span>
-                  </>
+                  <ImageIcon className="w-3 h-3" />
                 ) : (
-                  <>
-                    <TrianglePlayIcon className="scale-75 sm:scale-90" />
-                    <span className="text-[9px] sm:text-[10px] font-semibold uppercase tracking-wider">Vidéo</span>
-                  </>
+                  <TrianglePlayIcon className="scale-75" />
                 )}
+                <span className="text-[9px] font-semibold uppercase tracking-wider">{isVideoActive ? 'Photo' : 'Vidéo'}</span>
               </button>
             )}
           </div>
@@ -288,12 +268,12 @@ export const ProductGrid = ({ products, displayMode, showMinQuantity = false, is
   }
 
   return (
-    <div className="grid grid-cols-2 gap-3 sm:gap-4 md:grid-cols-3 lg:gap-5 xl:grid-cols-4">
+    <div className="grid grid-cols-2 gap-2.5 sm:gap-3.5 md:grid-cols-3 lg:gap-4 xl:grid-cols-4">
       {products.map((product, index) => (
         <Link
           key={product.id}
           href={`/products/${product.id}`}
-          className={`group block transition-transform duration-300 ease-out hover:-translate-y-1.5 sm:hover:-translate-y-2 animate-slide-up`}
+          className={`group block transition-transform duration-500 ease-out-expo hover:-translate-y-1 animate-slide-up`}
           style={{ animationDelay: `${Math.min(index * 0.03, 0.3)}s` }}
         >
           {renderMedia(product, 'grid', index)}

@@ -25,13 +25,29 @@ const footerLinks = [
 
 export const Footer = (): JSX.Element => {
   return (
-    <footer className="relative bg-black text-white mt-16 sm:mt-20 overflow-hidden">
+    <footer className="relative bg-black text-white mt-8 md:mt-20 overflow-hidden mb-14 md:mb-0">
       {/* Decorative gradient */}
       <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-[#C9A227]/40 to-transparent" />
-      <div className="absolute top-0 left-1/4 w-96 h-96 bg-[#C9A227]/5 rounded-full blur-3xl -translate-y-1/2" />
+      <div className="hidden md:block absolute top-0 left-1/4 w-96 h-96 bg-[#C9A227]/5 rounded-full blur-3xl -translate-y-1/2" />
 
-      <div className="relative mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 py-12 sm:py-16 lg:py-20">
-        <div className="grid gap-10 md:gap-12 lg:grid-cols-4">
+      {/* Mobile: Minimal footer */}
+      <div className="md:hidden px-5 py-5">
+        <div className="flex items-center justify-between">
+          <p className="text-[11px] text-white/30 font-medium">© {new Date().getFullYear()} ZST</p>
+          <div className="flex items-center gap-4">
+            <Link href="/privacy-policy" className="text-[11px] text-white/30 font-medium hover:text-white/50 transition-colors">
+              Privacy
+            </Link>
+            <Link href="/terms-of-service" className="text-[11px] text-white/30 font-medium hover:text-white/50 transition-colors">
+              Terms
+            </Link>
+          </div>
+        </div>
+      </div>
+
+      {/* Desktop: Full footer */}
+      <div className="hidden md:block relative mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 py-16 lg:py-20">
+        <div className="grid gap-12 lg:grid-cols-4">
           {/* Brand section */}
           <div className="lg:col-span-2 space-y-5">
             <Link href="/" className="inline-flex items-center gap-3 group">
@@ -39,14 +55,14 @@ export const Footer = (): JSX.Element => {
                 Z
               </div>
               <div>
-                <p className="text-xl sm:text-2xl font-bold tracking-tight">ZST ecom</p>
-                <p className="text-xs sm:text-sm text-white/50 max-w-xs leading-relaxed">
+                <p className="text-2xl font-bold tracking-tight">ZST ecom</p>
+                <p className="text-sm text-white/50 max-w-xs leading-relaxed">
                   Quality products. Trusted suppliers.
                 </p>
               </div>
             </Link>
             <p className="text-sm text-white/40 max-w-sm leading-relaxed">
-              Marketplace B2C & B2B complete pour l'achat et vente de tous produits, avec services freelance, a travers les 58 wilayas d'Algerie.
+              Marketplace B2C & B2B complete pour l&apos;achat et vente de tous produits, avec services freelance, a travers les 58 wilayas d&apos;Algerie.
             </p>
 
             {/* Trust badges */}
@@ -68,7 +84,7 @@ export const Footer = (): JSX.Element => {
               <p className="text-xs font-semibold uppercase tracking-[0.2em] text-white/40">
                 {section.title}
               </p>
-              <ul className="mt-4 sm:mt-5 space-y-3">
+              <ul className="mt-5 space-y-3">
                 {section.items.map((item) => (
                   <li key={item.href}>
                     <Link
@@ -85,19 +101,19 @@ export const Footer = (): JSX.Element => {
         </div>
 
         {/* Bottom bar */}
-        <div className="mt-12 sm:mt-16 pt-6 sm:pt-8 border-t border-[#C9A227]/10">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between text-sm">
+        <div className="mt-16 pt-8 border-t border-[#C9A227]/10">
+          <div className="flex flex-row items-center justify-between text-sm">
             <p className="text-white/40">
               © {new Date().getFullYear()} ZST ecom. All rights reserved.
             </p>
-            <div className="flex flex-wrap items-center gap-4 sm:gap-6">
+            <div className="flex items-center gap-6">
               <Link
                 href="/privacy-policy"
                 className="text-white/50 transition-colors duration-200 hover:text-[#E8C547]"
               >
                 Privacy Policy
               </Link>
-              <span className="text-[#C9A227]/30 hidden sm:inline">|</span>
+              <span className="text-[#C9A227]/30">|</span>
               <Link
                 href="/terms-of-service"
                 className="text-white/50 transition-colors duration-200 hover:text-[#E8C547]"

@@ -1,6 +1,28 @@
 'use client'
 
-import type { SellerDashboardStats } from '@/lib/supabase/orders'
+// Stats type matching Convex getSellerDashboardStats return
+type SellerDashboardStats = {
+  totalOrders: number
+  pendingOrders: number
+  processingOrders: number
+  completedOrders: number
+  totalRevenue: number
+  monthlyRevenue: number
+  totalProducts: number
+  lowStockProducts: number
+  completionRate: number
+  trend: {
+    totalOrders: number | null
+    totalRevenue: number | null
+    monthlyRevenue: number | null
+    completionRate: number | null
+  }
+  range: {
+    label: string
+    startDate: number
+    endDate: number
+  }
+}
 
 type StatCardProps = {
   title: string

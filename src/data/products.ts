@@ -1,4 +1,4 @@
-import type { SellerCategory } from '@/lib/supabase/types'
+type SellerCategory = 'fournisseur' | 'importateur' | 'grossiste'
 
 export type ProductType = 'Parfum Femme' | 'Parfum Homme' | 'Eau de Parfum' | 'Eau de Toilette'
 export type ProductNeed = 'Journée' | 'Soirée' | 'Quotidien' | 'Spécial'

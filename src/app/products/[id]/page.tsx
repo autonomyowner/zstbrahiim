@@ -1,118 +1,145 @@
-import { notFound } from 'next/navigation'
+'use client'
+
+import { useParams } from 'next/navigation'
+import { useQuery, useMutation } from 'convex/react'
+import { api } from '../../../../convex/_generated/api'
+import { Id } from '../../../../convex/_generated/dataModel'
+import { useEffect, useMemo } from 'react'
 import Link from 'next/link'
 import { getProductById, type Product } from '@/data/products'
-import { type AdaptedProduct } from '@/lib/supabase/products'
-import { supabaseAdmin } from '@/lib/supabase/server'
 import { ProductGallery } from '@/components/ProductGallery'
 import { ProductDetails } from '@/components/ProductDetails'
-import type { SellerCategory, ProductCategoryType } from '@/lib/supabase/types'
 
-type ProductPageProps = {
-  params: Promise<{
-    id: string
-  }>
+function isValidConvexId(id: string): boolean {
+  // Convex IDs are typically base64-like strings; static IDs are slugs with dashes
+  // We try Convex query and rely on it returning null for invalid IDs
+  // But we skip obviously non-Convex IDs (e.g., purely numeric or slug-like)
+  return !id.includes('-') && id.length > 10
 }
 
-// Server-side function to get product by ID (bypasses RLS for viewing)
-async function getProductByIdServer(id: string): Promise<AdaptedProduct | null> {
-  try {
-    // Fetch product
-    const { data: productData, error: productError } = await supabaseAdmin
-      .from('products')
-      .select('*')
-      .eq('id', id)
-      .single()
+export default function ProductPage() {
+  const params = useParams()
+  const id = params?.id as string
 
-    if (productError || !productData) {
-      return null
+  // Try static data first
+  const staticProduct = useMemo(() => (id ? getProductById(id) : undefined), [id])
+
+  // Only query Convex if no static product found and the ID looks like a Convex ID
+  const shouldQueryConvex = !staticProduct && id && isValidConvexId(id)
+  const convexProduct = useQuery(
+    api.products.getProductById,
+    shouldQueryConvex ? { productId: id as Id<"products"> } : 'skip'
+  )
+
+  const incrementViewers = useMutation(api.products.incrementViewersCount)
+
+  // Increment viewers count on mount for Convex products
+  useEffect(() => {
+    if (shouldQueryConvex && id) {
+      incrementViewers({ productId: id as Id<"products"> }).catch(() => {})
     }
+  }, [id, shouldQueryConvex, incrementViewers])
 
-    // Fetch images separately
-    const { data: imagesData } = await supabaseAdmin
-      .from('product_images')
-      .select('image_url, is_primary, display_order')
-      .eq('product_id', id)
-      .order('display_order', { ascending: true })
+  // Determine final product
+  const product: Product | null | undefined = useMemo(() => {
+    if (staticProduct) return staticProduct
 
-    // Fetch video separately
-    const { data: videosData } = await supabaseAdmin
-      .from('product_videos')
-      .select('video_url, thumbnail_url, duration_seconds, file_size_bytes')
-      .eq('product_id', id)
-      .limit(1)
+    if (!shouldQueryConvex) return null // Not a valid Convex ID and no static product
 
-    // Increment viewers count
-    await supabaseAdmin
-      .from('products')
-      .update({ viewers_count: (productData.viewers_count || 0) + 1 })
-      .eq('id', id)
+    if (convexProduct === undefined) return undefined // Still loading
 
-    const images = imagesData || []
-    const video = videosData?.[0]
-    const imageUrls = images.map((img) => img.image_url)
-    const primaryImage = imageUrls[0] || video?.thumbnail_url || ''
+    if (convexProduct === null) return null // Not found
 
+    // Map Convex product to Product type for compatibility with ProductDetails/ProductGallery
     return {
-      id: productData.id,
-      slug: productData.slug,
-      name: productData.name,
-      brand: productData.brand,
-      price: Number(productData.price),
-      originalPrice: productData.original_price ? Number(productData.original_price) : undefined,
-      image: primaryImage,
-      images: imageUrls,
-      category: productData.category,
-      productType: productData.product_type,
-      product_category: productData.product_category as ProductCategoryType | undefined,
-      need: productData.need,
-      inStock: productData.in_stock,
-      isPromo: productData.is_promo,
-      rating: productData.rating ? Number(productData.rating) : undefined,
-      isNew: productData.is_new,
-      description: productData.description,
-      benefits: productData.benefits,
-      ingredients: productData.ingredients,
-      usageInstructions: productData.usage_instructions,
-      deliveryEstimate: productData.delivery_estimate,
-      viewersCount: productData.viewers_count,
-      countdownEndDate: productData.countdown_end_date,
-      createdAt: productData.created_at,
-      seller_id: productData.seller_id || null,
-      sellerCategory: (productData.seller_category as SellerCategory) ?? null,
-      minQuantity: productData.min_quantity ?? 1,
+      id: convexProduct._id,
+      slug: convexProduct.slug,
+      name: convexProduct.name,
+      brand: convexProduct.brand,
+      price: convexProduct.price,
+      originalPrice: convexProduct.originalPrice,
+      image: convexProduct.image,
+      images: convexProduct.images,
+      category: convexProduct.category,
+      productType: convexProduct.productType,
+      need: convexProduct.need,
+      inStock: convexProduct.inStock,
+      isPromo: convexProduct.isPromo,
+      rating: convexProduct.rating,
+      isNew: convexProduct.isNew,
+      description: convexProduct.description,
+      benefits: convexProduct.benefits,
+      ingredients: convexProduct.ingredients,
+      usageInstructions: convexProduct.usageInstructions,
+      deliveryEstimate: convexProduct.deliveryEstimate,
+      viewersCount: convexProduct.viewersCount,
+      countdownEndDate: convexProduct.countdownEndDate,
+      sellerCategory: convexProduct.sellerCategory,
       additionalInfo: {
-        shipping: productData.shipping_info,
-        returns: productData.returns_info,
-        payment: productData.payment_info,
-        exclusiveOffers: productData.exclusive_offers,
+        shipping: convexProduct.shippingInfo,
+        returns: convexProduct.returnsInfo,
+        payment: convexProduct.paymentInfo,
+        exclusiveOffers: convexProduct.exclusiveOffers,
       },
-      video: video ? {
-        url: video.video_url ?? undefined,
-        thumbnailUrl: video.thumbnail_url ?? undefined,
-        durationSeconds: video.duration_seconds ?? undefined,
-        fileSizeBytes: video.file_size_bytes ?? undefined,
+      video: convexProduct.video ? {
+        url: convexProduct.video.url,
+        thumbnailUrl: convexProduct.video.thumbnailUrl,
+        durationSeconds: convexProduct.video.durationSeconds,
+        fileSizeBytes: convexProduct.video.fileSizeBytes,
       } : undefined,
-    }
-  } catch (error) {
-    console.error('Error fetching product by ID:', error)
-    return null
+    } as Product
+  }, [staticProduct, shouldQueryConvex, convexProduct])
+
+  // Loading state
+  if (product === undefined) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-brand-light via-white to-brand-cardMuted">
+        <div className="fixed inset-0 pointer-events-none overflow-hidden">
+          <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-brand-primary/[0.03] rounded-full blur-3xl transform translate-x-1/2 -translate-y-1/2" />
+          <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-brand-primary/[0.02] rounded-full blur-3xl transform -translate-x-1/2 translate-y-1/2" />
+        </div>
+        <div className="relative px-4 py-20 sm:py-24 sm:px-6 lg:px-8">
+          <div className="mx-auto max-w-7xl">
+            <div className="mb-6 sm:mb-8">
+              <div className="h-4 w-48 bg-brand-border/30 rounded animate-pulse" />
+            </div>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 xl:gap-16">
+              <div className="aspect-square bg-brand-border/20 rounded-2xl animate-pulse" />
+              <div className="space-y-4">
+                <div className="h-8 w-3/4 bg-brand-border/30 rounded animate-pulse" />
+                <div className="h-6 w-1/2 bg-brand-border/20 rounded animate-pulse" />
+                <div className="h-10 w-1/3 bg-brand-border/30 rounded animate-pulse" />
+                <div className="h-4 w-full bg-brand-border/20 rounded animate-pulse" />
+                <div className="h-4 w-full bg-brand-border/20 rounded animate-pulse" />
+                <div className="h-4 w-2/3 bg-brand-border/20 rounded animate-pulse" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    )
   }
-}
 
-export default async function ProductPage({ params }: ProductPageProps): Promise<JSX.Element> {
-  const resolvedParams = await params
-
-  // Try to get product from static data first, then from database
-  let product: Product | AdaptedProduct | undefined = getProductById(resolvedParams.id)
-
-  if (!product) {
-    // Try to get from database using server-side admin client
-    const dbProduct = await getProductByIdServer(resolvedParams.id)
-    if (dbProduct) product = dbProduct
-  }
-
-  if (!product) {
-    notFound()
+  // Not found
+  if (product === null) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-brand-light via-white to-brand-cardMuted flex items-center justify-center">
+        <div className="fixed inset-0 pointer-events-none overflow-hidden">
+          <div className="absolute top-0 right-0 w-[600px] h-[600px] bg-brand-primary/[0.03] rounded-full blur-3xl transform translate-x-1/2 -translate-y-1/2" />
+          <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-brand-primary/[0.02] rounded-full blur-3xl transform -translate-x-1/2 translate-y-1/2" />
+        </div>
+        <div className="relative text-center px-4">
+          <h1 className="text-3xl font-bold text-text-primary mb-4">Produit introuvable</h1>
+          <p className="text-text-muted mb-8">Le produit que vous recherchez n&apos;existe pas ou a ete supprime.</p>
+          <Link
+            href="/"
+            className="inline-block px-6 py-3 bg-brand-primary text-brand-dark font-semibold rounded-xl hover:bg-brand-primaryDark transition-colors"
+          >
+            Retour a l&apos;accueil
+          </Link>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -123,27 +150,31 @@ export default async function ProductPage({ params }: ProductPageProps): Promise
         <div className="absolute bottom-0 left-0 w-[500px] h-[500px] bg-brand-primary/[0.02] rounded-full blur-3xl transform -translate-x-1/2 translate-y-1/2" />
       </div>
 
-      <div className="relative px-4 py-20 sm:py-24 sm:px-6 lg:px-8">
+      <div className="relative px-0 sm:px-4 py-4 sm:py-20 lg:px-8">
         <div className="mx-auto max-w-7xl">
           {/* Breadcrumb */}
-          <nav className="mb-6 sm:mb-8 animate-fade-in">
-            <ol className="flex items-center gap-2 text-sm text-text-muted">
+          <nav className="mb-3 sm:mb-6 animate-fade-in px-4 sm:px-0">
+            <Link href="/" className="sm:hidden text-[13px] text-text-muted hover:text-text-primary transition-colors min-h-[44px] inline-flex items-center gap-1">
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7"/></svg>
+              Retour
+            </Link>
+            <ol className="hidden sm:flex items-center gap-1.5 text-[13px] text-text-muted">
               <li>
-                <Link href="/" className="hover:text-brand-primaryDark transition-colors">Accueil</Link>
+                <Link href="/" className="hover:text-text-primary transition-colors">Accueil</Link>
               </li>
-              <li className="text-brand-border">/</li>
+              <li className="text-brand-border/60">/</li>
               <li>
-                <Link href="/" className="hover:text-brand-primaryDark transition-colors">Produits</Link>
+                <Link href="/" className="hover:text-text-primary transition-colors">Produits</Link>
               </li>
-              <li className="text-brand-border">/</li>
+              <li className="text-brand-border/60">/</li>
               <li className="text-text-secondary font-medium truncate max-w-[200px]">{product.name}</li>
             </ol>
           </nav>
 
           {/* Main Content */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12 xl:gap-16">
-            {/* Left Column - Product Gallery */}
-            <div className="lg:sticky lg:top-24 lg:self-start animate-slide-up">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-12 xl:gap-16">
+            {/* Left Column - Product Gallery - edge-to-edge on mobile */}
+            <div className="lg:sticky lg:top-24 lg:self-start animate-slide-up sm:px-4 lg:px-0">
               <ProductGallery
                 images={product.images}
                 productName={product.name}
@@ -168,4 +199,3 @@ export default async function ProductPage({ params }: ProductPageProps): Promise
     </div>
   )
 }
-

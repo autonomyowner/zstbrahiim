@@ -1,11 +1,43 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import Image from 'next/image'
-import type { B2BOfferWithDetails, CreateB2BResponseRequest } from '@/lib/supabase/types'
-import { getBidHistory, hasUserResponded } from '@/lib/supabase/b2b-responses'
-import { getCurrentUserProfile } from '@/lib/supabase/auth'
+import { useQuery } from 'convex/react'
+import { api } from '../../../convex/_generated/api'
+import type { Id } from '../../../convex/_generated/dataModel'
 import ResponsesManagementSection from './ResponsesManagementSection'
+
+type B2BOfferWithDetails = {
+  id: string
+  seller_id: string
+  title: string
+  description: string
+  images: string[]
+  tags: string[]
+  base_price: number
+  min_quantity: number
+  available_quantity: number
+  offer_type: 'negotiable' | 'auction'
+  status: string
+  current_bid: number | null
+  starts_at: string | null
+  ends_at: string | null
+  seller_name: string
+  seller_category: string
+  pending_responses_count: number
+  total_responses_count: number
+  highest_bid_amount: number | null
+  display_status: string
+  seconds_remaining: number | null
+}
+
+type CreateB2BResponseRequest = {
+  offer_id: string
+  response_type: 'bid' | 'negotiation'
+  amount: number
+  quantity: number
+  message?: string
+}
 
 type OfferDetailsModalProps = {
   isOpen: boolean
@@ -29,51 +61,23 @@ export default function OfferDetailsModal({
   const [message, setMessage] = useState('')
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [bidHistory, setBidHistory] = useState<any[]>([])
-  const [loadingBids, setLoadingBids] = useState(false)
   const [activeTab, setActiveTab] = useState<'details' | 'responses'>('details')
-  const [userHasResponded, setUserHasResponded] = useState(false)
-  const [checkingResponse, setCheckingResponse] = useState(false)
 
-  useEffect(() => {
-    if (offer && offer.offer_type === 'auction' && isOpen) {
-      loadBidHistory()
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [offer, isOpen])
+  // Convex reactive queries replace the old Supabase async functions
+  const bidHistoryData = useQuery(
+    api.b2bResponses.getBidHistory,
+    offer ? { offerId: offer.id as Id<"b2bOffers"> } : 'skip'
+  )
+  const hasRespondedData = useQuery(
+    api.b2bResponses.hasUserResponded,
+    offer && canRespond && !isOwner ? { offerId: offer.id as Id<"b2bOffers"> } : 'skip'
+  )
 
-  useEffect(() => {
-    if (offer && isOpen && canRespond && !isOwner) {
-      checkUserResponse()
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [offer, isOpen, canRespond, isOwner])
-
-  const checkUserResponse = async () => {
-    if (!offer) return
-    setCheckingResponse(true)
-    try {
-      const hasResponse = await hasUserResponded(offer.id)
-      setUserHasResponded(hasResponse)
-    } catch (error) {
-      console.error('Error checking user response:', error)
-    } finally {
-      setCheckingResponse(false)
-    }
-  }
-
-  const loadBidHistory = async () => {
-    if (!offer) return
-    setLoadingBids(true)
-    try {
-      const bids = await getBidHistory(offer.id)
-      setBidHistory(bids)
-    } catch (error) {
-      console.error('Error loading bid history:', error)
-    } finally {
-      setLoadingBids(false)
-    }
-  }
+  // Derive state from useQuery results
+  const bidHistory = bidHistoryData ?? []
+  const loadingBids = bidHistoryData === undefined
+  const userHasResponded = hasRespondedData ?? false
+  const checkingResponse = hasRespondedData === undefined
 
   if (!isOpen || !offer) return null
 
@@ -144,7 +148,7 @@ export default function OfferDetailsModal({
       setAmount('')
       setQuantity('')
       setMessage('')
-      setUserHasResponded(true) // Update state to reflect new response
+      // Convex will automatically update hasUserResponded reactively
       onClose()
     } catch (error: any) {
       console.error('Error submitting response:', error)

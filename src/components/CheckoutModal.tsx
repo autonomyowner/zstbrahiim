@@ -2,12 +2,19 @@
 
 import { useState, useEffect } from 'react'
 import type { Product } from '@/data/products'
-import type { AdaptedProduct } from '@/lib/supabase/products'
-import { supabase } from '@/lib/supabase/client'
-import { createOrderFromCheckout } from '@/lib/supabase/orders'
+import { useMutation } from 'convex/react'
+import { api } from '../../convex/_generated/api'
+import { useCurrentUser } from '@/hooks/useCurrentUser'
+
+type CheckoutProduct = {
+  id: string
+  name: string
+  price: number
+  seller_id?: string | null
+}
 
 type CheckoutModalProps = {
-  product: Product | AdaptedProduct
+  product: Product | CheckoutProduct
   quantity: number
   isOpen: boolean
   onClose: () => void
@@ -32,6 +39,8 @@ export const CheckoutModal = ({
   isOpen,
   onClose,
 }: CheckoutModalProps): JSX.Element | null => {
+  const { user } = useCurrentUser()
+  const createOrder = useMutation(api.orders.createOrderFromCheckout)
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -119,38 +128,23 @@ export const CheckoutModal = ({
     setIsSubmitting(true)
 
     try {
-      // Get current user (customer can be guest or authenticated)
-      const { data: { user } } = await supabase.auth.getUser()
-      
-      const totalPrice = product.price * quantity
-      
-      // Get seller_id from product
-      const productWithSeller = product as any
-      const sellerId = productWithSeller.seller_id || null
-      
-      // Create order in database
-      const orderData = {
-        user_id: user?.id || null, // Can be null for guest checkout
-        seller_id: sellerId,
-        product_id: product.id,
-        quantity: quantity,
-        total_price: totalPrice,
-        customer_name: formData.name,
-        customer_email: formData.email,
-        customer_phone: formData.phone,
-        shipping_wilaya: formData.willaya,
-        shipping_baladia: formData.baladia,
-        shipping_address: formData.address,
-        delivery_type: formData.deliveryType,
-        status: 'pending' as const,
-        payment_status: 'pending' as const,
-      }
-      
-      const orderId = await createOrderFromCheckout(orderData)
-      
+      // Create order via Convex mutation (guest checkout handled internally)
+      const orderId = await createOrder({
+        productId: product.id as any,
+        quantity,
+        totalPrice: product.price * quantity,
+        customerName: formData.name,
+        customerEmail: formData.email,
+        customerPhone: formData.phone,
+        shippingWilaya: formData.willaya,
+        shippingBaladia: formData.baladia,
+        shippingAddress: formData.address,
+        deliveryType: formData.deliveryType,
+      })
+
       if (orderId) {
         setOrderSuccess(true)
-        
+
         // Reset form after 2 seconds and close
         setTimeout(() => {
           setFormData({

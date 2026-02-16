@@ -2,7 +2,6 @@
 
 import { useState, useRef } from 'react'
 import Image from 'next/image'
-import { supabase } from '@/lib/supabase/client'
 
 type MultiImageUploadProps = {
   onImagesUploaded: (urls: string[]) => void
@@ -79,30 +78,22 @@ export function MultiImageUpload({
 
   const uploadImage = async (file: File): Promise<string | null> => {
     try {
-      // Generate unique filename
-      const fileExt = file.name.split('.').pop()
-      const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`
-      const filePath = `b2b-offers/${fileName}`
+      const formData = new FormData()
+      formData.append('file', file)
+      formData.append('folder', 'b2b-offers')
+      formData.append('entityId', 'images')
 
-      // Upload to Supabase Storage
-      const { data, error: uploadError } = await supabase.storage
-        .from('products')
-        .upload(filePath, file, {
-          cacheControl: '3600',
-          upsert: false,
-        })
+      const response = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
+      })
 
-      if (uploadError) {
-        console.error('Upload error:', uploadError)
-        throw uploadError
+      if (!response.ok) {
+        throw new Error('Upload failed')
       }
 
-      // Get public URL
-      const {
-        data: { publicUrl },
-      } = supabase.storage.from('products').getPublicUrl(filePath)
-
-      return publicUrl
+      const { url } = await response.json()
+      return url
     } catch (err: any) {
       console.error('Error uploading image:', err)
       setError(err.message || 'Erreur lors du téléchargement de l\'image.')

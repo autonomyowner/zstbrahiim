@@ -2,12 +2,12 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import { useQuery, useMutation } from 'convex/react'
+import { api } from '../../../convex/_generated/api'
+import { Id } from '../../../convex/_generated/dataModel'
+import { useCurrentUser } from '@/hooks/useCurrentUser'
 import { AddServiceModal, type ServiceFormData } from '@/components/freelancer/AddServiceModal'
 import { EditServiceModal } from '@/components/freelancer/EditServiceModal'
-import { getFreelanceServices, createService, updateService, deleteService } from '@/lib/supabase/services'
-import { isFreelancer } from '@/lib/supabase/auth'
-import { supabase } from '@/lib/supabase/client'
-import type { FreelanceServiceWithDetails } from '@/lib/supabase/types'
 
 // Adapted service type for frontend display
 type AdaptedService = {
@@ -48,9 +48,7 @@ type AdaptedService = {
 
 export default function FreelancerDashboardPage() {
   const router = useRouter()
-  const [services, setServices] = useState<AdaptedService[]>([])
-  const [loading, setLoading] = useState(true)
-  const [authChecking, setAuthChecking] = useState(true)
+  const { user, isLoading, isAuthenticated } = useCurrentUser()
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
 
@@ -58,47 +56,63 @@ export default function FreelancerDashboardPage() {
   const [isEditServiceModalOpen, setIsEditServiceModalOpen] = useState(false)
   const [selectedService, setSelectedService] = useState<AdaptedService | null>(null)
 
-  // Check authentication
+  // Convex reactive query - fetches all services
+  const allServices = useQuery(api.services.getFreelanceServices, {})
+
+  // Convex mutations
+  const createServiceMutation = useMutation(api.services.createService)
+  const updateServiceMutation = useMutation(api.services.updateService)
+  const deleteServiceMutation = useMutation(api.services.deleteService)
+
+  // Filter services to only show the current freelancer's services
+  const services: AdaptedService[] = (allServices ?? [])
+    .filter((s: any) => s.providerId === user?._id)
+    .map((s: any) => ({
+      id: s._id || s.id,
+      slug: s.slug,
+      providerId: s.providerId,
+      serviceTitle: s.serviceTitle,
+      category: s.category,
+      experienceLevel: s.experienceLevel,
+      price: s.price,
+      priceType: s.priceType,
+      shortDescription: s.shortDescription,
+      description: s.description,
+      skills: s.skills || [],
+      deliveryTime: s.deliveryTime,
+      revisions: s.revisions,
+      languages: s.languages || [],
+      responseTime: s.responseTime,
+      availability: s.availability,
+      featured: s.featured ?? null,
+      verified: s.verified ?? null,
+      topRated: s.topRated ?? null,
+      rating: s.rating ?? 0,
+      reviewsCount: s.reviewsCount ?? 0,
+      completedProjects: s.completedProjects ?? 0,
+      portfolio: (s.portfolio || []).map((p: any) => ({
+        title: p.title || '',
+        description: p.description || '',
+        imageUrl: p.image || p.imageUrl || '',
+        displayOrder: p.displayOrder ?? 0,
+      })),
+      provider: s.providerName ? {
+        providerName: s.providerName || null,
+        providerAvatar: s.providerAvatar || null,
+        bio: null,
+      } : undefined,
+    }))
+
+  // Auth check - redirect if not freelancer or admin
   useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        const hasFreelancerAccess = await isFreelancer()
-        if (!hasFreelancerAccess) {
-          router.push('/signin')
-          return
-        }
-        setAuthChecking(false)
-      } catch (error) {
-        console.error('Auth check failed:', error)
-        router.push('/signin')
-      }
+    if (!isLoading && !isAuthenticated) {
+      router.push('/signin')
+      return
     }
-    checkAuth()
-  }, [router])
-
-  // Fetch services
-  useEffect(() => {
-    if (authChecking) return
-
-    const fetchServices = async () => {
-      try {
-        setLoading(true)
-        const { data: { user } } = await supabase.auth.getUser()
-        if (!user) return
-
-        // Fetch only this freelancer's services
-        const allServices = await getFreelanceServices() as AdaptedService[]
-        const myServices = allServices.filter((s) => s.providerId === user.id)
-        setServices(myServices)
-      } catch (error) {
-        console.error('Error fetching services:', error)
-        setError('Failed to load services')
-      } finally {
-        setLoading(false)
-      }
+    if (!isLoading && user && user.role !== 'freelancer' && user.role !== 'admin') {
+      router.push('/signin')
     }
-    fetchServices()
-  }, [authChecking])
+  }, [isLoading, isAuthenticated, user, router])
 
   const handleAddService = () => {
     setIsAddServiceModalOpen(true)
@@ -107,50 +121,36 @@ export default function FreelancerDashboardPage() {
   const handleAddServiceSubmit = async (serviceData: ServiceFormData) => {
     try {
       setError(null)
-      
-      const { data: { user } } = await supabase.auth.getUser()
-      if (!user) return
 
-      const servicePayload = {
+      await createServiceMutation({
         slug: `${serviceData.serviceTitle.toLowerCase().replace(/\s+/g, '-')}-${Date.now()}`,
-        provider_id: user.id,
-        service_title: serviceData.serviceTitle,
-        category: serviceData.category,
-        experience_level: serviceData.experienceLevel,
+        serviceTitle: serviceData.serviceTitle,
+        category: serviceData.category as any,
+        experienceLevel: serviceData.experienceLevel as any,
         price: serviceData.price,
-        price_type: serviceData.priceType,
-        short_description: serviceData.shortDescription,
+        priceType: serviceData.priceType as any,
+        shortDescription: serviceData.shortDescription,
         description: serviceData.description,
         skills: serviceData.skills.split(',').map(s => s.trim()).filter(s => s),
-        delivery_time: serviceData.deliveryTime,
+        deliveryTime: serviceData.deliveryTime,
         revisions: serviceData.revisions,
         languages: serviceData.languages.split(',').map(s => s.trim()).filter(s => s),
-        response_time: serviceData.responseTime,
-        availability: 'available' as const,
-        featured: false,
-        verified: false,
-        top_rated: false,
-        video_url: serviceData.videoUrl || null,
+        responseTime: serviceData.responseTime,
+        availability: 'available' as any,
         portfolio: serviceData.portfolioImages.map((url, index) => ({
           title: `Work ${index + 1}`,
           description: '',
-          image_url: url,
-          display_order: index,
+          imageUrl: url,
+          displayOrder: index,
         })),
-      }
+      })
 
-      const serviceId = await createService(servicePayload)
-      
-      if (serviceId) {
-        setSuccess('Service créé avec succès!')
-        const updatedServices = await getFreelanceServices() as AdaptedService[]
-        const myServices = updatedServices.filter((s) => s.providerId === user.id)
-        setServices(myServices)
-        setTimeout(() => setSuccess(null), 3000)
-      }
+      setSuccess('Service cree avec succes!')
+      setTimeout(() => setSuccess(null), 3000)
+      // No need to manually refetch - Convex reactivity auto-updates the list
     } catch (error) {
       console.error('Error creating service:', error)
-      setError('Erreur lors de la création du service')
+      setError('Erreur lors de la creation du service')
     }
   }
 
@@ -163,31 +163,23 @@ export default function FreelancerDashboardPage() {
     try {
       setError(null)
 
-      const updatePayload = {
-        id: serviceId,
-        service_title: serviceData.serviceTitle,
+      await updateServiceMutation({
+        serviceId: serviceId as Id<"freelanceServices">,
+        serviceTitle: serviceData.serviceTitle,
         price: serviceData.price,
-        price_type: serviceData.priceType,
-        short_description: serviceData.shortDescription,
+        priceType: serviceData.priceType as any,
+        shortDescription: serviceData.shortDescription,
         description: serviceData.description,
         skills: serviceData.skills.split(',').map(s => s.trim()).filter(s => s),
-        delivery_time: serviceData.deliveryTime,
+        deliveryTime: serviceData.deliveryTime,
         revisions: serviceData.revisions,
         languages: serviceData.languages.split(',').map(s => s.trim()).filter(s => s),
-        response_time: serviceData.responseTime,
-        video_url: serviceData.videoUrl || null,
-      }
+        responseTime: serviceData.responseTime,
+      })
 
-      const updated = await updateService(updatePayload)
-      
-      if (updated) {
-        setSuccess('Service modifié avec succès!')
-        const { data: { user } } = await supabase.auth.getUser()
-        const updatedServices = await getFreelanceServices() as AdaptedService[]
-        const myServices = updatedServices.filter((s) => s.providerId === user?.id)
-        setServices(myServices)
-        setTimeout(() => setSuccess(null), 3000)
-      }
+      setSuccess('Service modifie avec succes!')
+      setTimeout(() => setSuccess(null), 3000)
+      // No need to manually refetch - Convex reactivity auto-updates the list
     } catch (error) {
       console.error('Error updating service:', error)
       setError('Erreur lors de la modification')
@@ -195,14 +187,15 @@ export default function FreelancerDashboardPage() {
   }
 
   const handleDeleteService = async (serviceId: string) => {
-    if (confirm('Êtes-vous sûr de vouloir supprimer ce service?')) {
+    if (confirm('Etes-vous sur de vouloir supprimer ce service?')) {
       try {
-        const deleted = await deleteService(serviceId)
-        if (deleted) {
-          setSuccess('Service supprimé!')
-          setServices(services.filter(s => s.id !== serviceId))
-          setTimeout(() => setSuccess(null), 3000)
-        }
+        await deleteServiceMutation({
+          serviceId: serviceId as Id<"freelanceServices">,
+        })
+
+        setSuccess('Service supprime!')
+        setTimeout(() => setSuccess(null), 3000)
+        // No need to manually refetch - Convex reactivity auto-updates the list
       } catch (error) {
         console.error('Error deleting service:', error)
         setError('Erreur lors de la suppression')
@@ -210,7 +203,10 @@ export default function FreelancerDashboardPage() {
     }
   }
 
-  if (authChecking || loading) {
+  // Show loading state while auth is checking or services are loading
+  const isPageLoading = isLoading || (!isLoading && isAuthenticated && user && (user.role === 'freelancer' || user.role === 'admin') && allServices === undefined)
+
+  if (isPageLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-brand-light">
         <div className="text-center">
@@ -227,7 +223,7 @@ export default function FreelancerDashboardPage() {
         {success && (
           <div className="rounded-2xl border border-green-200 bg-green-50 px-5 py-4 text-green-800 shadow-card-md animate-fade-in">
             <div className="flex items-center gap-2">
-              <span className="material-symbols-outlined text-green-600">check_circle</span>
+              <span className="w-2 h-2 rounded-full bg-green-500 flex-shrink-0" />
               <span className="font-semibold">{success}</span>
             </div>
           </div>
@@ -235,7 +231,7 @@ export default function FreelancerDashboardPage() {
         {error && (
           <div className="rounded-2xl border border-red-200 bg-red-50 px-5 py-4 text-red-700 shadow-card-md animate-fade-in">
             <div className="flex items-center gap-2">
-              <span className="material-symbols-outlined text-red-600">error</span>
+              <span className="w-2 h-2 rounded-full bg-red-500 flex-shrink-0" />
               <span className="font-semibold">{error}</span>
             </div>
           </div>
@@ -258,8 +254,7 @@ export default function FreelancerDashboardPage() {
               onClick={handleAddService}
               className="inline-flex items-center gap-2 rounded-xl bg-brand-dark px-4 sm:px-6 py-3 sm:py-3.5 text-xs sm:text-sm font-bold text-brand-primary transition-all hover:bg-black shadow-card-sm hover:shadow-card-md transform hover:scale-105 whitespace-nowrap"
             >
-              <span className="material-symbols-outlined text-base">add</span>
-              Nouveau service
+              + Nouveau service
             </button>
           </div>
 
@@ -279,16 +274,15 @@ export default function FreelancerDashboardPage() {
 
           {services.length === 0 ? (
             <div className="py-16 text-center">
-              <div className="mx-auto w-fit p-6 rounded-2xl bg-neutral-50 mb-6">
-                <span className="material-symbols-outlined text-6xl text-text-muted">work</span>
+              <div className="mx-auto w-16 h-16 rounded-2xl bg-neutral-50 flex items-center justify-center mb-6">
+                <span className="text-2xl text-text-muted font-bold">0</span>
               </div>
               <p className="text-text-muted font-medium mb-4">Vous n&apos;avez pas encore de services.</p>
               <button
                 onClick={handleAddService}
-                className="inline-flex items-center gap-2 text-brand-dark font-bold hover:text-text-primary transition-colors"
+                className="inline-flex items-center gap-2 text-brand-dark font-bold hover:text-text-primary transition-colors min-h-[44px]"
               >
-                Créer votre premier service
-                <span className="material-symbols-outlined text-base">arrow_forward</span>
+                Créer votre premier service &rarr;
               </button>
             </div>
           ) : (
@@ -350,4 +344,3 @@ export default function FreelancerDashboardPage() {
     </div>
   )
 }
-

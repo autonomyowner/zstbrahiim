@@ -3,7 +3,6 @@
 import Image from 'next/image'
 import { useState, useEffect } from 'react'
 import { type Product, type ProductType, type ProductNeed, productCategoryOptions } from '@/data/products'
-import { type AdaptedProduct } from '@/lib/supabase/products'
 import { type ProductFormData, type ProductVideoFormValue } from './AddProductModal'
 import { ImageUpload } from '@/components/ImageUpload'
 import { extractVideoMetadata } from '@/utils/video'
@@ -14,7 +13,7 @@ import {
 
 type EditProductModalProps = {
   isOpen: boolean
-  product: Product | AdaptedProduct | null
+  product: (Product & { video?: any }) | any | null
   onClose: () => void
   onSubmit: (
     productId: string,
@@ -201,15 +200,15 @@ export function EditProductModal({ isOpen, product, onClose, onSubmit }: EditPro
       `}</style>
 
       <div className="fixed inset-0 z-50 overflow-y-auto">
-        <div className="flex items-center justify-center min-h-screen px-4 py-8">
+        <div className="flex items-end md:items-center justify-center min-h-screen px-0 md:px-4 py-0 md:py-8">
           {/* Overlay */}
           <div
             className="edit-modal-overlay fixed inset-0 bg-gradient-to-br from-slate-900/60 via-slate-900/70 to-slate-800/80 backdrop-blur-sm"
             onClick={handleClose}
           />
 
-          {/* Modal */}
-          <div className="edit-modal-content relative bg-white rounded-3xl shadow-2xl w-full max-w-5xl overflow-hidden">
+          {/* Modal - full screen on mobile */}
+          <div className="edit-modal-content relative bg-white rounded-t-3xl md:rounded-3xl shadow-2xl w-full max-w-5xl overflow-hidden max-h-[95vh] md:max-h-[90vh] overflow-y-auto">
             <form onSubmit={handleSubmit}>
               {/* Header with gradient accent */}
               <div className="relative bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 px-8 py-8 overflow-hidden">

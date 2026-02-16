@@ -1,6 +1,25 @@
 'use client'
 
-import type { B2BResponseWithDetails } from '@/lib/supabase/types'
+type B2BResponseWithDetails = {
+  id: string
+  offer_id: string
+  buyer_id: string
+  response_type: 'bid' | 'negotiation'
+  status: 'pending' | 'accepted' | 'rejected' | 'outbid' | 'withdrawn'
+  amount: number
+  quantity: number
+  message: string | null
+  created_at: string
+  updated_at: string
+  offer_title: string
+  seller_id: string
+  offer_type: 'negotiable' | 'auction'
+  offer_status: string
+  buyer_name: string
+  buyer_category: string
+  seller_name: string
+  seller_category: string
+}
 
 type ResponseCardProps = {
   response: B2BResponseWithDetails

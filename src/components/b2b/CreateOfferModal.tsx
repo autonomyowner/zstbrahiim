@@ -1,7 +1,20 @@
 'use client'
 
 import { useState } from 'react'
-import type { B2BOfferType, CreateB2BOfferRequest } from '@/lib/supabase/types'
+type B2BOfferType = 'negotiable' | 'auction'
+
+type CreateB2BOfferRequest = {
+  title: string
+  description: string
+  images?: string[]
+  tags?: string[]
+  base_price: number
+  min_quantity: number
+  available_quantity: number
+  offer_type: B2BOfferType
+  starts_at?: string
+  ends_at?: string
+}
 import { MultiImageUpload } from '@/components/MultiImageUpload'
 import { VideoUpload } from '@/components/VideoUpload'
 

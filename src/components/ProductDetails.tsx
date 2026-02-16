@@ -1,16 +1,15 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import type { Product } from '@/data/products'
-import type { AdaptedProduct } from '@/lib/supabase/products'
-import { getCurrentUserProfile } from '@/lib/supabase/auth'
+import { useCurrentUser } from '@/hooks/useCurrentUser'
 import { CountdownTimer } from './CountdownTimer'
 import { QuantitySelector } from './QuantitySelector'
 import { Accordion } from './Accordion'
 import { CheckoutModal } from './CheckoutModal'
 
 type ProductDetailsProps = {
-  product: Product | AdaptedProduct
+  product: Product | any
 }
 
 // Custom SVG components
@@ -53,22 +52,10 @@ export const ProductDetails = ({ product }: ProductDetailsProps): JSX.Element =>
   const [quantity, setQuantity] = useState(1)
   const [isWishlisted, setIsWishlisted] = useState(false)
   const [isCheckoutModalOpen, setIsCheckoutModalOpen] = useState(false)
-  const [maxQuantity, setMaxQuantity] = useState(10)
+  const { user } = useCurrentUser()
 
-  // Check if user is fournisseur or grossiste to allow higher quantities
-  useEffect(() => {
-    const checkUserProfile = async () => {
-      try {
-        const profile = await getCurrentUserProfile()
-        if (profile?.seller_category === 'fournisseur' || profile?.seller_category === 'grossiste') {
-          setMaxQuantity(1000)
-        }
-      } catch {
-        // Keep default max of 10 for regular customers
-      }
-    }
-    checkUserProfile()
-  }, [])
+  // Allow higher quantities for fournisseur or grossiste sellers
+  const maxQuantity = (user?.sellerCategory === 'fournisseur' || user?.sellerCategory === 'grossiste') ? 1000 : 10
 
   const handleBuyNow = (): void => {
     setIsCheckoutModalOpen(true)
@@ -85,72 +72,71 @@ export const ProductDetails = ({ product }: ProductDetailsProps): JSX.Element =>
   return (
     <div className="space-y-6 sm:space-y-8">
       {/* Header Section */}
-      <div className="space-y-4">
-        {/* Category & Brand Badge */}
+      <div className="space-y-4 px-4 sm:px-0">
+        {/* Category & Brand */}
         <div className="flex items-center gap-2 flex-wrap">
-          {product.category && (
-            <span className="inline-flex px-3 py-1 rounded-full bg-brand-surface-muted border border-brand-border/60 text-[10px] sm:text-xs font-semibold uppercase tracking-[0.2em] text-text-muted">
-              {product.category}
-            </span>
-          )}
           {product.brand && (
-            <span className="inline-flex px-3 py-1 rounded-full bg-brand-dark text-brand-primary text-[10px] sm:text-xs font-semibold uppercase tracking-[0.15em]">
+            <span className="text-[11px] sm:text-xs font-bold uppercase tracking-[0.2em] text-text-muted">
               {product.brand}
             </span>
           )}
-          {product.isPromo && (
-            <span className="inline-flex px-3 py-1 rounded-full bg-brand-primary text-brand-dark text-[10px] sm:text-xs font-bold uppercase tracking-[0.1em]">
-              -{discountPercentage}%
+          {product.brand && product.category && (
+            <span className="text-brand-border">·</span>
+          )}
+          {product.category && (
+            <span className="text-[11px] sm:text-xs font-medium uppercase tracking-[0.15em] text-text-muted/60">
+              {product.category}
             </span>
           )}
         </div>
 
         {/* Product Name */}
-        <h1 className="heading-elegant text-2xl sm:text-3xl lg:text-4xl text-text-primary leading-tight">
+        <h1 className="heading-elegant text-2xl sm:text-3xl lg:text-4xl text-text-primary leading-[1.15]">
           {product.name}
         </h1>
 
         {/* Price Section */}
         <div className="flex items-baseline gap-3 flex-wrap">
-          <span className="text-3xl sm:text-4xl font-bold text-text-primary tracking-tight">
+          <span className="text-3xl sm:text-4xl font-bold text-text-primary tracking-tight tabular-nums">
             {product.price.toLocaleString()}
-            <span className="text-lg sm:text-xl font-medium text-text-muted ml-1">DA</span>
+            <span className="text-base sm:text-lg font-medium text-text-muted ml-1">DA</span>
           </span>
           {product.originalPrice && product.originalPrice > product.price && (
-            <span className="text-lg sm:text-xl text-text-muted line-through">
+            <span className="text-base sm:text-lg text-text-muted/50 line-through tabular-nums">
               {product.originalPrice.toLocaleString()} DA
+            </span>
+          )}
+          {product.isPromo && discountPercentage > 0 && (
+            <span className="inline-flex px-2 py-0.5 rounded-md bg-brand-primary text-brand-dark text-[11px] sm:text-xs font-bold">
+              -{discountPercentage}%
             </span>
           )}
         </div>
 
-        {/* Social Proof & Stock */}
-        <div className="flex flex-wrap items-center gap-3 sm:gap-4 pt-1">
-          {/* Viewers */}
-          {product.viewersCount && product.viewersCount > 0 && (
-            <div className="flex items-center gap-1.5 text-sm text-text-secondary">
-              <EyeIcon className="w-4 h-4 text-brand-primary" />
-              <span>{product.viewersCount} visiteurs actifs</span>
-            </div>
-          )}
-
-          {/* Stock Status */}
+        {/* Stock + Viewers row */}
+        <div className="flex flex-wrap items-center gap-3 pt-0.5">
           {product.inStock ? (
-            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-accent-success/10 text-accent-success text-xs sm:text-sm font-semibold rounded-full">
+            <span className="inline-flex items-center gap-1.5 text-xs sm:text-[13px] font-medium text-accent-success">
               <span className="w-1.5 h-1.5 rounded-full bg-accent-success animate-pulse" />
               En stock
             </span>
           ) : (
-            <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-accent-error/10 text-accent-error text-xs sm:text-sm font-semibold rounded-full">
+            <span className="inline-flex items-center gap-1.5 text-xs sm:text-[13px] font-medium text-accent-error">
               <span className="w-1.5 h-1.5 rounded-full bg-accent-error" />
               Rupture de stock
+            </span>
+          )}
+          {product.viewersCount && product.viewersCount > 0 && (
+            <span className="text-xs sm:text-[13px] text-text-muted">
+              {product.viewersCount} personnes regardent
             </span>
           )}
         </div>
 
         {/* Delivery Estimate */}
         {product.deliveryEstimate && (
-          <div className="flex items-center gap-2 text-sm text-text-secondary">
-            <TruckIcon className="w-4 h-4 text-brand-primaryDark" />
+          <div className="flex items-center gap-2 text-[13px] text-text-secondary pt-1">
+            <TruckIcon className="w-4 h-4 text-text-muted" />
             <span>{product.deliveryEstimate}</span>
           </div>
         )}
@@ -164,7 +150,7 @@ export const ProductDetails = ({ product }: ProductDetailsProps): JSX.Element =>
       )}
 
       {/* Actions Section */}
-      <div className="space-y-5 pt-2">
+      <div className="space-y-5 pt-2 px-4 sm:px-0">
         {/* Quantity Selector */}
         <div className="space-y-2">
           <div className="flex items-center justify-between">
@@ -217,7 +203,7 @@ export const ProductDetails = ({ product }: ProductDetailsProps): JSX.Element =>
 
       {/* Description */}
       {product.description && (
-        <div className="pt-6 border-t border-brand-border/60">
+        <div className="pt-5 border-t border-brand-border/40 px-4 sm:px-0">
           <h3 className="text-sm font-semibold uppercase tracking-[0.15em] text-text-muted mb-3">
             Description
           </h3>
@@ -228,7 +214,7 @@ export const ProductDetails = ({ product }: ProductDetailsProps): JSX.Element =>
       )}
 
       {/* Accordion Sections */}
-      <div className="space-y-0 pt-2 border-t border-brand-border/60">
+      <div className="space-y-0 pt-2 border-t border-brand-border/40 px-4 sm:px-0">
         <Accordion title="Livraison & Retours">
           <div className="space-y-4 text-sm">
             <div>
@@ -266,34 +252,42 @@ export const ProductDetails = ({ product }: ProductDetailsProps): JSX.Element =>
       </div>
 
       {/* Trust Badges */}
-      <div className="pt-6 border-t border-brand-border/60">
-        <div className="grid grid-cols-3 gap-3 sm:gap-4">
-          <div className="group flex flex-col items-center text-center p-3 sm:p-4 rounded-2xl bg-brand-surface-muted/50 border border-brand-border/40 transition-all duration-300 hover:border-brand-primary/30 hover:shadow-card-sm">
-            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-brand-primary/10 rounded-xl flex items-center justify-center mb-2 sm:mb-3 transition-all duration-300 group-hover:bg-brand-primary/20 group-hover:scale-105">
-              <CheckCircleIcon className="w-5 h-5 sm:w-6 sm:h-6 text-brand-primaryDark" />
-            </div>
-            <p className="text-[10px] sm:text-xs font-semibold text-text-primary leading-tight">
-              Satisfait ou Remboursé
-            </p>
+      <div className="pt-5 border-t border-brand-border/40 px-4 sm:px-0">
+        <div className="flex items-center justify-between gap-2 sm:gap-4">
+          <div className="flex items-center gap-2 text-text-muted">
+            <CheckCircleIcon className="w-4 h-4 flex-shrink-0" />
+            <span className="text-[10px] sm:text-xs font-medium">Satisfait ou Remboursé</span>
           </div>
+          <div className="w-px h-4 bg-brand-border/40 hidden sm:block" />
+          <div className="flex items-center gap-2 text-text-muted">
+            <ShieldIcon className="w-4 h-4 flex-shrink-0" />
+            <span className="text-[10px] sm:text-xs font-medium">Garantie Qualité</span>
+          </div>
+          <div className="w-px h-4 bg-brand-border/40 hidden sm:block" />
+          <div className="flex items-center gap-2 text-text-muted">
+            <TruckIcon className="w-4 h-4 flex-shrink-0" />
+            <span className="text-[10px] sm:text-xs font-medium">Livraison Rapide</span>
+          </div>
+        </div>
+      </div>
 
-          <div className="group flex flex-col items-center text-center p-3 sm:p-4 rounded-2xl bg-brand-surface-muted/50 border border-brand-border/40 transition-all duration-300 hover:border-brand-primary/30 hover:shadow-card-sm">
-            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-brand-primary/10 rounded-xl flex items-center justify-center mb-2 sm:mb-3 transition-all duration-300 group-hover:bg-brand-primary/20 group-hover:scale-105">
-              <ShieldIcon className="w-5 h-5 sm:w-6 sm:h-6 text-brand-primaryDark" />
-            </div>
-            <p className="text-[10px] sm:text-xs font-semibold text-text-primary leading-tight">
-              Garantie Qualité
-            </p>
+      {/* Sticky Buy Button - Mobile Only */}
+      <div className="fixed bottom-14 left-0 right-0 z-30 p-3 bg-white/95 backdrop-blur-md border-t border-brand-border/30 md:hidden safe-area-pb">
+        <div className="flex items-center gap-3">
+          <div className="flex-shrink-0">
+            <span className="text-lg font-bold text-text-primary">
+              {product.price.toLocaleString()}
+              <span className="text-xs font-medium text-text-muted ml-0.5">DA</span>
+            </span>
           </div>
-
-          <div className="group flex flex-col items-center text-center p-3 sm:p-4 rounded-2xl bg-brand-surface-muted/50 border border-brand-border/40 transition-all duration-300 hover:border-brand-primary/30 hover:shadow-card-sm">
-            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-brand-primary/10 rounded-xl flex items-center justify-center mb-2 sm:mb-3 transition-all duration-300 group-hover:bg-brand-primary/20 group-hover:scale-105">
-              <TruckIcon className="w-5 h-5 sm:w-6 sm:h-6 text-brand-primaryDark" />
-            </div>
-            <p className="text-[10px] sm:text-xs font-semibold text-text-primary leading-tight">
-              Livraison Rapide
-            </p>
-          </div>
+          <button
+            onClick={handleBuyNow}
+            disabled={!product.inStock}
+            className="flex-1 bg-brand-dark text-brand-primary py-3.5 rounded-xl font-semibold uppercase tracking-[0.15em] text-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed min-h-[48px]"
+            type="button"
+          >
+            {product.inStock ? 'Acheter Maintenant' : 'Indisponible'}
+          </button>
         </div>
       </div>
 

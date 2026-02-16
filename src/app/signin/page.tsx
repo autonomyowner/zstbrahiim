@@ -2,11 +2,9 @@
 
 import { useState } from 'react'
 import Link from 'next/link'
-import { useRouter } from 'next/navigation'
-import { signIn } from '@/lib/supabase/auth'
+import { authClient } from '@/lib/auth-client'
 
 export default function SignInPage() {
-  const router = useRouter()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState<string | null>(null)
@@ -18,20 +16,18 @@ export default function SignInPage() {
     setLoading(true)
 
     try {
-      const { user, error: signInError, userFriendlyError } = await signIn(email, password)
+      const { error: signInError } = await authClient.signIn.email({
+        email,
+        password,
+      })
 
       if (signInError) {
-        // Use the user-friendly error message from the auth helper
-        setError(userFriendlyError || 'Failed to sign in. Please try again.')
+        setError(signInError.message || 'Failed to sign in. Please try again.')
         setLoading(false)
         return
       }
 
-      if (user) {
-        // Redirect to home page on success
-        router.push('/')
-        router.refresh()
-      }
+      window.location.href = '/'
     } catch {
       setError('Unable to connect to the server. Please check your internet connection and try again.')
       setLoading(false)
@@ -39,24 +35,24 @@ export default function SignInPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-neutral-50 via-white to-brand-light px-4 py-12 relative overflow-hidden">
-      {/* Background decorative elements */}
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-brand-primary/10 via-transparent to-transparent"></div>
-      <div className="absolute top-0 right-0 w-96 h-96 bg-brand-primary/5 rounded-full blur-3xl"></div>
-      <div className="absolute bottom-0 left-0 w-96 h-96 bg-brand-dark/5 rounded-full blur-3xl"></div>
-      
-      <div className="w-full max-w-md relative z-10">
-        <div className="bg-white/95 backdrop-blur-sm rounded-3xl shadow-card-lg border border-brand-border/50 p-8 md:p-10">
+    <div className="min-h-screen bg-white md:bg-gradient-to-br md:from-neutral-50 md:via-white md:to-brand-light md:flex md:items-center md:justify-center px-0 md:px-4 py-0 md:py-12 relative overflow-hidden">
+      {/* Background decorative elements - desktop only */}
+      <div className="hidden md:block absolute inset-0 bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-brand-primary/10 via-transparent to-transparent"></div>
+      <div className="hidden md:block absolute top-0 right-0 w-96 h-96 bg-brand-primary/5 rounded-full blur-3xl"></div>
+      <div className="hidden md:block absolute bottom-0 left-0 w-96 h-96 bg-brand-dark/5 rounded-full blur-3xl"></div>
+
+      <div className="w-full max-w-md relative z-10 mx-auto">
+        <div className="bg-white md:bg-white/95 md:backdrop-blur-sm md:rounded-3xl md:shadow-card-lg md:border md:border-brand-border/50 px-5 pt-8 pb-24 md:p-10">
           {/* Logo */}
           <div className="flex justify-center mb-6">
-            <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-brand-dark text-brand-primary text-3xl font-black shadow-card-sm">
+            <div className="flex h-14 w-14 md:h-16 md:w-16 items-center justify-center rounded-2xl bg-brand-dark text-brand-primary text-2xl md:text-3xl font-black shadow-card-sm">
               Z
             </div>
           </div>
-          
+
           {/* Title */}
           <div className="text-center mb-8">
-            <h1 className="text-3xl md:text-4xl font-black text-text-primary mb-2 tracking-tight">
+            <h1 className="text-2xl md:text-4xl font-black text-text-primary mb-2 tracking-tight">
               Welcome Back
             </h1>
             <p className="text-text-muted text-sm">
@@ -87,7 +83,7 @@ export default function SignInPage() {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
-                className="w-full px-4 py-3.5 border border-brand-border rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-primary/40 focus:border-brand-primary transition-all bg-white text-text-primary placeholder:text-text-muted"
+                className="w-full px-4 py-4 md:py-3.5 border border-brand-border rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-primary/40 focus:border-brand-primary transition-all bg-white text-text-primary placeholder:text-text-muted text-base"
                 placeholder="you@example.com"
               />
             </div>
@@ -105,16 +101,16 @@ export default function SignInPage() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                className="w-full px-4 py-3.5 border border-brand-border rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-primary/40 focus:border-brand-primary transition-all bg-white text-text-primary placeholder:text-text-muted"
+                className="w-full px-4 py-4 md:py-3.5 border border-brand-border rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-primary/40 focus:border-brand-primary transition-all bg-white text-text-primary placeholder:text-text-muted text-base"
                 placeholder="Enter your password"
               />
             </div>
 
             <div className="flex items-center justify-between text-sm">
-              <label className="flex items-center cursor-pointer group">
+              <label className="flex items-center cursor-pointer group min-h-[44px]">
                 <input
                   type="checkbox"
-                  className="w-4 h-4 text-brand-primary border-brand-border rounded focus:ring-brand-primary/40 cursor-pointer"
+                  className="w-5 h-5 md:w-4 md:h-4 text-brand-primary border-brand-border rounded focus:ring-brand-primary/40 cursor-pointer"
                 />
                 <span className="ml-2 text-text-muted group-hover:text-text-primary transition-colors">
                   Remember me
@@ -122,23 +118,37 @@ export default function SignInPage() {
               </label>
               <Link
                 href="/forgot-password"
-                className="text-brand-dark hover:text-text-primary transition-colors font-medium"
+                className="text-brand-dark hover:text-text-primary transition-colors font-medium min-h-[44px] flex items-center"
               >
                 Forgot password?
               </Link>
             </div>
 
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full bg-brand-dark hover:bg-black text-brand-primary py-3.5 rounded-xl font-bold transition-all duration-200 shadow-card-sm hover:shadow-card-md disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-[1.02]"
-            >
-              {loading ? 'Signing In...' : 'Sign In'}
-            </button>
+            {/* Sign Up Link - above button on mobile */}
+            <p className="text-center text-sm text-text-muted md:hidden">
+              Don&apos;t have an account?{' '}
+              <Link
+                href="/signup"
+                className="font-bold text-brand-dark hover:text-text-primary transition-colors"
+              >
+                Sign up
+              </Link>
+            </p>
+
+            {/* Submit button - sticky on mobile */}
+            <div className="fixed bottom-0 left-0 right-0 p-4 bg-white border-t border-brand-border/30 md:static md:p-0 md:border-0 z-20">
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full bg-brand-dark hover:bg-black text-brand-primary py-4 md:py-3.5 rounded-xl font-bold transition-all duration-200 shadow-card-sm hover:shadow-card-md disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-[1.02] min-h-[48px]"
+              >
+                {loading ? 'Signing In...' : 'Sign In'}
+              </button>
+            </div>
           </form>
 
-          {/* Sign Up Link */}
-          <p className="mt-8 text-center text-sm text-text-muted">
+          {/* Sign Up Link - desktop */}
+          <p className="mt-8 text-center text-sm text-text-muted hidden md:block">
             Don&apos;t have an account?{' '}
             <Link
               href="/signup"

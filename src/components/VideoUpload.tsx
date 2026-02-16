@@ -1,7 +1,6 @@
 'use client'
 
 import { useState, useRef } from 'react'
-import { supabase } from '@/lib/supabase/client'
 
 type VideoUploadProps = {
   onVideoUploaded: (url: string) => void
@@ -44,7 +43,7 @@ export function VideoUpload({
 
     setError(null)
 
-    // Upload to Supabase Storage
+    // Upload to R2 Storage
     await uploadVideo(file)
   }
 
@@ -54,28 +53,23 @@ export function VideoUpload({
     setUploadProgress(0)
 
     try {
-      // Generate unique filename
-      const fileExt = file.name.split('.').pop()
-      const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`
-      const filePath = `${bucketPath}/${fileName}`
+      const formData = new FormData()
+      formData.append('file', file)
+      formData.append('folder', bucketPath)
+      formData.append('entityId', 'videos')
 
-      // Upload to Supabase Storage
-      const { data, error: uploadError } = await supabase.storage
-        .from('products')
-        .upload(filePath, file, {
-          cacheControl: '3600',
-          upsert: false,
-        })
+      const response = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
+      })
 
-      if (uploadError) throw uploadError
+      if (!response.ok) {
+        throw new Error('Upload failed')
+      }
 
-      // Get public URL
-      const {
-        data: { publicUrl },
-      } = supabase.storage.from('products').getPublicUrl(filePath)
-
-      setVideoUrl(publicUrl)
-      onVideoUploaded(publicUrl)
+      const { url } = await response.json()
+      setVideoUrl(url)
+      onVideoUploaded(url)
       setUploadProgress(100)
     } catch (err: unknown) {
       const errorMessage = err instanceof Error ? err.message : 'Erreur lors du téléchargement de la vidéo.'

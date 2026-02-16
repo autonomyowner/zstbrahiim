@@ -3,8 +3,7 @@
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { updatePassword } from '@/lib/supabase/auth'
-import { supabase } from '@/lib/supabase/client'
+import { authClient } from '@/lib/auth-client'
 
 export default function ResetPasswordPage() {
   const router = useRouter()
@@ -14,14 +13,14 @@ export default function ResetPasswordPage() {
   const [success, setSuccess] = useState(false)
   const [loading, setLoading] = useState(false)
   const [isValidSession, setIsValidSession] = useState<boolean | null>(null)
+  const [token, setToken] = useState<string | null>(null)
 
   useEffect(() => {
-    // Check if user has a valid session from the reset email
-    const checkSession = async () => {
-      const { data: { session } } = await supabase.auth.getSession()
-      setIsValidSession(!!session)
-    }
-    checkSession()
+    // Better Auth reset flow: the forgot-password email includes a token in the URL
+    const searchParams = new URLSearchParams(window.location.search)
+    const t = searchParams.get('token')
+    setToken(t)
+    setIsValidSession(!!t)
   }, [])
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -38,10 +37,18 @@ export default function ResetPasswordPage() {
       return
     }
 
+    if (!token) {
+      setError('Invalid reset token. Please request a new password reset link.')
+      return
+    }
+
     setLoading(true)
 
     try {
-      const { error: updateError } = await updatePassword(password)
+      const { error: updateError } = await authClient.resetPassword({
+        newPassword: password,
+        token,
+      })
 
       if (updateError) {
         setError('Failed to update password. Please try again.')
@@ -61,7 +68,7 @@ export default function ResetPasswordPage() {
 
   if (isValidSession === null) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-neutral-50 via-white to-brand-light">
+      <div className="min-h-screen bg-white md:bg-gradient-to-br md:from-neutral-50 md:via-white md:to-brand-light md:flex md:items-center md:justify-center px-0 md:px-4 py-0 md:py-12 relative overflow-hidden">
         <div className="text-center">
           <div className="mx-auto mb-4 h-12 w-12 animate-spin rounded-full border-b-2 border-brand-dark"></div>
           <p className="text-text-muted">Loading...</p>
@@ -72,19 +79,19 @@ export default function ResetPasswordPage() {
 
   if (!isValidSession) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-neutral-50 via-white to-brand-light px-4 py-12 relative overflow-hidden">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-brand-primary/10 via-transparent to-transparent"></div>
+      <div className="min-h-screen bg-white md:bg-gradient-to-br md:from-neutral-50 md:via-white md:to-brand-light md:flex md:items-center md:justify-center px-0 md:px-4 py-0 md:py-12 relative overflow-hidden">
+        <div className="hidden md:block absolute inset-0 bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-brand-primary/10 via-transparent to-transparent"></div>
 
         <div className="w-full max-w-md relative z-10">
-          <div className="bg-white/95 backdrop-blur-sm rounded-3xl shadow-card-lg border border-brand-border/50 p-8 md:p-10">
+          <div className="bg-white md:bg-white/95 md:backdrop-blur-sm md:rounded-3xl md:shadow-card-lg md:border md:border-brand-border/50 px-5 pt-8 pb-8 md:p-10">
             <div className="flex justify-center mb-6">
-              <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-red-500 text-white text-3xl font-black shadow-card-sm">
+              <div className="flex h-14 w-14 md:h-16 md:w-16 items-center justify-center rounded-2xl bg-red-500 text-white text-2xl md:text-3xl font-black shadow-card-sm">
                 !
               </div>
             </div>
 
             <div className="text-center mb-8">
-              <h1 className="text-3xl md:text-4xl font-black text-text-primary mb-2 tracking-tight">
+              <h1 className="text-2xl md:text-4xl font-black text-text-primary mb-2 tracking-tight">
                 Invalid or Expired Link
               </h1>
               <p className="text-text-muted text-sm">
@@ -106,19 +113,19 @@ export default function ResetPasswordPage() {
 
   if (success) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-neutral-50 via-white to-brand-light px-4 py-12 relative overflow-hidden">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-brand-primary/10 via-transparent to-transparent"></div>
+      <div className="min-h-screen bg-white md:bg-gradient-to-br md:from-neutral-50 md:via-white md:to-brand-light md:flex md:items-center md:justify-center px-0 md:px-4 py-0 md:py-12 relative overflow-hidden">
+        <div className="hidden md:block absolute inset-0 bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-brand-primary/10 via-transparent to-transparent"></div>
 
         <div className="w-full max-w-md relative z-10">
-          <div className="bg-white/95 backdrop-blur-sm rounded-3xl shadow-card-lg border border-brand-border/50 p-8 md:p-10">
+          <div className="bg-white md:bg-white/95 md:backdrop-blur-sm md:rounded-3xl md:shadow-card-lg md:border md:border-brand-border/50 px-5 pt-8 pb-8 md:p-10">
             <div className="flex justify-center mb-6">
-              <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-green-500 text-white text-3xl font-black shadow-card-sm">
+              <div className="flex h-14 w-14 md:h-16 md:w-16 items-center justify-center rounded-2xl bg-green-500 text-white text-2xl md:text-3xl font-black shadow-card-sm">
                 ✓
               </div>
             </div>
 
             <div className="text-center mb-8">
-              <h1 className="text-3xl md:text-4xl font-black text-text-primary mb-2 tracking-tight">
+              <h1 className="text-2xl md:text-4xl font-black text-text-primary mb-2 tracking-tight">
                 Password Updated
               </h1>
               <p className="text-text-muted text-sm">
@@ -139,21 +146,21 @@ export default function ResetPasswordPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-neutral-50 via-white to-brand-light px-4 py-12 relative overflow-hidden">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-brand-primary/10 via-transparent to-transparent"></div>
-      <div className="absolute top-0 right-0 w-96 h-96 bg-brand-primary/5 rounded-full blur-3xl"></div>
-      <div className="absolute bottom-0 left-0 w-96 h-96 bg-brand-dark/5 rounded-full blur-3xl"></div>
+    <div className="min-h-screen bg-white md:bg-gradient-to-br md:from-neutral-50 md:via-white md:to-brand-light md:flex md:items-center md:justify-center px-0 md:px-4 py-0 md:py-12 relative overflow-hidden">
+      <div className="hidden md:block absolute inset-0 bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-brand-primary/10 via-transparent to-transparent"></div>
+      <div className="hidden md:block absolute top-0 right-0 w-96 h-96 bg-brand-primary/5 rounded-full blur-3xl"></div>
+      <div className="hidden md:block absolute bottom-0 left-0 w-96 h-96 bg-brand-dark/5 rounded-full blur-3xl"></div>
 
       <div className="w-full max-w-md relative z-10">
-        <div className="bg-white/95 backdrop-blur-sm rounded-3xl shadow-card-lg border border-brand-border/50 p-8 md:p-10">
+        <div className="bg-white md:bg-white/95 md:backdrop-blur-sm md:rounded-3xl md:shadow-card-lg md:border md:border-brand-border/50 px-5 pt-8 pb-24 md:p-10">
           <div className="flex justify-center mb-6">
-            <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-brand-dark text-brand-primary text-3xl font-black shadow-card-sm">
+            <div className="flex h-14 w-14 md:h-16 md:w-16 items-center justify-center rounded-2xl bg-brand-dark text-brand-primary text-2xl md:text-3xl font-black shadow-card-sm">
               Z
             </div>
           </div>
 
           <div className="text-center mb-8">
-            <h1 className="text-3xl md:text-4xl font-black text-text-primary mb-2 tracking-tight">
+            <h1 className="text-2xl md:text-4xl font-black text-text-primary mb-2 tracking-tight">
               Reset Password
             </h1>
             <p className="text-text-muted text-sm">
@@ -183,7 +190,7 @@ export default function ResetPasswordPage() {
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 minLength={8}
-                className="w-full px-4 py-3.5 border border-brand-border rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-primary/40 focus:border-brand-primary transition-all bg-white text-text-primary placeholder:text-text-muted"
+                className="w-full px-4 py-4 md:py-3.5 border border-brand-border rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-primary/40 focus:border-brand-primary transition-all bg-white text-base text-text-primary placeholder:text-text-muted"
                 placeholder="Enter new password"
               />
             </div>
@@ -202,18 +209,20 @@ export default function ResetPasswordPage() {
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 required
                 minLength={8}
-                className="w-full px-4 py-3.5 border border-brand-border rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-primary/40 focus:border-brand-primary transition-all bg-white text-text-primary placeholder:text-text-muted"
+                className="w-full px-4 py-4 md:py-3.5 border border-brand-border rounded-xl focus:outline-none focus:ring-2 focus:ring-brand-primary/40 focus:border-brand-primary transition-all bg-white text-base text-text-primary placeholder:text-text-muted"
                 placeholder="Confirm new password"
               />
             </div>
 
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full bg-brand-dark hover:bg-black text-brand-primary py-3.5 rounded-xl font-bold transition-all duration-200 shadow-card-sm hover:shadow-card-md disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-[1.02]"
-            >
-              {loading ? 'Updating...' : 'Update Password'}
-            </button>
+            <div className="fixed bottom-0 left-0 right-0 p-4 bg-white border-t border-brand-border/30 md:static md:p-0 md:border-0 z-20">
+              <button
+                type="submit"
+                disabled={loading}
+                className="w-full bg-brand-dark hover:bg-black text-brand-primary py-4 md:py-3.5 rounded-xl font-bold transition-all duration-200 shadow-card-sm hover:shadow-card-md disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-[1.02] min-h-[48px]"
+              >
+                {loading ? 'Updating...' : 'Update Password'}
+              </button>
+            </div>
           </form>
         </div>
       </div>

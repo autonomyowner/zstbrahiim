@@ -23,9 +23,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 - **Frontend**: Next.js 15 (App Router), React 18.3.1, TypeScript 5.7.2
 - **Styling**: Tailwind CSS 3.4.17 with custom design system
-- **Backend**: Supabase (PostgreSQL, Auth, Storage)
-  - Project ID: enbrhhuubjvapadqyvds
-  - Region: eu-west-3
+- **Backend**: Convex (reactive database, real-time queries, serverless functions)
+- **Auth**: Better Auth via @convex-dev/better-auth (email/password + Google OAuth)
+- **Storage**: Cloudflare R2 via @aws-sdk/client-s3 (file uploads via /api/upload route)
 - **UI Components**: Radix UI, custom components (no icon library per user preference)
 
 ## Development Commands
@@ -33,15 +33,13 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ```bash
 # Development
 npm run dev              # Start Next.js dev server on localhost:3000
+npm run convex:dev       # Start Convex dev server (run alongside npm run dev)
 
 # Build & Production
 npm run build            # Build for production
 npm start               # Start production server
 npm run lint            # Run ESLint checks
-
-# Database Scripts
-npm run migrate         # Migrate static data to Supabase
-npm run create-admin    # Create admin user account
+npm run convex:deploy    # Deploy Convex functions to production
 ```
 
 ## Architecture Patterns
@@ -49,7 +47,7 @@ npm run create-admin    # Create admin user account
 ### 1. Hybrid Data Strategy
 The codebase uses a hybrid approach combining static and dynamic data:
 - Static product data in `/src/data/*.ts` files (perfumes, winter clothes, freelance services)
-- Dynamic database products from Supabase
+- Dynamic database products from Convex
 - Combined rendering in UI components to show both static and database products
 
 When working with products, always consider both data sources.
@@ -57,109 +55,136 @@ When working with products, always consider both data sources.
 ### 2. Seller Segmentation
 Products are filtered by seller category:
 - Homepage (`/`): Shows only products from "fournisseur" sellers
-- B2B page (`/winter`): Shows products from "importateur" and "grossiste" sellers
-- Filter logic is implemented in components using `seller_category` field
+- B2B page (`/GROS`): Shows products from "importateur" and "grossiste" sellers
+- Filter logic uses `sellerCategory` field in Convex queries
 
 ### 3. Authentication Flow
-- Supabase Auth with PKCE flow
+- Better Auth via @convex-dev/better-auth
 - Email/password signup with role selection (customer/seller/freelancer)
-- Protected routes check auth in `useEffect` hooks
-- Database trigger automatically creates user profile on signup
+- `useCurrentUser()` hook for accessing user profile + auth state
+- `authClient.signIn.email()`, `authClient.signUp.email()`, `authClient.signOut()` for auth actions
+- Profile creation via `api.users.createProfile` mutation after signup
 
 ### 4. Image/Video Management
-- Supabase Storage buckets: `product-images`, `product-videos`
-- Device-based file uploads via `ImageUpload` component in `src/components/ImageUpload.tsx`
-- Public URL generation for serving media
+- Cloudflare R2 storage via `/api/upload` Next.js API route
+- Device-based file uploads via `ImageUpload`, `MultiImageUpload`, `VideoUpload` components
+- Public URL generation from R2_PUBLIC_URL
 - Next.js Image component for optimization
 
 ### 5. Component Patterns
-- Client components (`'use client'`) for interactive features
-- Server components for static content
+- Client components (`'use client'`) with Convex reactive queries (`useQuery`)
+- `useQuery` for data fetching (auto-reactive, no useEffect needed)
+- `useMutation` for data mutations
 - Modal-based forms for CRUD operations (AddProductModal, EditProductModal, etc.)
 - Reusable filter/sorting controls in ShopFilters component
 
+### 6. Convex Data Fetching Pattern
+```tsx
+// Reactive query - auto-updates when data changes
+const data = useQuery(api.module.queryName, { args })
+
+// Conditional query - skip when args aren't ready
+const data = useQuery(api.module.queryName, condition ? { args } : 'skip')
+
+// Mutation
+const doSomething = useMutation(api.module.mutationName)
+await doSomething({ args })
+```
+
 ## Key File Locations
 
-### Supabase Integration
-- `src/lib/supabase/client.ts` - Supabase client configuration
-- `src/lib/supabase/server.ts` - Server-side Supabase client
-- `src/lib/supabase/auth.ts` - Authentication helpers
-- `src/lib/supabase/products.ts` - Product CRUD operations
-- `src/lib/supabase/orders.ts` - Order management functions
-- `src/lib/supabase/services.ts` - Freelance services operations
-- `src/lib/supabase/types.ts` - TypeScript type definitions
-- `src/lib/supabase/database.types.ts` - Generated Supabase types
+### Convex Backend
+- `convex/schema.ts` - Database schema (all tables + indexes)
+- `convex/auth.ts` - Better Auth instance + `getAuthenticatedAppUser()` helper
+- `convex/auth.config.ts` - Auth config provider
+- `convex/convex.config.ts` - Register better-auth component
+- `convex/http.ts` - HTTP routes (auth endpoints)
+- `convex/users.ts` - User queries/mutations
+- `convex/products.ts` - Product CRUD operations
+- `convex/orders.ts` - Order management + dashboard stats
+- `convex/services.ts` - Freelance services operations
+- `convex/b2bOffers.ts` - B2B offer management
+- `convex/b2bResponses.ts` - B2B bid/negotiation responses
+- `convex/b2bNotifications.ts` - B2B notification system
+- `convex/crons.ts` - Scheduled tasks (auction expiry, notifications)
+
+### Auth & Providers
+- `src/lib/auth-client.ts` - Frontend auth client (no baseURL)
+- `src/lib/auth-server.ts` - Server-side auth utilities
+- `src/app/api/auth/[...all]/route.ts` - Next.js auth API handler
+- `src/components/providers/convex-provider.tsx` - ConvexBetterAuthProvider wrapper
+- `src/hooks/useCurrentUser.ts` - `useCurrentUser()` + `useConvexAuth()` hooks
 
 ### Core Components
 - `src/components/Navbar.tsx` - Main navigation with auth state
 - `src/components/seller/` - Seller dashboard components
 - `src/components/freelancer/` - Freelancer management components
-- `src/components/ImageUpload.tsx` - File upload to Supabase Storage
+- `src/components/b2b/` - B2B marketplace components
+- `src/components/ImageUpload.tsx` - File upload to R2 Storage
+- `src/components/CheckoutModal.tsx` - Order checkout
 
 ### Data Files
 - `src/data/products.ts` - Static perfume catalog
 - `src/data/winter-clothes.ts` - Static winter clothing data
 - `src/data/freelance-services.ts` - Static freelance services
-- `src/data/orders.ts` - Order templates
+- `src/data/orders.ts` - Order type definitions
 
-### Database Migrations
-- `supabase/migrations/` - SQL migration files (11 migrations)
-- Migrations include schema, RLS policies, storage setup, and triggers
-
-## Database Schema
+## Database Schema (Convex)
 
 ### Key Tables
-- `user_profiles` - User accounts with role and seller_category
-- `products` - Product catalog with seller_id and category
-- `product_images` - Multiple images per product
-- `product_videos` - Product video assets
-- `orders` - Customer orders with order_number (auto-generated via sequence)
-- `order_items` - Order line items
-- `freelance_services` - Freelancer service listings
-- `service_portfolio` - Portfolio items for services
-- `service_reviews` - Service reviews and ratings
+- `userProfiles` - User accounts with role and sellerCategory
+- `products` - Product catalog with sellerId and category
+- `productImages` - Multiple images per product
+- `productVideos` - Product video assets
+- `orders` - Customer orders with orderNumber (auto-generated via counters table)
+- `orderItems` - Order line items
+- `freelanceServices` - Freelancer service listings
+- `freelancePortfolios` - Portfolio items for services
+- `b2bOffers` - B2B marketplace offers (auction/negotiable)
+- `b2bOfferResponses` - Bids and negotiations on B2B offers
+- `b2bNotifications` - B2B notification system
+- `counters` - Atomic counters for order number sequence
 
-### Important Enums
-- `user_role`: customer, seller, freelancer, admin
-- `seller_category`: fournisseur, importateur, grossiste
-- `product_category_type`: perfume, clothing
-- `order_status`: pending, processing, shipped, delivered, cancelled
-- `payment_status`: pending, paid, failed, refunded
+### Important Enums (as union types)
+- `role`: customer, seller, freelancer, admin
+- `sellerCategory`: fournisseur, importateur, grossiste
+- `productCategory`: perfume, clothing
+- `orderStatus`: pending, processing, shipped, delivered, cancelled
+- `paymentStatus`: pending, paid, failed, refunded
 
-### Row Level Security (RLS)
-All tables have RLS policies applied. Key patterns:
-- Products: Public read, authenticated insert, owner-only update/delete
+### Auth & Permissions
+Auth is handled by Better Auth + Convex. Access control is implemented in Convex function handlers:
+- Products: Public read, authenticated create, owner-only update/delete
 - Orders: Guest create allowed, seller/customer can view own orders
 - Services: Public read, freelancer manages own services
-- Storage: Public read, authenticated upload
+- B2B: Hierarchical visibility by seller category
 
 ## Development Workflow
 
-### Database Changes
-1. Create new migration file in `supabase/migrations/`
-2. Apply via Supabase dashboard or CLI
-3. Regenerate types: `npx supabase gen types typescript`
-4. Update `src/lib/supabase/database.types.ts`
+### Schema Changes
+1. Modify `convex/schema.ts`
+2. Run `npx convex dev` to push schema changes
+3. Types are auto-generated in `convex/_generated/`
 
 ### Adding Features
 When adding new features:
 1. Check if static data exists in `/src/data/` that needs to be considered
-2. Ensure RLS policies are properly configured for new tables
-3. Use TypeScript types from `src/lib/supabase/types.ts`
-4. Follow existing patterns for client/server components
+2. Add Convex functions in `convex/` directory (queries, mutations, actions)
+3. Implement auth checks using `getAuthenticatedAppUser(ctx)` in mutations
+4. Use `useQuery(api.module.queryName)` in frontend components
 5. Never include icons in design (per user preference in global CLAUDE.md)
 
 ### Working with Orders
-- Order numbers are auto-generated via Supabase sequence (not client-side)
+- Order numbers are auto-generated via `counters` table in Convex
 - Guest checkout is supported (no auth required for creating orders)
-- Seller dashboard filters orders by seller_id automatically
+- Seller dashboard filters orders by sellerId automatically
 - Order status workflow: pending → processing → shipped → delivered
 
 ### Image Uploads
 - Use `ImageUpload` component for consistent upload handling
-- Images are stored in Supabase Storage, not local filesystem
-- Always generate public URLs for displaying uploaded images
-- Multiple images per product are supported via `product_images` table
+- Images are stored in Cloudflare R2 via `/api/upload` API route
+- Always generate public URLs from R2_PUBLIC_URL
+- Multiple images per product are supported via `productImages` table
 
 ## Styling Conventions
 
@@ -179,30 +204,46 @@ When adding new features:
 
 Required in `.env.local`:
 ```env
-NEXT_PUBLIC_SUPABASE_URL=https://enbrhhuubjvapadqyvds.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=[key]
-SUPABASE_SERVICE_ROLE_KEY=[key]
-NEXT_PUBLIC_SITE_URL=http://localhost:3000
+NEXT_PUBLIC_CONVEX_URL=https://your-deployment.convex.cloud
+NEXT_PUBLIC_CONVEX_SITE_URL=https://your-deployment.convex.site
+CONVEX_SITE_URL=https://your-deployment.convex.site
+```
+
+R2 Storage (for file uploads):
+```env
+R2_ENDPOINT=https://your-account.r2.cloudflarestorage.com
+R2_ACCESS_KEY_ID=your-key
+R2_SECRET_ACCESS_KEY=your-secret
+R2_BUCKET_NAME=zst-media
+R2_PUBLIC_URL=https://your-r2-public-url
+```
+
+Convex Dashboard env vars (set via `npx convex env set`):
+```
+BETTER_AUTH_SECRET=<generated>
+SITE_URL=https://www.zst.xyz
+GOOGLE_CLIENT_ID=<oauth-client-id>
+GOOGLE_CLIENT_SECRET=<oauth-client-secret>
 ```
 
 ## Important Patterns
 
 ### Type Safety
 - Explicit type annotations required
-- Generated database types from Supabase
-- Type-safe Supabase client with `Database` generic
+- Generated types from Convex in `convex/_generated/`
+- Type-safe queries/mutations via `api` object
 - No implicit any types
 
 ### Data Fetching
-- Client-side fetching with `useEffect` for dynamic data
+- Convex reactive queries via `useQuery()` for dynamic data (auto-updates, no useEffect needed)
 - Static data imported directly from `/src/data`
-- Error handling with try/catch and console logging
-- No server actions currently in use
+- Conditional queries: `useQuery(api.x.y, condition ? args : 'skip')`
+- Mutations via `useMutation()` for write operations
 
 ### Route Structure
 - Dynamic routes: `/products/[id]`, `/freelance/[slug]`
-- Protected routes check auth in `useEffect`
-- No-cache headers on auth-dependent pages
+- Protected routes use `useConvexAuth()` + client-side redirect
+- No middleware auth checks (Better Auth handles sessions client-side)
 
 ## Testing Multi-Role Workflows
 
@@ -216,26 +257,33 @@ When testing features:
 
 ## Common Issues
 
-### RLS Policy Violations
-If you encounter RLS policy errors:
-1. Check the relevant policy in `supabase/migrations/`
-2. Verify user_id is correctly set in authenticated context
-3. For guest operations, ensure policy allows anon access
-4. Check seller_id matches authenticated user for seller operations
+### Convex Query Issues
+If queries return `undefined`:
+1. Ensure `npx convex dev` is running alongside `npm run dev`
+2. Check that `NEXT_PUBLIC_CONVEX_URL` is set in `.env.local`
+3. Verify the `ConvexClientProvider` wraps the app in `layout.tsx`
+
+### Auth Issues
+- If "Unauthenticated" errors: wrap `authComponent.getAuthUser(ctx)` in try-catch
+- If CORS errors: don't set `baseURL` in auth-client.ts (use same-origin routes)
+- If sessions don't persist: disable middleware, use client-side auth checks
+- Run `npx convex dev` to regenerate `components.betterAuth` types
 
 ### TypeScript Errors
-- Always regenerate types after schema changes
-- Use generated types from `database.types.ts`
+- Run `npx convex dev` to regenerate types after schema changes
+- Use generated types from `convex/_generated/`
 - Check for null/undefined handling on optional fields
 
 ### Image Upload Issues
-- Verify storage bucket permissions in Supabase dashboard
-- Check file size limits (Supabase has default limits)
-- Ensure public bucket settings for product images
+- Verify R2 credentials in `.env.local`
+- Check file size limits in `/api/upload` route
+- Ensure R2_PUBLIC_URL is set for serving images
 
 ## Deployment
 
-- **Platform**: Vercel (recommended)
-- **Environment**: Set all environment variables in Vercel dashboard
-- **Build**: Automatic builds on push to main branch
-- **Database**: Supabase project in eu-west-3 region
+- **Frontend**: Vercel (recommended)
+- **Backend**: Convex Cloud (auto-deployed via `npx convex deploy`)
+- **Storage**: Cloudflare R2
+- **Auth**: Better Auth (sessions managed via Convex)
+- Set Vercel env vars: `NEXT_PUBLIC_CONVEX_URL`, `NEXT_PUBLIC_CONVEX_SITE_URL`, `CONVEX_SITE_URL`
+- Set Convex env vars: `BETTER_AUTH_SECRET`, `SITE_URL`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, R2 vars

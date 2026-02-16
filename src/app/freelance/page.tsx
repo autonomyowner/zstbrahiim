@@ -1,9 +1,10 @@
 'use client'
 
-import { useState, useEffect, useMemo, useCallback } from 'react'
+import { useState, useMemo, useCallback } from 'react'
 import Link from 'next/link'
 import { freelanceServices, type ServiceCategory, type ExperienceLevel, type FreelanceService } from '@/data/freelance-services'
-import { getFreelanceServices } from '@/lib/supabase/services'
+import { useQuery } from 'convex/react'
+import { api } from '../../../convex/_generated/api'
 
 const SERVICES_PER_PAGE = 9
 
@@ -233,33 +234,13 @@ export default function FreelancePage() {
   const [selectedExperience, setSelectedExperience] = useState<ExperienceLevel | 'all'>('all')
   const [selectedAvailability, setSelectedAvailability] = useState<'all' | 'available' | 'busy'>('all')
   const [searchQuery, setSearchQuery] = useState('')
-  const [databaseServices, setDatabaseServices] = useState<ServiceWithVideo[]>([])
-  const [isLoadingServices, setIsLoadingServices] = useState(true)
   const [visibleCount, setVisibleCount] = useState(SERVICES_PER_PAGE)
 
-  // Fetch database services with abort controller
-  useEffect(() => {
-    const controller = new AbortController()
+  // Fetch database services via Convex
+  const rawDbServices = useQuery(api.services.getFreelanceServices, {})
 
-    const fetchServices = async () => {
-      try {
-        setIsLoadingServices(true)
-        const services = await getFreelanceServices()
-        if (!controller.signal.aborted) {
-          setDatabaseServices(services as ServiceWithVideo[])
-        }
-      } catch {
-        // Silently handle fetch errors
-      } finally {
-        if (!controller.signal.aborted) {
-          setIsLoadingServices(false)
-        }
-      }
-    }
-
-    fetchServices()
-    return () => controller.abort()
-  }, [])
+  const isLoadingServices = rawDbServices === undefined
+  const databaseServices: ServiceWithVideo[] = rawDbServices ? (rawDbServices as ServiceWithVideo[]) : []
 
   // Combine and memoize all services
   const allServices = useMemo((): ServiceWithVideo[] => {

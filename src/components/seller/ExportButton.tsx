@@ -2,12 +2,11 @@
 
 import { type Order } from '@/data/orders'
 import { type Product } from '@/data/products'
-import { type AdaptedProduct } from '@/lib/supabase/products'
 import { exportSummaryReport } from '@/utils/exportData'
 
 type ExportButtonProps = {
   orders: Order[]
-  products: (Product | AdaptedProduct)[]
+  products: (Product | any)[]
   type: 'orders' | 'products' | 'all'
 }
 

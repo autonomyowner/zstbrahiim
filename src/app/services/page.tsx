@@ -2,6 +2,9 @@
 
 import { useState, useMemo, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import { useQuery, useMutation } from 'convex/react'
+import { api } from '../../../convex/_generated/api'
+import { useCurrentUser } from '@/hooks/useCurrentUser'
 import { OrdersTable } from '@/components/seller/OrdersTable'
 import { OrderFilters } from '@/components/seller/OrderFilters'
 import { ProductManagement } from '@/components/seller/ProductManagement'
@@ -14,26 +17,13 @@ import {
 import { EditProductModal } from '@/components/seller/EditProductModal'
 import { OrderDetailsModal } from '@/components/seller/OrderDetailsModal'
 import { ExportButton } from '@/components/seller/ExportButton'
-import { mockOrders, type Order, type OrderStatus, type PaymentStatus } from '@/data/orders'
+import { type Order, type OrderStatus, type PaymentStatus } from '@/data/orders'
 import { type Product } from '@/data/products'
 import { printInvoice } from '@/utils/printInvoice'
-import { getSellerProducts, createProduct, updateProduct, deleteProduct } from '@/lib/supabase/products'
-import { getCurrentUserProfile, isSeller } from '@/lib/supabase/auth'
-import { supabase } from '@/lib/supabase/client'
-import {
-  getOrdersForSeller,
-  updateOrderStatus as updateOrderStatusInDb,
-  getSellerDashboardStats,
-  type SellerDashboardStats,
-} from '@/lib/supabase/orders'
-import { upsertProductVideo, deleteProductVideo } from '@/lib/supabase/productVideos'
-import type { UserProfile, B2BOfferWithDetails, CreateB2BOfferRequest } from '@/lib/supabase/types'
-import { getMyOffers, createOffer as createB2BOffer, deleteOffer } from '@/lib/supabase/b2b-offers'
-import { getSellerStatistics } from '@/lib/supabase/b2b-offers'
 import CreateOfferModal from '@/components/b2b/CreateOfferModal'
 import OfferCard from '@/components/b2b/OfferCard'
 import OfferDetailsModal from '@/components/b2b/OfferDetailsModal'
-import { useRealtimeOrders } from '@/hooks/useRealtimeOrders'
+import type { Id } from '../../../convex/_generated/dataModel'
 
 type TabType = 'dashboard' | 'orders' | 'products' | 'analytics' | 'b2b'
 
@@ -199,237 +189,87 @@ function MobileBottomNav({
 
 export default function SellerPortalPage(): JSX.Element {
   const router = useRouter()
+  const { user, isLoading: authChecking } = useCurrentUser()
+
   const [activeTab, setActiveTab] = useState<TabType>('dashboard')
-  const [orders, setOrders] = useState<Order[]>(mockOrders)
-  const [productsList, setProductsList] = useState<(Product | import('@/lib/supabase/products').AdaptedProduct)[]>([])
-  const [loading, setLoading] = useState(true)
-  const [authChecking, setAuthChecking] = useState(true)
   const [productError, setProductError] = useState<string | null>(null)
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
-  const [sellerProfile, setSellerProfile] = useState<UserProfile | null>(null)
   const [statsPreset, setStatsPreset] = useState<StatsRangePreset>('30d')
   const statsRange = useMemo(() => computeRange(statsPreset), [statsPreset])
-  const [dashboardStats, setDashboardStats] = useState<SellerDashboardStats | null>(null)
-  const [statsLoading, setStatsLoading] = useState(true)
-  const [statsError, setStatsError] = useState<string | null>(null)
 
   // Modal states
   const [isAddProductModalOpen, setIsAddProductModalOpen] = useState(false)
   const [isEditProductModalOpen, setIsEditProductModalOpen] = useState(false)
   const [isOrderDetailsModalOpen, setIsOrderDetailsModalOpen] = useState(false)
-  const [selectedProduct, setSelectedProduct] = useState<Product | import('@/lib/supabase/products').AdaptedProduct | null>(null)
+  const [selectedProduct, setSelectedProduct] = useState<any>(null)
   const [selectedOrder, setSelectedOrder] = useState<Order | null>(null)
 
   // B2B states
-  const [b2bOffers, setB2BOffers] = useState<B2BOfferWithDetails[]>([])
-  const [b2bStats, setB2BStats] = useState<any>(null)
   const [isCreateOfferModalOpen, setIsCreateOfferModalOpen] = useState(false)
   const [isB2BDetailsModalOpen, setIsB2BDetailsModalOpen] = useState(false)
-  const [selectedB2BOffer, setSelectedB2BOffer] = useState<B2BOfferWithDetails | null>(null)
-  const [b2bLoading, setB2BLoading] = useState(false)
+  const [selectedB2BOffer, setSelectedB2BOffer] = useState<any>(null)
 
   // Order filters
   const [statusFilter, setStatusFilter] = useState<OrderStatus | 'all'>('all')
   const [paymentFilter, setPaymentFilter] = useState<PaymentStatus | 'all'>('all')
 
-  // Real-time orders hook
-  const { pendingCount: realtimePendingCount } = useRealtimeOrders({
-    sellerId: sellerProfile?.id || null,
-    enabled: !authChecking && sellerProfile?.role === 'seller',
-  })
+  // Convex reactive queries - data updates automatically, no subscriptions needed
+  const isSeller = !authChecking && (user?.role === 'seller' || user?.role === 'admin')
 
-  // Check authentication and seller role
-  useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        const hasSellerAccess = await isSeller()
-        if (!hasSellerAccess) {
-          router.push('/signin')
-          return
+  const sellerProducts = useQuery(
+    api.products.getSellerProducts,
+    isSeller ? {} : 'skip'
+  )
+
+  const sellerOrders = useQuery(
+    api.orders.getOrdersForSeller,
+    isSeller && user?._id ? { sellerId: user._id } : 'skip'
+  )
+
+  const dashboardStats = useQuery(
+    api.orders.getSellerDashboardStats,
+    isSeller && user?._id
+      ? {
+          sellerId: user._id,
+          startDate: statsRange.start.getTime(),
+          endDate: statsRange.end.getTime(),
         }
-        setAuthChecking(false)
-      } catch (error) {
-        console.error('Auth check failed:', error)
-        router.push('/signin')
-      }
-    }
-    checkAuth()
-  }, [router])
+      : 'skip'
+  )
 
+  const canAccessB2B = user?.sellerCategory === 'importateur' || user?.sellerCategory === 'grossiste'
+
+  const b2bOffers = useQuery(
+    api.b2bOffers.getMyOffers,
+    isSeller && canAccessB2B ? {} : 'skip'
+  )
+
+  const b2bStats = useQuery(
+    api.b2bOffers.getSellerStatistics,
+    isSeller && canAccessB2B ? {} : 'skip'
+  )
+
+  // Convex mutations
+  const createProductMutation = useMutation(api.products.createProduct)
+  const updateProductMutation = useMutation(api.products.updateProduct)
+  const deleteProductMutation = useMutation(api.products.deleteProduct)
+  const updateOrderStatusMutation = useMutation(api.orders.updateOrderStatus)
+  const createOfferMutation = useMutation(api.b2bOffers.createOffer)
+  const deleteOfferMutation = useMutation(api.b2bOffers.deleteOffer)
+
+  // Redirect if not seller
   useEffect(() => {
-    if (authChecking) return
-
-    const fetchProfile = async () => {
-      try {
-        const profile = await getCurrentUserProfile()
-        setSellerProfile(profile)
-      } catch (error) {
-        console.error('Error fetching seller profile:', error)
-      }
+    if (!authChecking && !isSeller) {
+      router.push('/signin')
     }
+  }, [authChecking, isSeller, router])
 
-    fetchProfile()
-  }, [authChecking])
-
-  // Fetch products from Supabase (only seller's products)
-  useEffect(() => {
-    if (authChecking) return
-
-    const fetchProducts = async () => {
-      try {
-        setLoading(true)
-        const fetchedProducts = await getSellerProducts()
-        setProductsList(fetchedProducts)
-      } catch (error) {
-        console.error('Error fetching products:', error)
-        setProductError('Failed to load products')
-      } finally {
-        setLoading(false)
-      }
-    }
-    fetchProducts()
-  }, [authChecking])
-
-  // Fetch orders for seller
-  useEffect(() => {
-    if (authChecking) return
-
-    const fetchOrders = async () => {
-      try {
-        const { data: { user } } = await supabase.auth.getUser()
-        if (!user) return
-
-        const sellerOrders = await getOrdersForSeller(user.id)
-        setOrders(sellerOrders)
-      } catch (error) {
-        console.error('Error fetching orders:', error)
-      }
-    }
-    fetchOrders()
-
-    // Set up real-time subscription for order changes
-    const channel = supabase
-      .channel('seller-orders-changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'orders',
-        },
-        async (payload) => {
-          console.log('Order change detected, refreshing orders...', payload)
-          // Refetch orders when any change occurs
-          const { data: { user } } = await supabase.auth.getUser()
-          if (user) {
-            const sellerOrders = await getOrdersForSeller(user.id)
-            setOrders(sellerOrders)
-          }
-        }
-      )
-      .subscribe()
-
-    // Cleanup subscription
-    return () => {
-      supabase.removeChannel(channel)
-    }
-  }, [authChecking])
-
-  // Fetch dashboard stats
-  useEffect(() => {
-    if (authChecking) return
-
-    const fetchStats = async () => {
-      try {
-        setStatsLoading(true)
-        setStatsError(null)
-        const {
-          data: { user },
-        } = await supabase.auth.getUser()
-        if (!user) {
-          setDashboardStats(null)
-          return
-        }
-
-        const stats = await getSellerDashboardStats({
-          sellerId: user.id,
-          startDate: statsRange.start.toISOString(),
-          endDate: statsRange.end.toISOString(),
-        })
-
-        setDashboardStats(stats)
-      } catch (error) {
-        console.error('Error fetching seller dashboard stats:', error)
-        setStatsError('Impossible de charger les statistiques')
-      } finally {
-        setStatsLoading(false)
-      }
-    }
-
-    fetchStats()
-
-    // Set up real-time subscription to refresh stats on order changes
-    const channel = supabase
-      .channel('seller-stats-changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'orders',
-        },
-        async (payload) => {
-          console.log('Order change detected, refreshing stats...', payload)
-          // Refetch stats when order changes occur
-          const {
-            data: { user },
-          } = await supabase.auth.getUser()
-          if (user) {
-            try {
-              const stats = await getSellerDashboardStats({
-                sellerId: user.id,
-                startDate: statsRange.start.toISOString(),
-                endDate: statsRange.end.toISOString(),
-              })
-              setDashboardStats(stats)
-            } catch (error) {
-              console.error('Error refreshing stats:', error)
-            }
-          }
-        }
-      )
-      .subscribe()
-
-    // Cleanup subscription
-    return () => {
-      supabase.removeChannel(channel)
-    }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [authChecking, statsPreset])
-
-  // Fetch B2B offers for importateurs and grossistes
-  useEffect(() => {
-    if (authChecking) return
-    if (!sellerProfile) return
-    if (sellerProfile.seller_category !== 'importateur' && sellerProfile.seller_category !== 'grossiste') return
-
-    const fetchB2BData = async () => {
-      try {
-        setB2BLoading(true)
-        const offers = await getMyOffers()
-        setB2BOffers(offers)
-
-        const stats = await getSellerStatistics()
-        setB2BStats(stats)
-      } catch (error) {
-        console.error('Error fetching B2B data:', error)
-      } finally {
-        setB2BLoading(false)
-      }
-    }
-
-    fetchB2BData()
-  }, [authChecking, sellerProfile])
+  // Derived data - cast Convex query results to the expected types
+  const productsList = sellerProducts ?? []
+  const orders: Order[] = (sellerOrders ?? []) as unknown as Order[]
+  const loading = sellerProducts === undefined
+  const statsLoading = dashboardStats === undefined
+  const b2bLoading = b2bOffers === undefined
 
   // Filter orders
   const filteredOrders = useMemo(() => {
@@ -443,27 +283,15 @@ export default function SellerPortalPage(): JSX.Element {
 
   const handleUpdateOrderStatus = async (orderId: string, newStatus: OrderStatus) => {
     try {
-      const success = await updateOrderStatusInDb({
-        order_id: orderId,
+      await updateOrderStatusMutation({
+        orderId: orderId as Id<"orders">,
         status: newStatus,
       })
-
-      if (success) {
-        setOrders((prevOrders) =>
-          prevOrders.map((order) =>
-            order.id === orderId
-              ? { ...order, status: newStatus, updatedAt: new Date().toISOString() }
-              : order
-          )
-        )
-        setSuccessMessage('Statut de commande mis à jour')
-        setTimeout(() => setSuccessMessage(null), 3000)
-      } else {
-        setProductError('Erreur lors de la mise à jour du statut')
-      }
+      setSuccessMessage('Statut de commande mis a jour')
+      setTimeout(() => setSuccessMessage(null), 3000)
     } catch (error) {
       console.error('Error updating order status:', error)
-      setProductError('Erreur lors de la mise à jour du statut')
+      setProductError('Erreur lors de la mise a jour du statut')
     }
   }
 
@@ -483,74 +311,45 @@ export default function SellerPortalPage(): JSX.Element {
     try {
       setProductError(null)
 
-      const { data: { user } } = await supabase.auth.getUser()
-
       if (!user) {
-        setProductError('Vous devez être connecté pour ajouter un produit')
+        setProductError('Vous devez etre connecte pour ajouter un produit')
         return
       }
 
-      const productPayload = {
+      await createProductMutation({
         slug: `${productData.name.toLowerCase().replace(/\s+/g, '-')}-${Date.now()}`,
         name: productData.name,
         brand: productData.brand,
         price: productData.price,
-        original_price: productData.originalPrice ?? null,
+        originalPrice: productData.originalPrice ?? undefined,
         category: productData.category,
-        product_type: productData.productType,
-        product_category: 'perfume' as const,
-        need: productData.need ?? null,
-        in_stock: productData.inStock,
-        is_promo: productData.isPromo,
-        is_new: productData.isNew ?? null,
-        rating: null,
-        countdown_end_date: null,
+        productType: productData.productType,
+        productCategory: 'perfume',
+        need: productData.need ?? undefined,
+        inStock: productData.inStock,
+        isPromo: productData.isPromo,
+        isNew: productData.isNew ?? undefined,
         description: productData.description,
         benefits: [],
         ingredients: '',
-        usage_instructions: '',
-        delivery_estimate: productData.deliveryEstimate,
-        shipping_info: 'Livraison gratuite à partir de 20 000 DA',
-        returns_info: 'Retours acceptés sous 14 jours',
-        payment_info: 'Paiement à la livraison',
-        exclusive_offers: null,
+        usageInstructions: '',
+        deliveryEstimate: productData.deliveryEstimate,
+        shippingInfo: 'Livraison gratuite a partir de 20 000 DA',
+        returnsInfo: 'Retours acceptes sous 14 jours',
+        paymentInfo: 'Paiement a la livraison',
+        minQuantity: 1,
         images: [productData.image],
-        seller_id: user.id,
-        seller_category: sellerProfile?.seller_category ?? null,
-        min_quantity: 1,
-      }
+      })
 
-      const productId = await createProduct(productPayload)
-
-      if (productId) {
-        if (video) {
-          try {
-            await upsertProductVideo({
-              productId,
-              file: video.file,
-              durationSeconds: video.durationSeconds,
-              thumbnailBlob: video.thumbnailBlob,
-            })
-          } catch (videoError: any) {
-            console.error('Error uploading product video:', videoError)
-            setProductError(videoError?.message || "Erreur lors de l'ajout de la vidéo.")
-          }
-        }
-
-        setSuccessMessage(`Produit "${productData.name}" ajouté avec succès!`)
-        const updatedProducts = await getSellerProducts()
-        setProductsList(updatedProducts)
-        setTimeout(() => setSuccessMessage(null), 3000)
-      } else {
-        setProductError('Failed to create product')
-      }
+      setSuccessMessage(`Produit "${productData.name}" ajoute avec succes!`)
+      setTimeout(() => setSuccessMessage(null), 3000)
     } catch (error) {
       console.error('Error adding product:', error)
       setProductError('Error adding product. Please try again.')
     }
   }
 
-  const handleEditProduct = (product: Product | import('@/lib/supabase/products').AdaptedProduct) => {
+  const handleEditProduct = (product: any) => {
     setSelectedProduct(product)
     setIsEditProductModalOpen(true)
   }
@@ -564,57 +363,28 @@ export default function SellerPortalPage(): JSX.Element {
     try {
       setProductError(null)
 
-      const updatePayload = {
-        id: productId,
+      await updateProductMutation({
+        productId: productId as Id<"products">,
         name: productData.name,
         brand: productData.brand,
         price: productData.price,
-        original_price: productData.originalPrice ?? null,
+        originalPrice: productData.originalPrice ?? undefined,
         category: productData.category,
-        product_type: productData.productType,
-        need: productData.need ?? null,
-        in_stock: productData.inStock,
-        is_promo: productData.isPromo,
-        is_new: productData.isNew ?? null,
+        productType: productData.productType,
+        need: productData.need ?? undefined,
+        inStock: productData.inStock,
+        isPromo: productData.isPromo,
+        isNew: productData.isNew ?? undefined,
         description: productData.description,
         benefits: [],
         ingredients: '',
-        usage_instructions: '',
-        delivery_estimate: productData.deliveryEstimate,
+        usageInstructions: '',
+        deliveryEstimate: productData.deliveryEstimate,
         images: [productData.image],
-      }
+      })
 
-      const success = await updateProduct(updatePayload)
-
-      if (success) {
-        if (removeVideo) {
-          try {
-            await deleteProductVideo(productId)
-          } catch (error: any) {
-            console.error('Error removing product video:', error)
-            setProductError(error?.message || 'Erreur lors de la suppression de la vidéo.')
-          }
-        } else if (video) {
-          try {
-            await upsertProductVideo({
-              productId,
-              file: video.file,
-              durationSeconds: video.durationSeconds,
-              thumbnailBlob: video.thumbnailBlob,
-            })
-          } catch (videoError: any) {
-            console.error('Error updating product video:', videoError)
-            setProductError(videoError?.message || 'Erreur lors de la mise à jour de la vidéo.')
-          }
-        }
-
-        setSuccessMessage(`Produit "${productData.name}" modifié avec succès!`)
-        const updatedProducts = await getSellerProducts()
-        setProductsList(updatedProducts)
-        setTimeout(() => setSuccessMessage(null), 3000)
-      } else {
-        setProductError('Failed to update product')
-      }
+      setSuccessMessage(`Produit "${productData.name}" modifie avec succes!`)
+      setTimeout(() => setSuccessMessage(null), 3000)
     } catch (error) {
       console.error('Error updating product:', error)
       setProductError('Error updating product. Please try again.')
@@ -622,19 +392,12 @@ export default function SellerPortalPage(): JSX.Element {
   }
 
   const handleDeleteProduct = async (productId: string) => {
-    if (confirm('Êtes-vous sûr de vouloir supprimer ce produit?')) {
+    if (confirm('Etes-vous sur de vouloir supprimer ce produit?')) {
       try {
         setProductError(null)
-        const success = await deleteProduct(productId)
-
-        if (success) {
-          setSuccessMessage('Produit supprimé avec succès!')
-          const updatedProducts = await getSellerProducts()
-          setProductsList(updatedProducts)
-          setTimeout(() => setSuccessMessage(null), 3000)
-        } else {
-          setProductError('Failed to delete product')
-        }
+        await deleteProductMutation({ productId: productId as Id<"products"> })
+        setSuccessMessage('Produit supprime avec succes!')
+        setTimeout(() => setSuccessMessage(null), 3000)
       } catch (error) {
         console.error('Error deleting product:', error)
         setProductError('Error deleting product. Please try again.')
@@ -647,32 +410,35 @@ export default function SellerPortalPage(): JSX.Element {
   }
 
   // B2B handlers
-  const handleCreateB2BOffer = async (offerData: CreateB2BOfferRequest) => {
+  const handleCreateB2BOffer = async (offerData: any) => {
     try {
       setProductError(null)
-      await createB2BOffer(offerData)
-      setSuccessMessage('Offre B2B créée avec succès!')
-
-      const offers = await getMyOffers()
-      setB2BOffers(offers)
-
+      await createOfferMutation({
+        title: offerData.title,
+        description: offerData.description,
+        images: offerData.images,
+        tags: offerData.tags,
+        basePrice: offerData.base_price,
+        minQuantity: offerData.min_quantity,
+        availableQuantity: offerData.available_quantity,
+        offerType: offerData.offer_type,
+        startsAt: offerData.starts_at ? new Date(offerData.starts_at).getTime() : undefined,
+        endsAt: offerData.ends_at ? new Date(offerData.ends_at).getTime() : undefined,
+      })
+      setSuccessMessage('Offre B2B creee avec succes!')
       setTimeout(() => setSuccessMessage(null), 3000)
     } catch (error: any) {
       console.error('Error creating B2B offer:', error)
-      setProductError(error.message || "Erreur lors de la création de l'offre B2B")
+      setProductError(error.message || "Erreur lors de la creation de l'offre B2B")
     }
   }
 
   const handleDeleteB2BOffer = async (offerId: string) => {
-    if (confirm('Êtes-vous sûr de vouloir supprimer cette offre B2B?')) {
+    if (confirm('Etes-vous sur de vouloir supprimer cette offre B2B?')) {
       try {
         setProductError(null)
-        await deleteOffer(offerId)
-        setSuccessMessage('Offre B2B supprimée avec succès!')
-
-        const offers = await getMyOffers()
-        setB2BOffers(offers)
-
+        await deleteOfferMutation({ offerId: offerId as Id<"b2bOffers"> })
+        setSuccessMessage('Offre B2B supprimee avec succes!')
         setTimeout(() => setSuccessMessage(null), 3000)
       } catch (error: any) {
         console.error('Error deleting B2B offer:', error)
@@ -681,13 +447,9 @@ export default function SellerPortalPage(): JSX.Element {
     }
   }
 
-  const handleViewB2BDetails = (offer: B2BOfferWithDetails) => {
+  const handleViewB2BDetails = (offer: any) => {
     setSelectedB2BOffer(offer)
     setIsB2BDetailsModalOpen(true)
-  }
-
-  const canAccessB2B = () => {
-    return sellerProfile?.seller_category === 'importateur' || sellerProfile?.seller_category === 'grossiste'
   }
 
   const getTrendProps = (value: number | null): { trend?: string; trendUp?: boolean } => {
@@ -708,7 +470,7 @@ export default function SellerPortalPage(): JSX.Element {
             <div className="absolute inset-0 rounded-full border-4 border-brand-border"></div>
             <div className="absolute inset-0 rounded-full border-4 border-transparent border-t-brand-dark animate-spin"></div>
           </div>
-          <p className="text-text-muted font-medium text-sm">Vérification...</p>
+          <p className="text-text-muted font-medium text-sm">Verification...</p>
         </div>
       </div>
     )
@@ -730,7 +492,7 @@ export default function SellerPortalPage(): JSX.Element {
                   Espace Vendeur
                 </p>
                 <p className="text-sm font-bold text-text-primary">
-                  {sellerProfile?.provider_name || sellerProfile?.full_name || 'Dashboard'}
+                  {user?.providerName || user?.fullName || 'Dashboard'}
                 </p>
               </div>
             </div>
@@ -741,7 +503,7 @@ export default function SellerPortalPage(): JSX.Element {
                 { id: 'dashboard' as TabType, label: 'Accueil' },
                 { id: 'orders' as TabType, label: 'Commandes' },
                 { id: 'products' as TabType, label: 'Produits' },
-                ...(canAccessB2B() ? [{ id: 'b2b' as TabType, label: 'B2B' }] : []),
+                ...(canAccessB2B ? [{ id: 'b2b' as TabType, label: 'B2B' }] : []),
                 { id: 'analytics' as TabType, label: 'Stats' },
               ].map((tab) => (
                 <button
@@ -764,10 +526,10 @@ export default function SellerPortalPage(): JSX.Element {
             </nav>
 
             {/* Seller Badge */}
-            {sellerProfile?.seller_category && sellerProfile.seller_category !== 'fournisseur' && (
+            {user?.sellerCategory && user.sellerCategory !== 'fournisseur' && (
               <div className="flex items-center gap-2 rounded-full bg-brand-dark px-3 py-1.5">
                 <span className="text-xs font-bold uppercase tracking-wider text-brand-primary">
-                  {sellerProfile.seller_category === 'grossiste' ? 'Grossiste' : 'Importateur'}
+                  {user.sellerCategory === 'grossiste' ? 'Grossiste' : 'Importateur'}
                 </span>
               </div>
             )}
@@ -784,14 +546,14 @@ export default function SellerPortalPage(): JSX.Element {
             </div>
             <div>
               <p className="text-sm font-bold text-text-primary">
-                {sellerProfile?.provider_name || sellerProfile?.full_name || 'Dashboard'}
+                {user?.providerName || user?.fullName || 'Dashboard'}
               </p>
             </div>
           </div>
-          {sellerProfile?.seller_category && sellerProfile.seller_category !== 'fournisseur' && (
+          {user?.sellerCategory && user.sellerCategory !== 'fournisseur' && (
             <div className="rounded-full bg-brand-dark px-2.5 py-1">
               <span className="text-[10px] font-bold uppercase tracking-wide text-brand-primary">
-                {sellerProfile.seller_category === 'grossiste' ? 'GROS' : 'IMP'}
+                {user.sellerCategory === 'grossiste' ? 'GROS' : 'IMP'}
               </span>
             </div>
           )}
@@ -837,7 +599,7 @@ export default function SellerPortalPage(): JSX.Element {
                   text-xs font-semibold uppercase tracking-wider mb-1
                   ${successMessage ? 'text-brand-primary' : 'text-red-400'}
                 `}>
-                  {successMessage ? 'Succès' : 'Erreur'}
+                  {successMessage ? 'Succes' : 'Erreur'}
                 </p>
                 <p className="text-sm text-white font-medium leading-relaxed">
                   {successMessage || productError}
@@ -882,7 +644,7 @@ export default function SellerPortalPage(): JSX.Element {
               <div>
                 <p className="text-xs sm:text-sm text-text-muted">Bienvenue,</p>
                 <h1 className="mt-0.5 sm:mt-1 text-2xl sm:text-3xl md:text-4xl font-black tracking-tight text-text-primary">
-                  {sellerProfile?.provider_name || sellerProfile?.full_name || 'Votre Boutique'}
+                  {user?.providerName || user?.fullName || 'Votre Boutique'}
                 </h1>
               </div>
               <StatsRangePicker
@@ -937,7 +699,7 @@ export default function SellerPortalPage(): JSX.Element {
                 />
                 <ActionButton
                   title="Commandes"
-                  description="Gérer les commandes"
+                  description="Gerer les commandes"
                   onClick={() => setActiveTab('orders')}
                 />
                 <ActionButton
@@ -945,10 +707,10 @@ export default function SellerPortalPage(): JSX.Element {
                   description="Stocks et prix"
                   onClick={() => setActiveTab('products')}
                 />
-                {canAccessB2B() && (
+                {canAccessB2B && (
                   <ActionButton
                     title="Offre B2B"
-                    description="Créer une offre"
+                    description="Creer une offre"
                     onClick={() => setIsCreateOfferModalOpen(true)}
                   />
                 )}
@@ -958,7 +720,7 @@ export default function SellerPortalPage(): JSX.Element {
             {/* Recent Orders Preview */}
             <section className="rounded-xl sm:rounded-2xl border border-brand-border bg-white p-4 sm:p-6">
               <div className="mb-3 sm:mb-4 flex items-center justify-between">
-                <h2 className="text-base sm:text-lg font-bold text-text-primary">Commandes Récentes</h2>
+                <h2 className="text-base sm:text-lg font-bold text-text-primary">Commandes Recentes</h2>
                 <button
                   onClick={() => setActiveTab('orders')}
                   className="text-xs sm:text-sm font-semibold text-brand-dark"
@@ -1039,13 +801,13 @@ export default function SellerPortalPage(): JSX.Element {
         )}
 
         {/* B2B Tab */}
-        {activeTab === 'b2b' && canAccessB2B() && (
+        {activeTab === 'b2b' && canAccessB2B && (
           <div className="space-y-4 sm:space-y-6 animate-fade-in">
             <div className="flex flex-col gap-3 sm:gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div>
                 <h1 className="text-xl sm:text-2xl font-black text-text-primary">Offres B2B</h1>
                 <p className="mt-0.5 text-xs sm:text-sm text-text-muted">
-                  Gérez vos offres grossistes
+                  Gerez vos offres grossistes
                 </p>
               </div>
               <button
@@ -1059,12 +821,12 @@ export default function SellerPortalPage(): JSX.Element {
             {/* B2B Stats */}
             {b2bStats && (
               <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-4">
-                <StatCard label="Actives" value={b2bStats.active_offers_count || 0} />
-                <StatCard label="Réponses" value={b2bStats.total_responses_count || 0} />
-                <StatCard label="Vendues" value={b2bStats.sold_offers_count || 0} variant="success" />
+                <StatCard label="Actives" value={b2bStats.activeOffers || 0} />
+                <StatCard label="Total" value={b2bStats.totalOffers || 0} />
+                <StatCard label="Fermees" value={b2bStats.closedOffers || 0} variant="success" />
                 <StatCard
-                  label="Max Enchère"
-                  value={b2bStats.highest_bid ? `${b2bStats.highest_bid}` : '—'}
+                  label="Offres"
+                  value={b2bStats.totalOffers || 0}
                 />
               </div>
             )}
@@ -1076,17 +838,17 @@ export default function SellerPortalPage(): JSX.Element {
                   <div key={i} className="h-48 sm:h-64 animate-pulse rounded-xl sm:rounded-2xl bg-brand-border/30" />
                 ))}
               </div>
-            ) : b2bOffers.length > 0 ? (
+            ) : (b2bOffers ?? []).length > 0 ? (
               <div className="grid gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                {b2bOffers.map((offer) => (
-                  <div key={offer.id} className="relative">
+                {(b2bOffers ?? []).map((offer: any) => (
+                  <div key={offer.id || offer._id} className="relative">
                     <OfferCard
                       offer={offer}
                       onViewDetails={handleViewB2BDetails}
                       onMakeOffer={() => {}}
                     />
                     <button
-                      onClick={() => handleDeleteB2BOffer(offer.id)}
+                      onClick={() => handleDeleteB2BOffer(offer.id || offer._id)}
                       className="absolute right-3 top-3 sm:right-4 sm:top-4 rounded-lg bg-red-600 px-2.5 py-1 sm:px-3 sm:py-1.5 text-[10px] sm:text-xs font-semibold text-white transition-colors active:bg-red-700"
                     >
                       Suppr.
@@ -1098,13 +860,13 @@ export default function SellerPortalPage(): JSX.Element {
               <div className="rounded-xl sm:rounded-2xl border-2 border-dashed border-brand-border bg-white/50 px-4 sm:px-6 py-12 sm:py-16 text-center">
                 <p className="text-base sm:text-lg font-semibold text-text-muted">Aucune offre B2B</p>
                 <p className="mt-1 sm:mt-2 text-xs sm:text-sm text-text-muted">
-                  Créez votre première offre
+                  Creez votre premiere offre
                 </p>
                 <button
                   onClick={() => setIsCreateOfferModalOpen(true)}
                   className="mt-4 sm:mt-6 rounded-xl bg-brand-dark px-5 sm:px-6 py-2.5 sm:py-3 text-xs sm:text-sm font-bold text-brand-primary transition-all active:scale-95"
                 >
-                  Créer une offre
+                  Creer une offre
                 </button>
               </div>
             )}
@@ -1157,14 +919,14 @@ export default function SellerPortalPage(): JSX.Element {
                   {...getTrendProps(dashboardStats.trend.totalOrders)}
                 />
                 <StatCard
-                  label="Réussite"
+                  label="Reussite"
                   value={`${Math.round(dashboardStats.completionRate)}%`}
                   {...getTrendProps(dashboardStats.trend.completionRate)}
                   variant="success"
                 />
                 <StatCard label="En Attente" value={dashboardStats.pendingOrders} />
                 <StatCard label="Traitement" value={dashboardStats.processingOrders} />
-                <StatCard label="Complétées" value={dashboardStats.completedOrders} variant="success" />
+                <StatCard label="Completees" value={dashboardStats.completedOrders} variant="success" />
                 <StatCard
                   label="Stock Faible"
                   value={dashboardStats.lowStockProducts}
@@ -1180,7 +942,7 @@ export default function SellerPortalPage(): JSX.Element {
       <MobileBottomNav
         activeTab={activeTab}
         onTabChange={setActiveTab}
-        showB2B={canAccessB2B()}
+        showB2B={canAccessB2B}
       />
 
       {/* Modals */}
@@ -1210,13 +972,13 @@ export default function SellerPortalPage(): JSX.Element {
         onPrintInvoice={handlePrintInvoice}
       />
 
-      {canAccessB2B() && sellerProfile?.seller_category && (
+      {canAccessB2B && user?.sellerCategory && (
         <>
           <CreateOfferModal
             isOpen={isCreateOfferModalOpen}
             onClose={() => setIsCreateOfferModalOpen(false)}
             onSubmit={handleCreateB2BOffer}
-            sellerCategory={sellerProfile.seller_category as 'importateur' | 'grossiste'}
+            sellerCategory={user.sellerCategory as 'importateur' | 'grossiste'}
           />
 
           <OfferDetailsModal

@@ -15,15 +15,15 @@ export function OrderDetailsModal({ isOpen, order, onClose, onPrintInvoice }: Or
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto">
-      <div className="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+      <div className="flex items-end md:items-center justify-center min-h-screen px-0 md:px-4 pt-0 md:pt-4 pb-0 md:pb-20 text-center sm:block sm:p-0">
         {/* Overlay */}
         <div
           className="fixed inset-0 transition-opacity bg-gray-500 bg-opacity-75"
           onClick={onClose}
         />
 
-        {/* Modal */}
-        <div className="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full">
+        {/* Modal - full screen on mobile */}
+        <div className="inline-block align-bottom bg-white rounded-t-3xl md:rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full max-h-[95vh] md:max-h-[90vh] overflow-y-auto">
           {/* Header */}
           <div className="bg-kitchen-lux-dark-green-600 px-6 py-4">
             <div className="flex justify-between items-start">

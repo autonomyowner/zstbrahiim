@@ -55,6 +55,7 @@ export const ShopFilters = ({
   const categoriesScrollRef = React.useRef<HTMLDivElement>(null)
   const [showLeftArrow, setShowLeftArrow] = React.useState(false)
   const [showRightArrow, setShowRightArrow] = React.useState(true)
+  const [showFilterSheet, setShowFilterSheet] = React.useState(false)
 
   const updateFilter = <K extends keyof FilterState>(key: K, value: FilterState[K]): void => {
     onFiltersChange({ ...filters, [key]: value })
@@ -116,25 +117,38 @@ export const ShopFilters = ({
   const hasActiveFilters = filters.category !== '' || filters.availability !== 'all' || filters.priceRange.min > 0 || filters.priceRange.max < 900000 || filters.searchQuery !== ''
 
   return (
-    <section className="rounded-2xl sm:rounded-3xl border border-brand-border/50 bg-white p-4 sm:p-5 shadow-card-sm transition-shadow duration-300 hover:shadow-card-md">
-      {/* Search bar */}
+    <section className="rounded-2xl sm:rounded-3xl border border-brand-border/30 bg-white p-4 sm:p-5 shadow-subtle">
+      {/* Search bar + filter trigger on mobile */}
       <div className="mb-4 sm:mb-5">
-        <div className="relative">
-          <div className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-text-muted">
-            <SearchIcon />
+        <div className="flex gap-2">
+          <div className="relative flex-1">
+            <div className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-text-muted">
+              <SearchIcon />
+            </div>
+            <input
+              type="text"
+              placeholder="Rechercher un produit..."
+              value={filters.searchQuery}
+              onChange={(e) => updateFilter('searchQuery', e.target.value)}
+              className="w-full rounded-full border border-brand-border bg-brand-surface-muted pl-10 pr-4 py-2.5 text-sm text-text-primary placeholder:text-text-muted/60 transition-all duration-200 focus:border-brand-primary focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-primary/20 min-h-[44px]"
+            />
           </div>
-          <input
-            type="text"
-            placeholder="Rechercher un produit..."
-            value={filters.searchQuery}
-            onChange={(e) => updateFilter('searchQuery', e.target.value)}
-            className="w-full rounded-full border border-brand-border bg-brand-surface-muted pl-10 pr-4 py-2.5 text-sm text-text-primary placeholder:text-text-muted/60 transition-all duration-200 focus:border-brand-primary focus:bg-white focus:outline-none focus:ring-2 focus:ring-brand-primary/20"
-          />
+          {/* Mobile filter button */}
+          <button
+            type="button"
+            onClick={() => setShowFilterSheet(true)}
+            className="md:hidden flex-shrink-0 rounded-full border border-brand-border bg-brand-surface-muted px-4 min-h-[44px] text-xs font-semibold text-text-primary transition-all hover:border-brand-dark/40"
+          >
+            Filtres
+            {hasActiveFilters && (
+              <span className="ml-1.5 inline-flex h-4 w-4 items-center justify-center rounded-full bg-brand-dark text-[9px] text-brand-primary">!</span>
+            )}
+          </button>
         </div>
       </div>
 
-      {/* Availability filters */}
-      <div className="flex flex-wrap items-center gap-2">
+      {/* Availability filters - hidden on mobile (in bottom sheet) */}
+      <div className="hidden md:flex flex-wrap items-center gap-2">
         {availabilityOptions.map((option) => (
           <button
             key={option.value}
@@ -157,10 +171,9 @@ export const ShopFilters = ({
         ))}
       </div>
 
-      {/* Category filters */}
-      <div className="mt-4 sm:mt-5">
+      {/* Category filters - always visible (horizontal scroll works great on mobile) */}
+      <div className="mt-3 md:mt-5">
         <div className="relative group">
-          {/* Left scroll button */}
           <button
             type="button"
             onClick={() => scrollCategories('left')}
@@ -172,7 +185,6 @@ export const ShopFilters = ({
             <ChevronLeftIcon />
           </button>
 
-          {/* Scrollable categories */}
           <div
             ref={categoriesScrollRef}
             className="flex gap-1.5 sm:gap-2 overflow-x-auto pb-1 scrollbar-hide scroll-smooth"
@@ -182,7 +194,7 @@ export const ShopFilters = ({
                 key={category.id}
                 type="button"
                 onClick={() => handleCategorySelect(category.id)}
-                className={`flex-shrink-0 rounded-full px-3.5 sm:px-4 py-1.5 sm:py-2 text-xs sm:text-[13px] font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-brand-primary/30 ${
+                className={`flex-shrink-0 rounded-full px-3.5 sm:px-4 py-2 sm:py-2 text-xs sm:text-[13px] font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-brand-primary/30 min-h-[36px] ${
                   filters.category === category.id
                     ? 'bg-brand-dark text-brand-primary shadow-subtle'
                     : 'bg-brand-surface-muted text-text-muted hover:bg-brand-border/40 hover:text-text-primary'
@@ -193,7 +205,6 @@ export const ShopFilters = ({
             ))}
           </div>
 
-          {/* Right scroll button */}
           <button
             type="button"
             onClick={() => scrollCategories('right')}
@@ -207,14 +218,13 @@ export const ShopFilters = ({
         </div>
       </div>
 
-      {/* Bottom row: Budget dropdown + stats + reset */}
-      <div className="mt-4 sm:mt-5 flex flex-wrap items-center gap-3 pt-4 border-t border-brand-border/30">
-        {/* Budget select */}
+      {/* Bottom row: Budget dropdown + stats + reset - hidden on mobile */}
+      <div className="hidden md:flex mt-5 flex-wrap items-center gap-3 pt-4 border-t border-brand-border/30">
         <div className="relative">
           <select
             id="budget-select"
             onChange={handlePriceRangeSelect}
-            className="appearance-none rounded-full border border-brand-border bg-white pl-4 pr-8 py-2 text-xs sm:text-[13px] font-medium text-text-primary cursor-pointer transition-all duration-200 hover:border-brand-dark/40 focus:border-brand-primary focus:outline-none focus:ring-2 focus:ring-brand-primary/20"
+            className="appearance-none rounded-full border border-brand-border bg-white pl-4 pr-8 py-2 text-[13px] font-medium text-text-primary cursor-pointer transition-all duration-200 hover:border-brand-dark/40 focus:border-brand-primary focus:outline-none focus:ring-2 focus:ring-brand-primary/20"
           >
             <option value="">Budget</option>
             {priceRangeOptions.map((option, index) => (
@@ -230,9 +240,8 @@ export const ShopFilters = ({
           </div>
         </div>
 
-        {/* Stats and reset */}
         <div className="ml-auto flex items-center gap-3">
-          <span className="text-xs sm:text-[13px] text-text-muted font-medium">
+          <span className="text-[13px] text-text-muted font-medium">
             <span className="font-semibold text-text-primary">{productCounts.inStock}</span> disponibles
           </span>
 
@@ -246,11 +255,100 @@ export const ShopFilters = ({
               <span className="transition-transform duration-200 group-hover:rotate-180">
                 <RefreshIcon />
               </span>
-              <span className="hidden sm:inline">Réinitialiser</span>
+              Réinitialiser
             </button>
           )}
         </div>
       </div>
+
+      {/* Mobile Filter Bottom Sheet */}
+      {showFilterSheet && (
+        <div className="fixed inset-0 z-50 md:hidden">
+          <div
+            className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+            onClick={() => setShowFilterSheet(false)}
+          />
+          <div className="absolute bottom-0 left-0 right-0 bg-white rounded-t-3xl p-5 animate-slide-up-sheet safe-area-pb" style={{ maxHeight: '70vh', overflowY: 'auto' }}>
+            <div className="flex items-center justify-between mb-5">
+              <h3 className="text-lg font-bold text-text-primary">Filtres</h3>
+              <button
+                type="button"
+                onClick={() => setShowFilterSheet(false)}
+                className="rounded-full bg-brand-surface-muted px-4 py-2 text-xs font-semibold text-text-primary min-h-[44px]"
+              >
+                Fermer
+              </button>
+            </div>
+
+            {/* Availability */}
+            <div className="mb-5">
+              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-text-muted mb-3">Disponibilité</p>
+              <div className="flex flex-wrap gap-2">
+                {availabilityOptions.map((option) => (
+                  <button
+                    key={option.value}
+                    type="button"
+                    onClick={() => updateFilter('availability', option.value as FilterState['availability'])}
+                    className={`rounded-full px-4 py-2.5 text-sm font-medium transition-all min-h-[44px] ${
+                      filters.availability === option.value
+                        ? 'bg-brand-dark text-brand-primary shadow-subtle'
+                        : 'bg-brand-surface-muted text-text-muted'
+                    }`}
+                  >
+                    {option.label}
+                    {option.value === 'in-stock' && ` (${productCounts.inStock})`}
+                    {option.value === 'out-of-stock' && ` (${productCounts.outOfStock})`}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Price Range */}
+            <div className="mb-5">
+              <p className="text-xs font-semibold uppercase tracking-[0.2em] text-text-muted mb-3">Budget</p>
+              <div className="flex flex-wrap gap-2">
+                {priceRangeOptions.map((option, index) => (
+                  <button
+                    key={index}
+                    type="button"
+                    onClick={() => updateFilter('priceRange', { min: option.min, max: option.max })}
+                    className={`rounded-full px-4 py-2.5 text-sm font-medium transition-all min-h-[44px] ${
+                      filters.priceRange.min === option.min && filters.priceRange.max === option.max
+                        ? 'bg-brand-dark text-brand-primary shadow-subtle'
+                        : 'bg-brand-surface-muted text-text-muted'
+                    }`}
+                  >
+                    {option.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Actions */}
+            <div className="flex gap-3 pt-3 border-t border-brand-border/30">
+              {hasActiveFilters && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    onResetFilters()
+                    setShowFilterSheet(false)
+                  }}
+                  className="flex-1 rounded-xl border border-brand-border bg-white py-3.5 text-sm font-bold text-text-primary min-h-[48px]"
+                >
+                  Réinitialiser
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={() => setShowFilterSheet(false)}
+                className="flex-1 rounded-xl bg-brand-dark py-3.5 text-sm font-bold text-brand-primary min-h-[48px]"
+              >
+                Voir {productCounts.inStock} produits
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </section>
   )
 }

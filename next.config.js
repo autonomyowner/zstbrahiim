@@ -8,11 +8,14 @@ const nextConfig = {
       },
       {
         protocol: 'https',
-        hostname: 'enbrhhuubjvapadqyvds.supabase.co',
-        pathname: '/storage/v1/object/public/**',
+        hostname: '*.r2.dev',
+      },
+      {
+        protocol: 'https',
+        hostname: 'pub-*.r2.dev',
       },
     ],
   },
 }
 
-module.exports = nextConfig 
+module.exports = nextConfig

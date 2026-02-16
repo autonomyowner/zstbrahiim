@@ -1,7 +1,29 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import type { B2BOfferWithDetails } from '@/lib/supabase/types'
+type B2BOfferWithDetails = {
+  id: string
+  seller_id: string
+  title: string
+  description: string
+  images: string[]
+  tags: string[]
+  base_price: number
+  min_quantity: number
+  available_quantity: number
+  offer_type: 'negotiable' | 'auction'
+  status: string
+  current_bid: number | null
+  starts_at: string | null
+  ends_at: string | null
+  seller_name: string
+  seller_category: string
+  pending_responses_count: number
+  total_responses_count: number
+  highest_bid_amount: number | null
+  display_status: string
+  seconds_remaining: number | null
+}
 
 interface OfferCardProps {
   offer: B2BOfferWithDetails

@@ -3,62 +3,55 @@
 import { useState, useEffect, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { getCurrentUserProfile, signOut, updateUserProfile } from '@/lib/supabase/auth'
-import { getOrdersForCustomer } from '@/lib/supabase/orders'
+import { useQuery, useMutation } from 'convex/react'
+import { api } from '../../../convex/_generated/api'
+import { useCurrentUser } from '@/hooks/useCurrentUser'
+import { authClient } from '@/lib/auth-client'
 import { CustomerOrderHistory } from '@/components/CustomerOrderHistory'
-import type { SellerCategory, UserProfile } from '@/lib/supabase/types'
 
+type SellerCategory = 'fournisseur' | 'importateur' | 'grossiste'
 type OrderStatusFilter = 'all' | 'pending' | 'processing' | 'shipped' | 'delivered' | 'cancelled'
 
 export default function AccountPage() {
   const router = useRouter()
-  const [user, setUser] = useState<UserProfile | null>(null)
-  const [loading, setLoading] = useState(true)
+  const { user, isLoading } = useCurrentUser()
+  const orders = useQuery(
+    api.orders.getOrdersForCustomer,
+    user?._id ? { userId: user._id } : 'skip'
+  )
+  const updateProfile = useMutation(api.users.updateProfile)
+
   const [editing, setEditing] = useState(false)
-  const [orders, setOrders] = useState<any[]>([])
-  const [loadingOrders, setLoadingOrders] = useState(true)
   const [orderStatusFilter, setOrderStatusFilter] = useState<OrderStatusFilter>('all')
   const [formData, setFormData] = useState<{
-    full_name: string
+    fullName: string
     phone: string
-    seller_category: SellerCategory
+    sellerCategory: SellerCategory
   }>({
-    full_name: '',
+    fullName: '',
     phone: '',
-    seller_category: 'fournisseur',
+    sellerCategory: 'fournisseur',
   })
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
 
+  // Initialize form data when user loads
   useEffect(() => {
-    const fetchUser = async () => {
-      try {
-        const profile = await getCurrentUserProfile()
-        if (!profile) {
-          router.push('/signin')
-          return
-        }
-        setUser(profile)
-        setFormData({
-          full_name: profile.full_name || '',
-          phone: profile.phone || '',
-          seller_category: (profile.seller_category as SellerCategory) || 'fournisseur',
-        })
-        
-        // Fetch user's orders
-        setLoadingOrders(true)
-        const customerOrders = await getOrdersForCustomer(profile.id)
-        setOrders(customerOrders)
-        setLoadingOrders(false)
-      } catch (error) {
-        console.error('Error fetching user:', error)
-        router.push('/signin')
-      } finally {
-        setLoading(false)
-      }
+    if (user) {
+      setFormData({
+        fullName: user.fullName || '',
+        phone: user.phone || '',
+        sellerCategory: (user.sellerCategory as SellerCategory) || 'fournisseur',
+      })
     }
-    fetchUser()
-  }, [router])
+  }, [user])
+
+  // Redirect when not logged in
+  useEffect(() => {
+    if (!isLoading && !user) {
+      router.push('/signin')
+    }
+  }, [isLoading, user, router])
 
   const handleUpdateProfile = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -66,25 +59,18 @@ export default function AccountPage() {
     setSuccess(null)
 
     try {
-      const updated = await updateUserProfile({
-        full_name: formData.full_name,
+      await updateProfile({
+        fullName: formData.fullName,
         phone: formData.phone,
         ...(user?.role === 'seller'
           ? {
-              seller_category: formData.seller_category,
+              sellerCategory: formData.sellerCategory,
             }
           : {}),
       })
 
-      if (updated) {
-        setSuccess('Profile updated successfully!')
-        setEditing(false)
-        // Refresh user data
-        const profile = await getCurrentUserProfile()
-        if (profile) setUser(profile)
-      } else {
-        setError('Failed to update profile')
-      }
+      setSuccess('Profile updated successfully!')
+      setEditing(false)
     } catch (error) {
       console.error('Error updating profile:', error)
       setError('An error occurred while updating your profile')
@@ -93,11 +79,7 @@ export default function AccountPage() {
 
   const handleSignOut = async () => {
     try {
-      const { error } = await signOut()
-      if (error) {
-        console.error('Error signing out:', error)
-        return
-      }
+      await authClient.signOut()
       router.push('/')
       router.refresh()
     } catch (error) {
@@ -105,13 +87,15 @@ export default function AccountPage() {
     }
   }
 
+  const loadingOrders = orders === undefined
   const visibleOrders = useMemo(() => {
+    if (!orders) return []
     return orders.filter((order) => {
       return orderStatusFilter === 'all' || order.status === orderStatusFilter
     })
   }, [orders, orderStatusFilter])
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-brand-light px-4 py-24">
         <div className="text-center">
@@ -132,7 +116,7 @@ export default function AccountPage() {
         {success && (
           <div className="rounded-2xl border border-green-200 bg-green-50 px-5 py-4 text-green-800 shadow-card-md animate-fade-in">
             <div className="flex items-center gap-2">
-              <span className="material-symbols-outlined text-green-600">check_circle</span>
+              <span className="w-2 h-2 rounded-full bg-green-500 flex-shrink-0" />
               <span className="font-semibold">{success}</span>
             </div>
           </div>
@@ -140,7 +124,7 @@ export default function AccountPage() {
         {error && (
           <div className="rounded-2xl border border-red-200 bg-red-50 px-5 py-4 text-red-700 shadow-card-md animate-fade-in">
             <div className="flex items-center gap-2">
-              <span className="material-symbols-outlined text-red-600">error</span>
+              <span className="w-2 h-2 rounded-full bg-red-500 flex-shrink-0" />
               <span className="font-semibold">{error}</span>
             </div>
           </div>
@@ -181,8 +165,8 @@ export default function AccountPage() {
                   <label className="text-xs uppercase tracking-[0.3em] text-text-muted">Nom complet</label>
                   <input
                     type="text"
-                    value={formData.full_name}
-                    onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
+                    value={formData.fullName}
+                    onChange={(e) => setFormData({ ...formData, fullName: e.target.value })}
                     className="mt-2 w-full rounded-2xl border border-brand-border px-4 py-3 text-sm focus:border-brand-dark focus:outline-none focus:ring-2 focus:ring-brand-primary/30"
                     required
                   />
@@ -204,11 +188,11 @@ export default function AccountPage() {
                     Segment vendeur
                   </label>
                   <select
-                    value={formData.seller_category}
+                    value={formData.sellerCategory}
                     onChange={(e) =>
                       setFormData({
                         ...formData,
-                        seller_category: e.target.value as SellerCategory,
+                        sellerCategory: e.target.value as SellerCategory,
                       })
                     }
                     className="mt-2 w-full rounded-2xl border border-brand-border bg-white px-4 py-3 text-sm focus:border-brand-dark focus:outline-none focus:ring-2 focus:ring-brand-primary/30"
@@ -234,9 +218,9 @@ export default function AccountPage() {
                   onClick={() => {
                     setEditing(false)
                     setFormData({
-                      full_name: user.full_name || '',
+                      fullName: user.fullName || '',
                       phone: user.phone || '',
-                      seller_category: (user.seller_category as SellerCategory) || 'fournisseur',
+                      sellerCategory: (user.sellerCategory as SellerCategory) || 'fournisseur',
                     })
                     setError(null)
                     setSuccess(null)
@@ -256,7 +240,7 @@ export default function AccountPage() {
               <div>
                 <p className="text-xs uppercase tracking-[0.3em] text-text-muted">Nom complet</p>
                 <p className="mt-2 text-lg font-semibold text-text-primary">
-                  {user.full_name || 'Non renseigné'}
+                  {user.fullName || 'Non renseigné'}
                 </p>
               </div>
               <div>
@@ -269,9 +253,9 @@ export default function AccountPage() {
                 <div>
                   <p className="text-xs uppercase tracking-[0.3em] text-text-muted">Segment vendeur</p>
                   <p className="mt-2 text-lg font-semibold text-text-primary">
-                    {user.seller_category === 'grossiste'
+                    {user.sellerCategory === 'grossiste'
                       ? 'Grossiste'
-                      : user.seller_category === 'importateur'
+                      : user.sellerCategory === 'importateur'
                       ? 'Importateur'
                       : 'Fournisseur'}
                   </p>
@@ -280,7 +264,7 @@ export default function AccountPage() {
               <div>
                 <p className="text-xs uppercase tracking-[0.3em] text-text-muted">Créé le</p>
                 <p className="mt-2 text-lg font-semibold text-text-primary">
-                  {new Date(user.created_at).toLocaleDateString('fr-FR', {
+                  {new Date(user.createdAt).toLocaleDateString('fr-FR', {
                     year: 'numeric',
                     month: 'long',
                     day: 'numeric',
@@ -359,4 +343,3 @@ export default function AccountPage() {
     </div>
   )
 }
-

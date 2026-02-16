@@ -1,12 +1,13 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { useMemo, useState } from 'react'
 import Link from 'next/link'
+import { useQuery } from 'convex/react'
+import { api } from '../../../convex/_generated/api'
+import { useCurrentUser } from '@/hooks/useCurrentUser'
 import { ProductGrid } from '@/components/ProductGrid'
 import { ProductControls } from '@/components/ProductControls'
 import { GrosFilters, createDefaultGrosFilters, type GrosFilterState } from '@/components/gros/GrosFilters'
-import { getProducts } from '@/lib/supabase/products'
-import { getCurrentUserProfile } from '@/lib/supabase/auth'
 import type { Product } from '@/data/products'
 
 type SortOption = 'best-sellers' | 'price-asc' | 'price-desc' | 'newest' | 'highest-rated'
@@ -34,66 +35,28 @@ const sortProducts = (products: Product[], sortOption: SortOption): Product[] =>
 }
 
 export default function GrosPage(): JSX.Element {
-  const [profile, setProfile] = useState<Awaited<ReturnType<typeof getCurrentUserProfile>>>(null)
-  const [loadingProfile, setLoadingProfile] = useState(true)
-  const [loadingProducts, setLoadingProducts] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const { user, isLoading: loadingProfile } = useCurrentUser()
 
-  const [products, setProducts] = useState<Product[]>([])
   const [displayMode, setDisplayMode] = useState<'grid' | 'list'>('grid')
   const [sortOption, setSortOption] = useState<SortOption>('best-sellers')
   const [filters, setFilters] = useState<GrosFilterState>(createDefaultGrosFilters)
 
-  const isAdmin = profile?.role === 'admin'
-  const sellerCategory = profile?.seller_category
+  const isAdmin = user?.role === 'admin'
+  const sellerCategory = user?.sellerCategory
 
   // Access rules for GROS page:
   // - Can VIEW: fournisseurs, grossistes, and admins
   // - Can POST: only grossistes (handled in seller dashboard)
   const canViewGrosPage = isAdmin || sellerCategory === 'fournisseur' || sellerCategory === 'grossiste'
 
-  // Fetch user profile
-  useEffect(() => {
-    const fetchProfile = async () => {
-      try {
-        const currentProfile = await getCurrentUserProfile()
-        setProfile(currentProfile)
-      } catch (err) {
-        console.error('Failed to load profile', err)
-        setProfile(null)
-      } finally {
-        setLoadingProfile(false)
-      }
-    }
-
-    fetchProfile()
-  }, [])
-
   // Fetch products from grossistes only (for GROS marketplace)
-  useEffect(() => {
-    if (!profile || !canViewGrosPage) {
-      setProducts([])
-      return
-    }
+  const convexProducts = useQuery(
+    api.products.getProducts,
+    canViewGrosPage ? { sellerCategories: ['grossiste'] as ['grossiste'] } : 'skip'
+  )
 
-    const fetchProducts = async () => {
-      try {
-        setLoadingProducts(true)
-        setError(null)
-
-        // GROS page shows products from grossistes only
-        const grossisteProducts = await getProducts(undefined, { sellerCategories: ['grossiste'] })
-        setProducts(grossisteProducts as Product[])
-      } catch (err) {
-        console.error('Failed to load GROS products', err)
-        setError('Impossible de charger les produits.')
-      } finally {
-        setLoadingProducts(false)
-      }
-    }
-
-    fetchProducts()
-  }, [profile, canViewGrosPage])
+  const products = (convexProducts as Product[] | undefined) ?? []
+  const loadingProducts = canViewGrosPage && convexProducts === undefined
 
   // Extract unique categories from products
   const categories = useMemo(() => {
@@ -152,19 +115,19 @@ export default function GrosPage(): JSX.Element {
   // Loading state
   if (loadingProfile) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-kitchen-lux-dark-green-50 to-kitchen-lux-dark-green-100 flex items-center justify-center">
+      <div className="min-h-screen bg-gradient-to-br from-neutral-50 via-white to-brand-light flex items-center justify-center">
         <div className="text-center">
           <div className="mx-auto mb-4 h-12 w-12 animate-spin rounded-full border-b-2 border-brand-dark"></div>
-          <p className="text-brand-dark/70">Chargement...</p>
+          <p className="text-text-muted">Chargement...</p>
         </div>
       </div>
     )
   }
 
   // Not logged in
-  if (!profile) {
+  if (!user) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-kitchen-lux-dark-green-50 to-kitchen-lux-dark-green-100 px-4 py-16 sm:px-6 lg:px-8">
+      <div className="min-h-screen bg-gradient-to-br from-neutral-50 via-white to-brand-light px-4 py-16 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-2xl">
           <div className="rounded-3xl border border-brand-border bg-white/95 backdrop-blur-sm p-8 shadow-card-md text-center">
             <div className="mx-auto mb-6 w-20 h-20 rounded-full bg-amber-100 flex items-center justify-center">
@@ -172,9 +135,9 @@ export default function GrosPage(): JSX.Element {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
               </svg>
             </div>
-            <h1 className="text-2xl font-black text-brand-dark mb-4">Espace GROS Réservé</h1>
-            <p className="text-brand-dark/70 mb-6">
-              Connectez-vous avec un compte <strong>fournisseur</strong> ou <strong>grossiste</strong> pour accéder aux produits en gros.
+            <h1 className="text-2xl font-black text-text-primary mb-4">Espace GROS R&eacute;serv&eacute;</h1>
+            <p className="text-text-muted mb-6">
+              Connectez-vous avec un compte <strong>fournisseur</strong> ou <strong>grossiste</strong> pour acc&eacute;der aux produits en gros.
             </p>
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
               <Link
@@ -187,7 +150,7 @@ export default function GrosPage(): JSX.Element {
                 href="/signup"
                 className="px-6 py-3 bg-brand-border/20 text-brand-dark font-semibold rounded-xl hover:bg-brand-border/40 transition-colors"
               >
-                Créer un compte
+                Cr&eacute;er un compte
               </Link>
             </div>
           </div>
@@ -199,7 +162,7 @@ export default function GrosPage(): JSX.Element {
   // Access denied (not fournisseur, grossiste, or admin)
   if (!canViewGrosPage) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-kitchen-lux-dark-green-50 to-kitchen-lux-dark-green-100 px-4 py-16 sm:px-6 lg:px-8">
+      <div className="min-h-screen bg-gradient-to-br from-neutral-50 via-white to-brand-light px-4 py-16 sm:px-6 lg:px-8">
         <div className="mx-auto max-w-2xl">
           <div className="rounded-3xl border border-brand-border bg-white/95 backdrop-blur-sm p-8 shadow-card-md text-center">
             <div className="mx-auto mb-6 w-20 h-20 rounded-full bg-red-100 flex items-center justify-center">
@@ -207,20 +170,20 @@ export default function GrosPage(): JSX.Element {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
               </svg>
             </div>
-            <h1 className="text-2xl font-black text-brand-dark mb-4">Accès Restreint</h1>
-            <p className="text-brand-dark/70 mb-6">
-              L&apos;espace GROS est réservé aux <strong>fournisseurs</strong> et <strong>grossistes</strong> vérifiés.
+            <h1 className="text-2xl font-black text-text-primary mb-4">Acc&egrave;s Restreint</h1>
+            <p className="text-text-muted mb-6">
+              L&apos;espace GROS est r&eacute;serv&eacute; aux <strong>fournisseurs</strong> et <strong>grossistes</strong> v&eacute;rifi&eacute;s.
             </p>
-            {profile.role === 'customer' && (
-              <p className="text-sm text-brand-dark/50 mb-6">
-                Vous êtes connecté en tant que client. Pour accéder aux produits en gros,
-                veuillez créer un compte vendeur professionnel.
+            {user.role === 'customer' && (
+              <p className="text-sm text-text-muted/70 mb-6">
+                Vous &ecirc;tes connect&eacute; en tant que client. Pour acc&eacute;der aux produits en gros,
+                veuillez cr&eacute;er un compte vendeur professionnel.
               </p>
             )}
-            {profile.seller_category === 'importateur' && (
-              <p className="text-sm text-brand-dark/50 mb-6">
-                En tant qu&apos;importateur, vous avez accès à l&apos;espace B2B pour publier vos offres
-                aux grossistes. L&apos;espace GROS est destiné aux transactions entre grossistes et fournisseurs.
+            {user.sellerCategory === 'importateur' && (
+              <p className="text-sm text-text-muted/70 mb-6">
+                En tant qu&apos;importateur, vous avez acc&egrave;s &agrave; l&apos;espace B2B pour publier vos offres
+                aux grossistes. L&apos;espace GROS est destin&eacute; aux transactions entre grossistes et fournisseurs.
               </p>
             )}
             <div className="flex flex-col sm:flex-row gap-3 justify-center">
@@ -228,9 +191,9 @@ export default function GrosPage(): JSX.Element {
                 href="/"
                 className="px-6 py-3 bg-brand-dark text-white font-semibold rounded-xl hover:bg-brand-dark/90 transition-colors"
               >
-                Retour à l&apos;accueil
+                Retour &agrave; l&apos;accueil
               </Link>
-              {profile.seller_category === 'importateur' && (
+              {user.sellerCategory === 'importateur' && (
                 <Link
                   href="/b2b"
                   className="px-6 py-3 bg-brand-border/20 text-brand-dark font-semibold rounded-xl hover:bg-brand-border/40 transition-colors"
@@ -247,28 +210,28 @@ export default function GrosPage(): JSX.Element {
 
   // Main content - user has access
   return (
-    <div className="min-h-screen bg-gradient-to-br from-kitchen-lux-dark-green-50 to-kitchen-lux-dark-green-100 px-4 py-8 sm:px-6 lg:px-8">
-      <div className="mx-auto max-w-7xl space-y-6">
+    <div className="min-h-screen bg-gradient-to-br from-neutral-50 via-white to-brand-light px-4 py-6 sm:py-8 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-7xl space-y-5 sm:space-y-6">
         {/* Header */}
-        <header className="rounded-3xl border border-brand-border bg-white/95 backdrop-blur-sm p-6 sm:p-8 shadow-card-md">
+        <header className="rounded-2xl sm:rounded-3xl border border-brand-border/30 bg-white p-5 sm:p-8 shadow-subtle">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
-              <p className="text-[11px] font-semibold uppercase tracking-[0.35em] text-brand-dark/70">
+              <p className="text-[9px] sm:text-[10px] font-bold uppercase tracking-[0.3em] text-text-muted/60">
                 Espace Grossistes
               </p>
-              <h1 className="mt-2 text-3xl sm:text-4xl font-black text-brand-dark">
-                Marché GROS ZST
+              <h1 className="mt-1.5 text-2xl sm:text-3xl lg:text-4xl font-black text-text-primary">
+                March&eacute; GROS ZST
               </h1>
-              <p className="mt-2 text-sm text-brand-dark/70">
+              <p className="mt-2 text-sm text-text-muted">
                 {sellerCategory === 'grossiste'
-                  ? 'Publiez vos produits en gros et touchez les fournisseurs de votre région.'
-                  : 'Trouvez les meilleurs prix de gros auprès des grossistes vérifiés.'}
+                  ? 'Publiez vos produits en gros et touchez les fournisseurs de votre r\u00E9gion.'
+                  : 'Trouvez les meilleurs prix de gros aupr\u00E8s des grossistes v\u00E9rifi\u00E9s.'}
               </p>
             </div>
             <div className="flex items-center gap-3">
               <div className="rounded-xl bg-brand-border/20 px-4 py-2">
-                <p className="text-xs text-brand-dark/60">Connecté en tant que</p>
-                <p className="font-semibold text-brand-dark capitalize">
+                <p className="text-xs text-text-muted">Connect&eacute; en tant que</p>
+                <p className="font-semibold text-text-primary capitalize">
                   {sellerCategory === 'fournisseur' ? 'Fournisseur' : 'Grossiste'}
                 </p>
               </div>
@@ -284,13 +247,6 @@ export default function GrosPage(): JSX.Element {
           </div>
         </header>
 
-        {/* Error message */}
-        {error && (
-          <div className="rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-red-700 shadow-card-sm">
-            {error}
-          </div>
-        )}
-
         {/* Filters */}
         <GrosFilters
           filters={filters}
@@ -301,7 +257,7 @@ export default function GrosPage(): JSX.Element {
         />
 
         {/* Products section */}
-        <section className="rounded-3xl border border-brand-border bg-white/95 backdrop-blur-sm p-6 sm:p-8 shadow-card-md">
+        <section className="rounded-2xl sm:rounded-3xl border border-brand-border/30 bg-white p-5 sm:p-8 shadow-subtle">
           <div className="mb-6">
             <ProductControls
               productCount={sortedProducts.length}
@@ -315,17 +271,17 @@ export default function GrosPage(): JSX.Element {
           {loadingProducts ? (
             <div className="py-12 text-center">
               <div className="mx-auto mb-4 h-10 w-10 animate-spin rounded-full border-b-2 border-brand-dark"></div>
-              <p className="text-brand-dark/70">Chargement des produits...</p>
+              <p className="text-text-muted">Chargement des produits...</p>
             </div>
           ) : sortedProducts.length > 0 ? (
             <ProductGrid products={sortedProducts} displayMode={displayMode} showMinQuantity />
           ) : (
             <div className="rounded-2xl border border-dashed border-brand-border/60 bg-neutral-50 py-12 text-center">
-              <p className="text-lg font-semibold text-brand-dark">Aucun produit trouvé</p>
-              <p className="mt-2 text-sm text-brand-dark/70">
+              <p className="text-lg font-semibold text-brand-dark">Aucun produit trouv&eacute;</p>
+              <p className="mt-2 text-sm text-text-muted">
                 {products.length === 0
-                  ? 'Les grossistes publieront bientôt leurs produits.'
-                  : 'Essayez de modifier vos filtres pour voir plus de résultats.'}
+                  ? 'Les grossistes publieront bient\u00F4t leurs produits.'
+                  : 'Essayez de modifier vos filtres pour voir plus de r\u00E9sultats.'}
               </p>
               {products.length > 0 && (
                 <button
@@ -333,7 +289,7 @@ export default function GrosPage(): JSX.Element {
                   onClick={handleResetFilters}
                   className="mt-4 px-4 py-2 bg-brand-dark text-white text-sm font-semibold rounded-xl hover:bg-brand-dark/90 transition-colors"
                 >
-                  Réinitialiser les filtres
+                  R&eacute;initialiser les filtres
                 </button>
               )}
             </div>
@@ -342,24 +298,24 @@ export default function GrosPage(): JSX.Element {
 
         {/* Info section for fournisseurs */}
         {sellerCategory === 'fournisseur' && (
-          <section className="rounded-3xl border border-brand-border bg-white/95 backdrop-blur-sm p-6 shadow-card-md">
-            <h3 className="text-lg font-bold text-brand-dark mb-3">Comment ça marche ?</h3>
+          <section className="rounded-2xl sm:rounded-3xl border border-brand-border/30 bg-white p-5 sm:p-6 shadow-subtle">
+            <h3 className="text-lg font-bold text-text-primary mb-3">Comment &ccedil;a marche ?</h3>
             <div className="grid sm:grid-cols-3 gap-4">
               <div className="rounded-xl bg-brand-border/10 p-4">
-                <div className="text-2xl font-black text-brand-dark mb-2">1</div>
-                <p className="text-sm text-brand-dark/70">
-                  Parcourez les produits proposés par les grossistes vérifiés
+                <div className="text-2xl font-black text-text-primary mb-2">1</div>
+                <p className="text-sm text-text-muted">
+                  Parcourez les produits propos&eacute;s par les grossistes v&eacute;rifi&eacute;s
                 </p>
               </div>
               <div className="rounded-xl bg-brand-border/10 p-4">
-                <div className="text-2xl font-black text-brand-dark mb-2">2</div>
-                <p className="text-sm text-brand-dark/70">
-                  Filtrez par catégorie, prix et quantité minimale selon vos besoins
+                <div className="text-2xl font-black text-text-primary mb-2">2</div>
+                <p className="text-sm text-text-muted">
+                  Filtrez par cat&eacute;gorie, prix et quantit&eacute; minimale selon vos besoins
                 </p>
               </div>
               <div className="rounded-xl bg-brand-border/10 p-4">
-                <div className="text-2xl font-black text-brand-dark mb-2">3</div>
-                <p className="text-sm text-brand-dark/70">
+                <div className="text-2xl font-black text-text-primary mb-2">3</div>
+                <p className="text-sm text-text-muted">
                   Contactez le grossiste pour passer votre commande en gros
                 </p>
               </div>

@@ -1,35 +1,29 @@
 'use client'
 
 import { useParams } from 'next/navigation'
-import { useState, useEffect } from 'react'
+import { useState, useMemo } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { freelanceServices } from '@/data/freelance-services'
-import { getServiceBySlug } from '@/lib/supabase/services'
+import { useQuery } from 'convex/react'
+import { api } from '../../../../convex/_generated/api'
 
 export default function ServiceDetailPage() {
   const params = useParams()
   const slug = params?.slug as string
-  const [service, setService] = useState<any>(null)
-  const [loading, setLoading] = useState(true)
   const [showSuccessMessage, setShowSuccessMessage] = useState(false)
 
-  useEffect(() => {
-    const fetchService = async () => {
-      // Try static services first
-      let foundService = freelanceServices.find(s => s.slug === slug)
-
-      // If not found, try database
-      if (!foundService) {
-        foundService = await getServiceBySlug(slug)
-      }
-
-      setService(foundService)
-      setLoading(false)
-    }
-
-    fetchService()
+  // Check static services first
+  const staticService = useMemo(() => {
+    return freelanceServices.find(s => s.slug === slug) || null
   }, [slug])
+
+  // Only query Convex if no static match found
+  const dbService = useQuery(api.services.getServiceBySlug, !staticService && slug ? { slug } : 'skip')
+
+  // Merge logic: prefer static, then database
+  const service = staticService || dbService || null
+  const loading = !staticService && dbService === undefined && !!slug
 
   if (loading) {
     return (

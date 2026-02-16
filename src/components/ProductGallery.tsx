@@ -126,9 +126,9 @@ export const ProductGallery = ({
         {/* Main Image Container */}
         <div
           ref={mainImageRef}
-          className={`relative aspect-[4/5] sm:aspect-square lg:aspect-[4/5] overflow-hidden rounded-2xl sm:rounded-3xl
-            bg-gradient-to-br from-brand-surface-muted to-white border border-brand-border/60
-            shadow-card-sm transition-all duration-500
+          className={`relative aspect-[4/5] sm:aspect-square lg:aspect-[4/5] overflow-hidden rounded-none sm:rounded-2xl lg:rounded-3xl
+            bg-neutral-50 sm:border sm:border-brand-border/30
+            transition-all duration-500
             ${selectedItem?.type === 'image' ? 'cursor-zoom-in' : ''}
             ${isZoomed ? 'cursor-zoom-out' : ''}`}
           onClick={handleMainImageClick}
@@ -209,36 +209,34 @@ export const ProductGallery = ({
             <button
               onClick={(e) => { e.stopPropagation(); handlePrevious(); }}
               className="absolute left-2 sm:left-3 top-1/2 -translate-y-1/2
-                w-10 h-10 sm:w-12 sm:h-12
+                w-9 h-9 sm:w-11 sm:h-11
                 flex items-center justify-center
-                bg-white/95 hover:bg-white
-                border border-brand-border/60 hover:border-brand-primary/40
-                rounded-full shadow-card-sm hover:shadow-card-md
-                text-text-secondary hover:text-brand-primaryDark
-                opacity-0 group-hover:opacity-100
+                bg-white/90 sm:bg-white/80 hover:bg-white
+                rounded-full shadow-sm sm:shadow-card-sm hover:shadow-card-md
+                text-text-secondary hover:text-text-primary
+                sm:opacity-0 sm:group-hover:opacity-100
                 transition-all duration-300 ease-out
-                hover:scale-105 active:scale-95"
+                active:scale-90"
               type="button"
               aria-label="Image précédente"
             >
-              <ChevronLeft className="w-5 h-5 sm:w-6 sm:h-6" />
+              <ChevronLeft className="w-5 h-5" />
             </button>
             <button
               onClick={(e) => { e.stopPropagation(); handleNext(); }}
               className="absolute right-2 sm:right-3 top-1/2 -translate-y-1/2
-                w-10 h-10 sm:w-12 sm:h-12
+                w-9 h-9 sm:w-11 sm:h-11
                 flex items-center justify-center
-                bg-white/95 hover:bg-white
-                border border-brand-border/60 hover:border-brand-primary/40
-                rounded-full shadow-card-sm hover:shadow-card-md
-                text-text-secondary hover:text-brand-primaryDark
-                opacity-0 group-hover:opacity-100
+                bg-white/90 sm:bg-white/80 hover:bg-white
+                rounded-full shadow-sm sm:shadow-card-sm hover:shadow-card-md
+                text-text-secondary hover:text-text-primary
+                sm:opacity-0 sm:group-hover:opacity-100
                 transition-all duration-300 ease-out
-                hover:scale-105 active:scale-95"
+                active:scale-90"
               type="button"
               aria-label="Image suivante"
             >
-              <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6" />
+              <ChevronRight className="w-5 h-5" />
             </button>
           </>
         )}
@@ -247,7 +245,7 @@ export const ProductGallery = ({
       {/* Thumbnails Strip */}
       <div
         ref={thumbnailContainerRef}
-        className="flex gap-2 sm:gap-3 overflow-x-auto pb-1 scrollbar-hide -mx-1 px-1"
+        className="flex gap-2 sm:gap-3 overflow-x-auto pb-1 scrollbar-hide px-4 sm:px-0"
       >
         {mediaItems.map((item, index) => {
           const isActive = selectedIndex === index
